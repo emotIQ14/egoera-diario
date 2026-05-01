@@ -61,6 +61,19 @@ html, body {
   overflow-x: hidden;
 }
 
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  font-family: inherit;
+  color: inherit;
+  border: none;
+  background: none;
+  cursor: pointer;
+}
+
 body {
   /* iOS safe areas */
   padding-top: env(safe-area-inset-top);
