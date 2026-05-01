@@ -1,0 +1,211 @@
+/* ===== EGOERA DIARIO · Design Tokens ===== */
+:root {
+  /* Colores brand */
+  --crema: #f1ead8;
+  --crema-soft: #ede5d0;
+  --crema-dark: #d9cfb4;
+  --cobalto: #1d2bdb;
+  --cobalto-deep: #0f1a9c;
+  --cobalto-light: #4956e8;
+  --ink: #0d0f3d;
+  --ink-soft: #1c1f4a;
+  --accent: #e6643a;
+  --accent-soft: #f3a07a;
+  --accent-deep: #b84a26;
+  --pill-yellow: #e8d45f;
+
+  /* Espaciado */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+
+  /* Radios */
+  --r-sm: 10px;
+  --r-md: 16px;
+  --r-lg: 22px;
+  --r-xl: 28px;
+  --r-pill: 999px;
+
+  /* Sombras */
+  --shadow-sm: 0 4px 12px rgba(13, 15, 61, 0.08);
+  --shadow-md: 0 12px 30px rgba(29, 43, 219, 0.18);
+  --shadow-lg: 0 30px 80px rgba(0, 0, 0, 0.5);
+
+  /* Fonts */
+  --font-display: 'Fraunces', Georgia, serif;
+  --font-body: 'Inter', -apple-system, system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+  --font-hand: 'Caveat', cursive;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+html, body {
+  background: var(--crema);
+  color: var(--ink);
+  font-family: var(--font-body);
+  line-height: 1.5;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+body {
+  /* iOS safe areas */
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { display: none; }
+* { scrollbar-width: none; }
+
+/* Selección */
+::selection {
+  background: var(--cobalto);
+  color: var(--crema);
+}
+
+/* Tipografía utilitaria */
+.font-display { font-family: var(--font-display); }
+.font-mono { font-family: var(--font-mono); }
+.font-hand { font-family: var(--font-hand); }
+
+.italic { font-style: italic; }
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  font-weight: 500;
+  opacity: 0.6;
+}
+
+/* ===== Componentes compartidos ===== */
+
+/* Pill button */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--ink);
+  color: var(--crema);
+  font-family: var(--font-body);
+  font-weight: 500;
+  font-size: 14px;
+  padding: 12px 20px;
+  border-radius: var(--r-pill);
+  text-decoration: none;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.15s ease, opacity 0.15s ease;
+}
+.btn:active { transform: scale(0.97); opacity: 0.9; }
+.btn-cobalto { background: var(--cobalto); }
+.btn-accent { background: var(--accent); }
+.btn-outline {
+  background: transparent;
+  color: var(--ink);
+  border: 1.5px solid rgba(13, 15, 61, 0.18);
+}
+
+/* Pill numérico tipo Merl */
+.pill-num {
+  display: inline-block;
+  background: #000;
+  color: var(--crema);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  padding: 5px 11px;
+  border-radius: var(--r-pill);
+  font-weight: 600;
+}
+.pill-yellow {
+  background: var(--pill-yellow);
+  color: var(--ink);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  padding: 5px 11px;
+  border-radius: var(--r-pill);
+  font-weight: 700;
+}
+
+/* M-card (Merl-style card) */
+.m-card {
+  position: relative;
+  border-radius: var(--r-lg);
+  padding: 20px;
+  overflow: hidden;
+}
+.m-card-cobalto { background: var(--cobalto); color: var(--crema); }
+.m-card-cream { background: var(--crema-soft); color: var(--ink); border: 1px solid rgba(13, 15, 61, 0.08); }
+.m-card-dark { background: var(--ink); color: var(--crema); }
+.m-card-accent { background: var(--accent); color: var(--crema); }
+.m-card-gradient { background: linear-gradient(180deg, var(--crema) 0%, var(--crema-dark) 100%); color: var(--ink); }
+
+.card-title {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 700;
+  font-size: 26px;
+  line-height: 1.05;
+  letter-spacing: -0.01em;
+  margin-top: 36px;
+}
+.card-sub {
+  font-family: var(--font-body);
+  font-size: 13px;
+  line-height: 1.45;
+  opacity: 0.78;
+  margin-top: 8px;
+}
+
+/* Greet header */
+.s-greet {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 600;
+  font-size: 36px;
+  line-height: 1.05;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+}
+.s-greet em {
+  color: var(--cobalto);
+  font-style: italic;
+}
+.s-date {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  opacity: 0.5;
+  margin-top: 8px;
+}
+
+/* Section header */
+.sec-big {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 700;
+  font-size: 34px;
+  line-height: 1;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+}
+.sec-big em { color: var(--accent); }
