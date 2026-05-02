@@ -1,4 +1,3 @@
-import Anthropic from '@anthropic-ai/sdk';
 import type { DiaryEntry } from '@/lib/storage';
 
 export const runtime = 'nodejs';
@@ -55,55 +54,97 @@ Contexto reciente del diario de la persona (úsalo solo para tener memoria, no l
 ${summary}${moodLine}${emotionsLine}`;
 }
 
+/**
+ * Llama al Vercel AI Gateway (formato OpenAI-compat).
+ * Usado cuando ANTHROPIC_API_KEY tiene prefijo `vck_`.
+ */
+async function callVercelGateway(
+  apiKey: string,
+  systemPrompt: string,
+  messages: ChatMessage[]
+): Promise<string> {
+  const res = await fetch('https://ai-gateway.vercel.sh/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      model: 'anthropic/claude-sonnet-4-5',
+      max_tokens: 200,
+      temperature: 0.7,
+      messages: [
+        { role: 'system', content: systemPrompt },
+        ...messages.map((m) => ({ role: m.role, content: m.content })),
+      ],
+    }),
+  });
+
+  if (!res.ok) {
+    const errBody = await res.text().catch(() => '');
+    throw new Error(`Gateway ${res.status}: ${errBody.slice(0, 200)}`);
+  }
+
+  const data = (await res.json()) as {
+    choices?: Array<{ message?: { content?: string } }>;
+  };
+  return data.choices?.[0]?.message?.content?.trim() ?? '';
+}
+
+/**
+ * Llama directamente a la API de Anthropic.
+ * Usado cuando la key tiene formato nativo `sk-ant-...`.
+ */
+async function callAnthropic(
+  apiKey: string,
+  systemPrompt: string,
+  messages: ChatMessage[]
+): Promise<string> {
+  const Anthropic = (await import('@anthropic-ai/sdk')).default;
+  const client = new Anthropic({ apiKey });
+  const response = await client.messages.create({
+    model: 'claude-sonnet-4-5',
+    max_tokens: 200,
+    temperature: 0.7,
+    system: systemPrompt,
+    messages: messages.map((m) => ({ role: m.role, content: m.content })),
+  });
+  type TextBlock = { type: 'text'; text: string };
+  return response.content
+    .filter((b): b is TextBlock => b.type === 'text')
+    .map((b) => b.text)
+    .join('\n')
+    .trim();
+}
+
 export async function POST(req: Request): Promise<Response> {
   try {
     const apiKey = process.env.ANTHROPIC_API_KEY;
     if (!apiKey) {
-      return Response.json(
-        { error: 'No puedo conectar ahora mismo' },
-        { status: 500 }
-      );
+      return Response.json({ error: 'No puedo conectar ahora mismo' }, { status: 500 });
     }
 
     const body = (await req.json()) as ConversaRequest;
     const { messages, userContext } = body;
 
     if (!Array.isArray(messages) || messages.length === 0) {
-      return Response.json(
-        { error: 'No puedo conectar ahora mismo' },
-        { status: 400 }
-      );
+      return Response.json({ error: 'No puedo conectar ahora mismo' }, { status: 400 });
     }
 
-    const client = new Anthropic({ apiKey });
+    const systemPrompt = buildSystemPrompt(userContext);
+    const useGateway = apiKey.startsWith('vck_');
 
-    const response = await client.messages.create({
-      model: 'claude-sonnet-4-5',
-      max_tokens: 200,
-      temperature: 0.7,
-      system: buildSystemPrompt(userContext),
-      messages: messages.map((m) => ({ role: m.role, content: m.content })),
-    });
-
-    const text = response.content
-      .filter((block): block is Anthropic.TextBlock => block.type === 'text')
-      .map((block) => block.text)
-      .join('\n')
-      .trim();
+    const text = useGateway
+      ? await callVercelGateway(apiKey, systemPrompt, messages)
+      : await callAnthropic(apiKey, systemPrompt, messages);
 
     if (!text) {
-      return Response.json(
-        { error: 'No puedo conectar ahora mismo' },
-        { status: 500 }
-      );
+      return Response.json({ error: 'No puedo conectar ahora mismo' }, { status: 500 });
     }
 
     return Response.json({ message: text });
   } catch (err) {
     console.error('[api/conversa] error', err);
-    return Response.json(
-      { error: 'No puedo conectar ahora mismo' },
-      { status: 500 }
-    );
+    return Response.json({ error: 'No puedo conectar ahora mismo' }, { status: 500 });
   }
 }
