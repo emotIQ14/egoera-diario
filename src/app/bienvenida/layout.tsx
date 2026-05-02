@@ -1,4 +1,15 @@
+import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
+
+export const metadata: Metadata = {
+  title: 'Bienvenida · Egoera Diario',
+  description: 'Empieza tu diario emocional. Sin gamificación, sin métricas raras. Solo tú escuchándote.',
+  openGraph: {
+    title: 'Bienvenida a Egoera Diario',
+    description: 'Tu diario emocional, despacio.',
+    type: 'website',
+  },
+};
 
 /**
  * Layout del flujo de onboarding.

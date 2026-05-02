@@ -1,8 +1,12 @@
 import type { Metadata, Viewport } from 'next';
+import { Analytics } from '@vercel/analytics/next';
+import { SpeedInsights } from '@vercel/speed-insights/next';
 import './globals.css';
 import { ServiceWorkerRegister } from '@/components/ServiceWorkerRegister';
+import { StructuredData } from '@/components/StructuredData';
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL ?? 'https://egoera-diario.vercel.app'),
   title: 'Egoera Diario · Diario emocional despacio',
   description: 'Un diario emocional terapéutico. Sin gamificación, sin métricas raras. Cobalto + crema, despacio.',
   manifest: '/manifest.json',
@@ -19,6 +23,21 @@ export const metadata: Metadata = {
       { url: '/icons/icon-512.png', sizes: '512x512', type: 'image/png' },
     ],
     apple: '/icons/apple-touch-icon.png',
+  },
+  openGraph: {
+    type: 'website',
+    locale: 'es_ES',
+    url: 'https://egoera-diario.vercel.app',
+    siteName: 'Egoera Diario',
+    title: 'Egoera Diario · Diario emocional despacio',
+    description: 'Sin gamificación. Sin métricas raras. Solo tú escuchándote.',
+    images: [{ url: '/og-image.png', width: 1200, height: 630, alt: 'Egoera Diario' }],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Egoera Diario',
+    description: 'Diario emocional, despacio.',
+    images: ['/og-image.png'],
   },
 };
 
@@ -45,6 +64,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body>
         <ServiceWorkerRegister />
         {children}
+        <StructuredData />
+        <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );

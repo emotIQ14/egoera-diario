@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Screen from '@/components/Screen';
 import TabBar from '@/components/TabBar';
+import InstallPrompt from '@/components/InstallPrompt';
 import { entriesThisWeek, loadEntries, streakDays } from '@/lib/storage';
 
 const WEEKDAYS = [
@@ -193,6 +194,8 @@ export default function HomePage() {
           </button>
         </p>
       ) : null}
+
+      <InstallPrompt />
 
       <TabBar />
 

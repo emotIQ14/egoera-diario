@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Screen from '@/components/Screen';
 import TabBar from '@/components/TabBar';
+import SafetyBar from '@/components/SafetyBar';
 import { saveEntry, makeId } from '@/lib/storage';
 import type { DiaryEntry, Emotion } from '@/lib/storage';
 import { EMOTIONS } from '@/lib/types';
@@ -151,6 +152,8 @@ export default function DiarioPage() {
           Guardar entrada
         </button>
       </Screen>
+
+      <SafetyBar text={text} />
 
       <button
         type="button"
@@ -341,8 +344,8 @@ export default function DiarioPage() {
           padding: 14px 22px;
           font-size: 14px;
           font-weight: 600;
-          /* deja hueco al FAB de voz */
-          margin-bottom: 24px;
+          /* deja hueco al FAB de voz + tab bar */
+          margin-bottom: 96px;
         }
         .save-btn:disabled {
           opacity: 0.4;

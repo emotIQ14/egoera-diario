@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import Screen from '@/components/Screen';
 import TabBar from '@/components/TabBar';
+import SafetyBar from '@/components/SafetyBar';
 import { loadEntries } from '@/lib/storage';
 
 type Message = { role: 'user' | 'assistant'; content: string };
@@ -223,6 +224,8 @@ export default function ConversaPage() {
           </svg>
         </button>
       </div>
+
+      <SafetyBar text={input} offsetBottom={156} />
 
       <TabBar />
 

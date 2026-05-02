@@ -855,7 +855,7 @@ export default function ProPage(): React.ReactElement {
         <style jsx>{`
           .final {
             position: relative;
-            padding: 56px 4px 32px;
+            padding: 56px 4px 56px;
             text-align: left;
             background:
               radial-gradient(80% 60% at 100% 100%, rgba(230, 100, 58, 0.18), transparent 60%),
@@ -945,7 +945,7 @@ export default function ProPage(): React.ReactElement {
 
         <style jsx>{`
           .faq {
-            padding: 28px 0 16px;
+            padding: 28px 0 48px;
           }
           .faq .eyebrow {
             margin-bottom: 14px;

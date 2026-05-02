@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Egoera Diario</string>
+    <string name="title_activity_main">Egoera Diario</string>
+    <string name="package_name">es.egoera.diario</string>
+    <string name="custom_url_scheme">es.egoera.diario</string>
+</resources>

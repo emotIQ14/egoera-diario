@@ -10,17 +10,25 @@
     "cap:sync": "next build && npx cap sync"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.30.0",
+    "@capacitor/android": "^8.3.1",
+    "@capacitor/cli": "^7.6.2",
+    "@capacitor/core": "^8.3.1",
+    "@capacitor/ios": "^8.3.1",
+    "@capacitor/splash-screen": "^8.0.1",
+    "@capacitor/status-bar": "^8.0.2",
+    "@vercel/analytics": "^2.0.1",
+    "@vercel/speed-insights": "^2.0.0",
     "next": "^15.0.3",
     "react": "^19.0.0-rc",
-    "react-dom": "^19.0.0-rc",
-    "@anthropic-ai/sdk": "^0.30.0"
+    "react-dom": "^19.0.0-rc"
   },
   "devDependencies": {
     "@types/node": "^22",
     "@types/react": "^19.0.0-rc",
     "@types/react-dom": "^19.0.0-rc",
-    "typescript": "^5.7.0",
     "eslint": "^9",
-    "eslint-config-next": "^15.0.3"
+    "eslint-config-next": "^15.0.3",
+    "typescript": "^5.7.0"
   }
 }

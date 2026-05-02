@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState, type ChangeEvent } from 'react';
+import { useRouter } from 'next/navigation';
 import Screen from '@/components/Screen';
 import TabBar from '@/components/TabBar';
 import { loadEntries, streakDays } from '@/lib/storage';
@@ -144,6 +145,7 @@ function importFromJson(file: File): Promise<DiaryEntry[]> {
 }
 
 export default function TuPage() {
+  const router = useRouter();
   const [name, setName] = useState<string>('Ander Bilbao');
   const [editingName, setEditingName] = useState<boolean>(false);
   const [draftName, setDraftName] = useState<string>('');
@@ -424,6 +426,18 @@ export default function TuPage() {
         <span id="more-eyebrow" className="eyebrow block-eyebrow">
           — Más —
         </span>
+        <button
+          type="button"
+          className="pro-card"
+          onClick={() => router.push('/pro')}
+          aria-label="Egoera Pro"
+        >
+          <span className="pro-pill">— PRO —</span>
+          <span className="pro-title">Egoera Pro</span>
+          <span className="pro-sub">
+            Conversa ilimitada · memoria 365 días · export profesional
+          </span>
+        </button>
         <ul className="link-list">
           <li>
             <a
@@ -704,6 +718,64 @@ export default function TuPage() {
           line-height: 1.45;
           opacity: 0.75;
           margin-top: 6px;
+        }
+
+        .pro-card {
+          position: relative;
+          display: flex;
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 6px;
+          width: 100%;
+          padding: 18px 20px;
+          margin-bottom: 12px;
+          background: var(--cobalto);
+          color: var(--crema);
+          border: none;
+          border-radius: var(--r-md);
+          text-align: left;
+          cursor: pointer;
+          box-shadow: 0 18px 40px rgba(29, 43, 219, 0.32);
+          transition: transform 0.12s ease, box-shadow 0.15s ease;
+          -webkit-tap-highlight-color: transparent;
+        }
+        .pro-card:active {
+          transform: scale(0.99);
+        }
+        .pro-card:focus-visible {
+          outline: 2px solid var(--accent);
+          outline-offset: 3px;
+        }
+        .pro-pill {
+          position: absolute;
+          top: 14px;
+          right: 14px;
+          background: var(--pill-yellow);
+          color: var(--ink);
+          font-family: var(--font-mono);
+          font-size: 10px;
+          letter-spacing: 0.18em;
+          text-transform: uppercase;
+          padding: 4px 10px;
+          border-radius: var(--r-pill);
+          font-weight: 700;
+        }
+        .pro-title {
+          font-family: var(--font-display);
+          font-style: italic;
+          font-weight: 700;
+          font-size: 20px;
+          line-height: 1.1;
+          letter-spacing: -0.01em;
+          color: var(--crema);
+          padding-right: 70px;
+        }
+        .pro-sub {
+          font-family: var(--font-body);
+          font-size: 12px;
+          line-height: 1.45;
+          color: var(--crema);
+          opacity: 0.82;
         }
 
         .danger-eyebrow {
