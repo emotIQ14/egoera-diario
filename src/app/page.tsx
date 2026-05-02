@@ -32,6 +32,7 @@ const MONTHS = [
 ] as const;
 
 const NAME_KEY = 'egoera-diario-name';
+const ONBOARDED_KEY = 'egoera-diario-onboarded';
 
 function greetingFor(hour: number): string {
   if (hour >= 6 && hour < 12) return 'Buenos días';
@@ -58,6 +59,15 @@ export default function HomePage() {
   const [name, setName] = useState<string>('Ander');
   const [streak, setStreak] = useState<number>(0);
   const [todayCount, setTodayCount] = useState<number>(0);
+
+  // Redirige a /bienvenida si el usuario aún no ha hecho onboarding.
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const onboarded = window.localStorage.getItem(ONBOARDED_KEY);
+    if (onboarded !== 'true') {
+      router.replace('/bienvenida');
+    }
+  }, [router]);
 
   useEffect(() => {
     const current = new Date();
