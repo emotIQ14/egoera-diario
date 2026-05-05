@@ -195,6 +195,23 @@ export default function HomePage() {
         </p>
       ) : null}
 
+      <nav className="discover" aria-label="Descubrir más">
+        <button
+          type="button"
+          className="discover-link"
+          onClick={() => router.push('/bienvenida')}
+        >
+          ¿Primera vez? · Empieza guiado →
+        </button>
+        <button
+          type="button"
+          className="discover-link discover-link-pro"
+          onClick={() => router.push('/pro')}
+        >
+          Egoera Pro · 7 días gratis →
+        </button>
+      </nav>
+
       <InstallPrompt />
 
       <TabBar />
@@ -260,6 +277,38 @@ export default function HomePage() {
           outline: 2px solid var(--cobalto);
           outline-offset: 2px;
           border-radius: 2px;
+        }
+        .discover {
+          margin-top: 32px;
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+        }
+        .discover-link {
+          background: none;
+          border: 1px dashed rgba(13, 15, 61, 0.18);
+          padding: 12px 16px;
+          border-radius: 12px;
+          font-family: var(--font-mono);
+          font-size: 11px;
+          letter-spacing: 0.16em;
+          text-transform: uppercase;
+          color: var(--ink);
+          cursor: pointer;
+          opacity: 0.78;
+          transition: opacity 0.15s, border-color 0.15s;
+          text-align: left;
+        }
+        .discover-link:hover {
+          opacity: 1;
+          border-color: var(--cobalto);
+        }
+        .discover-link-pro {
+          color: var(--accent-deep);
+          border-color: rgba(184, 74, 38, 0.3);
+        }
+        .discover-link-pro:hover {
+          border-color: var(--accent);
         }
       `}</style>
     </Screen>

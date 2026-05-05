@@ -440,6 +440,16 @@ export default function TuPage() {
         </button>
         <ul className="link-list">
           <li>
+            <button
+              type="button"
+              className="link-card"
+              onClick={() => router.push('/bienvenida')}
+            >
+              <span className="link-label">Volver al inicio guiado</span>
+              <span className="link-value">→</span>
+            </button>
+          </li>
+          <li>
             <a
               className="link-card link-card-anchor"
               href="https://egoera.es/sobre-nosotros/"
