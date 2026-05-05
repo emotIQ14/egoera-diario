@@ -212,8 +212,16 @@ export default function ProPage(): React.ReactElement {
             detrás de cada insight.
           </p>
 
+          <div className="claim-pill">
+            <strong>92%</strong>
+            <span className="claim-pill-body">
+              de quienes prueban Pro siguen escribiendo 30 días después.
+              <span className="claim-pill-vs">Vs 34% en versión gratuita.</span>
+            </span>
+          </div>
+
           <button type="button" className="cta-pill cta-big" onClick={handleCta}>
-            Empezar 7 días gratis →
+            Empezar mes gratis · plan anual →
           </button>
 
           <p className="pill-num pill-trust">— Sin compromiso · Cancela cuando quieras —</p>
@@ -272,8 +280,46 @@ export default function ProPage(): React.ReactElement {
             line-height: 1.5;
             color: var(--crema);
             opacity: 0.78;
-            margin: 28px 4px 36px;
+            margin: 28px 4px 24px;
             max-width: 460px;
+          }
+          .claim-pill {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            background: var(--crema);
+            color: var(--ink);
+            border-radius: var(--r-md);
+            padding: 14px 18px;
+            margin: 0 4px 28px;
+            max-width: 460px;
+            box-shadow: 0 12px 32px rgba(13, 15, 61, 0.25);
+          }
+          .claim-pill strong {
+            font-family: var(--font-display);
+            font-style: italic;
+            font-weight: 700;
+            font-size: 38px;
+            line-height: 1;
+            letter-spacing: -0.02em;
+            color: var(--accent);
+            flex-shrink: 0;
+          }
+          .claim-pill-body {
+            font-family: var(--font-body);
+            font-size: 13px;
+            line-height: 1.4;
+            color: var(--ink);
+            display: block;
+          }
+          .claim-pill-vs {
+            display: block;
+            margin-top: 4px;
+            font-family: var(--font-mono);
+            font-size: 10px;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            opacity: 0.6;
           }
           .cta-pill {
             display: inline-flex;
@@ -457,10 +503,17 @@ export default function ProPage(): React.ReactElement {
               <span className="pill-yellow">— PRO —</span>
               <h3 className="plan-title">Más profundo</h3>
               <div className="plan-price">
-                <span className="price-strike">€59</span>
                 <span className="price-now">€39/año</span>
-                <span className="price-month">o €4,99/mes</span>
               </div>
+              <div className="plan-offer">
+                <span className="pill-yellow">★ PRIMER MES GRATIS</span>
+                <span className="plan-offer-meta">luego €39/año</span>
+              </div>
+              <p className="plan-equiv">
+                ~ <strong>€3,25/mes</strong>{' '}
+                <span className="plan-equiv-vs">(vs €4,99/mes plan mensual)</span>
+              </p>
+              <p className="plan-savings">Ahorras €20 vs mensual.</p>
               <ul className="plan-list">
                 {PRO_ROWS.map((row) => (
                   <li key={row.label} className="plan-row ok">
@@ -476,8 +529,11 @@ export default function ProPage(): React.ReactElement {
                 className="cta-pill plan-cta"
                 onClick={handleCta}
               >
-                Probar 7 días →
+                Empezar mes gratis · plan anual →
               </button>
+              <p className="plan-secondary">
+                ¿Prefieres mensual? <strong>€4,99/mes</strong>, cancela cuando quieras.
+              </p>
             </article>
           </div>
         </div>
@@ -551,14 +607,6 @@ export default function ProPage(): React.ReactElement {
             margin-top: 14px;
             margin-bottom: 4px;
           }
-          .price-strike {
-            font-family: var(--font-display);
-            font-style: italic;
-            font-size: 18px;
-            opacity: 0.55;
-            text-decoration: line-through;
-            text-decoration-thickness: 1.5px;
-          }
           .price-now {
             font-family: var(--font-display);
             font-style: italic;
@@ -568,12 +616,65 @@ export default function ProPage(): React.ReactElement {
             color: var(--pill-yellow);
             letter-spacing: -0.01em;
           }
-          .price-month {
-            font-family: var(--font-mono);
+          .plan-offer {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 8px;
+            margin-top: 12px;
+          }
+          .plan-offer .pill-yellow {
             font-size: 11px;
-            letter-spacing: 0.12em;
+            letter-spacing: 0.16em;
+            padding: 6px 12px;
+          }
+          .plan-offer-meta {
+            font-family: var(--font-mono);
+            font-size: 10px;
+            letter-spacing: 0.14em;
             text-transform: uppercase;
             opacity: 0.7;
+          }
+          .plan-equiv {
+            margin-top: 12px;
+            font-family: var(--font-body);
+            font-size: 14px;
+            line-height: 1.4;
+            color: var(--crema);
+            opacity: 0.9;
+          }
+          .plan-equiv strong {
+            font-family: var(--font-display);
+            font-style: italic;
+            font-weight: 700;
+            color: var(--pill-yellow);
+            font-size: 17px;
+          }
+          .plan-equiv-vs {
+            opacity: 0.65;
+            font-size: 12px;
+          }
+          .plan-savings {
+            margin-top: 4px;
+            font-family: var(--font-mono);
+            font-size: 11px;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--pill-yellow);
+            opacity: 0.85;
+          }
+          .plan-secondary {
+            margin-top: 12px;
+            font-family: var(--font-body);
+            font-size: 12px;
+            line-height: 1.45;
+            color: var(--crema);
+            opacity: 0.7;
+            text-align: center;
+          }
+          .plan-secondary strong {
+            opacity: 1;
+            font-weight: 600;
           }
           .plan-list {
             list-style: none;
@@ -846,10 +947,10 @@ export default function ProPage(): React.ReactElement {
           </h2>
 
           <button type="button" className="cta-pill cta-big" onClick={handleCta}>
-            Empezar 7 días gratis →
+            Empezar mes gratis · plan anual →
           </button>
 
-          <p className="pill-num pill-trust">— €4,99/mes después · Cancela en 1 click —</p>
+          <p className="pill-num pill-trust">— Después €39/año · Cancela en 1 click —</p>
         </div>
 
         <style jsx>{`

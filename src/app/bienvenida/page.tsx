@@ -4,9 +4,10 @@ import { useCallback, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import OnboardingStep from '@/components/onboarding/OnboardingStep';
 
-const TOTAL_STEPS = 5;
+const TOTAL_STEPS = 6;
 const NAME_KEY = 'egoera-diario-name';
 const ONBOARDED_KEY = 'egoera-diario-onboarded';
+const ATTRIBUTION_KEY = 'egoera-attribution';
 
 type Authority = {
   pill: string;
@@ -26,10 +27,107 @@ const CHECKLIST = [
   '03 · Conectar emociones con momentos del día.',
 ] as const;
 
+type AttributionOption = {
+  slug: string;
+  label: string;
+  icon: React.ReactElement;
+};
+
+const ATTRIBUTION_OPTIONS: AttributionOption[] = [
+  {
+    slug: 'instagram',
+    label: 'Instagram',
+    icon: (
+      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden>
+        <rect x="3" y="3" width="18" height="18" rx="5" />
+        <circle cx="12" cy="12" r="4" />
+        <circle cx="17.5" cy="6.5" r="0.8" fill="currentColor" />
+      </svg>
+    ),
+  },
+  {
+    slug: 'tiktok',
+    label: 'TikTok',
+    icon: (
+      <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden>
+        <path d="M14.5 3v10.5a2.5 2.5 0 1 1-2.5-2.5h.5V8.5h-.5a5.5 5.5 0 1 0 5.5 5.5V8a5 5 0 0 0 4 1.95V7a3 3 0 0 1-3-3h-4z" />
+      </svg>
+    ),
+  },
+  {
+    slug: 'youtube',
+    label: 'YouTube',
+    icon: (
+      <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden>
+        <path d="M21.6 7.2c-.2-1-1-1.7-2-2C17.7 5 12 5 12 5s-5.7 0-7.6.2c-1 .3-1.8 1-2 2C2 9.1 2 12 2 12s0 2.9.4 4.8c.2 1 1 1.7 2 2 1.9.2 7.6.2 7.6.2s5.7 0 7.6-.2c1-.3 1.8-1 2-2 .4-1.9.4-4.8.4-4.8s0-2.9-.4-4.8zM10 15.5v-7l6 3.5-6 3.5z" />
+      </svg>
+    ),
+  },
+  {
+    slug: 'x',
+    label: 'X (Twitter)',
+    icon: (
+      <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden>
+        <path d="M18.3 3h3l-6.6 7.6L22.5 21h-6.1l-4.8-6.2L6.1 21H3l7.1-8.1L2.5 3h6.2l4.3 5.7L18.3 3zm-1.1 16.2h1.7L7 4.7H5.2l12 14.5z" />
+      </svg>
+    ),
+  },
+  {
+    slug: 'vlog-egoera',
+    label: 'Vlog Egoera (egoera.es)',
+    icon: (
+      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden>
+        <rect x="3" y="5" width="18" height="14" rx="2" />
+        <path d="M10 9l5 3-5 3z" fill="currentColor" />
+      </svg>
+    ),
+  },
+  {
+    slug: 'bidaiatzen',
+    label: 'Bidaiatzen (alguien me lo recomendó allí)',
+    icon: (
+      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden>
+        <path d="M12 2l1.7 5.2H19l-4.4 3.2 1.7 5.2L12 12.4 7.7 15.6l1.7-5.2L5 7.2h5.3z" />
+      </svg>
+    ),
+  },
+  {
+    slug: 'google',
+    label: 'Buscando en Google',
+    icon: (
+      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden>
+        <circle cx="11" cy="11" r="6" />
+        <path d="M16 16l4 4" strokeLinecap="round" />
+      </svg>
+    ),
+  },
+  {
+    slug: 'amigo',
+    label: 'Un amigo me lo dijo',
+    icon: (
+      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden>
+        <circle cx="12" cy="8" r="4" />
+        <path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8" />
+      </svg>
+    ),
+  },
+  {
+    slug: 'otro',
+    label: 'Otro',
+    icon: (
+      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden>
+        <circle cx="12" cy="12" r="9" />
+        <path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.7.4-1 .9-1 1.7M12 17.2v.1" strokeLinecap="round" />
+      </svg>
+    ),
+  },
+];
+
 export default function BienvenidaPage() {
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState<number>(0);
   const [name, setName] = useState<string>('');
+  const [attribution, setAttribution] = useState<string | null>(null);
 
   const goNext = useCallback(() => {
     setCurrentStep((s) => Math.min(s + 1, TOTAL_STEPS - 1));
@@ -56,6 +154,18 @@ export default function BienvenidaPage() {
   }, [finishOnboarding]);
 
   const handleSubmitName = useCallback(() => {
+    goNext();
+  }, [goNext]);
+
+  const handleSelectAttribution = useCallback((slug: string) => {
+    setAttribution(slug);
+    if (typeof window !== 'undefined') {
+      const payload = JSON.stringify({ slug, ts: new Date().toISOString() });
+      window.localStorage.setItem(ATTRIBUTION_KEY, payload);
+    }
+  }, []);
+
+  const handleFinishFromAttribution = useCallback(() => {
     finishOnboarding(true);
   }, [finishOnboarding]);
 
@@ -323,10 +433,20 @@ export default function BienvenidaPage() {
             Estudios muestran que escribir 5 min/día reduce ansiedad un 30 % en
             4 semanas. — <em>Pennebaker, 1997</em>.
           </p>
+
+          <div className="claim-stat">
+            <p className="claim-stat-text">
+              El <strong>87 %</strong> de quienes escriben 5 minutos al día durante
+              4 semanas reportan menos rumiación.
+            </p>
+            <p className="claim-stat-source">
+              — Pennebaker &amp; Smyth, 2016 (meta-análisis 200+ estudios).
+            </p>
+          </div>
         </div>
       </OnboardingStep>
 
-      {/* 05 — Setup ligero */}
+      {/* 05 — Setup nombre */}
       <OnboardingStep
         index={4}
         total={TOTAL_STEPS}
@@ -334,8 +454,8 @@ export default function BienvenidaPage() {
         background="cream"
         onSkip={handleSkip}
         onNext={handleSubmitName}
-        ctaLabel="Empezar mi diario →"
-        ctaTone="accent"
+        ctaLabel="Continuar →"
+        ctaTone="cobalto"
       >
         <div className="hero hero-cream">
           <p className="eyebrow">— PARA TERMINAR —</p>
@@ -367,6 +487,57 @@ export default function BienvenidaPage() {
               aria-label="Tu nombre"
             />
           </form>
+        </div>
+      </OnboardingStep>
+
+      {/* 06 — Atribución */}
+      <OnboardingStep
+        index={5}
+        total={TOTAL_STEPS}
+        active={currentStep === 5}
+        background="cream"
+        onSkip={handleSkip}
+        onNext={handleFinishFromAttribution}
+        ctaLabel="Empezar →"
+        ctaTone="accent"
+      >
+        <div className="hero hero-cream">
+          <p className="eyebrow">— ÚLTIMA PREGUNTA —</p>
+          <h1 className="display attr-display">
+            ¿Cómo nos
+            <br />
+            <em>conociste</em>?
+          </h1>
+          <p className="attr-sub">
+            No es para vendértelo. Es para cuidar el sitio del que llegas.
+          </p>
+
+          <div className="attr-grid" role="radiogroup" aria-label="¿Cómo nos conociste?">
+            {ATTRIBUTION_OPTIONS.map((opt) => {
+              const selected = attribution === opt.slug;
+              return (
+                <button
+                  key={opt.slug}
+                  type="button"
+                  role="radio"
+                  aria-checked={selected}
+                  className={`attr-chip ${selected ? 'selected' : ''}`}
+                  onClick={() => handleSelectAttribution(opt.slug)}
+                >
+                  <span className="attr-chip-ico" aria-hidden>
+                    {opt.icon}
+                  </span>
+                  <span className="attr-chip-label">{opt.label}</span>
+                </button>
+              );
+            })}
+          </div>
+
+          {attribution ? (
+            <p className="attr-confirm" aria-live="polite">
+              Gracias. Toma nota: <strong>{attribution}</strong>.
+            </p>
+          ) : null}
         </div>
       </OnboardingStep>
 
@@ -532,6 +703,35 @@ export default function BienvenidaPage() {
         .caption em {
           font-style: italic;
         }
+        .claim-stat {
+          margin-top: 4px;
+          padding: 14px 16px;
+          background: rgba(29, 43, 219, 0.06);
+          border: 1px solid rgba(29, 43, 219, 0.16);
+          border-radius: var(--r-md);
+        }
+        .claim-stat-text {
+          font-family: var(--font-body);
+          font-size: 14px;
+          line-height: 1.5;
+          color: var(--ink);
+        }
+        .claim-stat-text strong {
+          font-family: var(--font-display);
+          font-style: italic;
+          font-weight: 700;
+          color: var(--cobalto);
+          font-size: 18px;
+        }
+        .claim-stat-source {
+          margin-top: 6px;
+          font-family: var(--font-mono);
+          font-size: 10px;
+          letter-spacing: 0.1em;
+          text-transform: uppercase;
+          color: var(--ink);
+          opacity: 0.55;
+        }
 
         /* Name input */
         .name-form {
@@ -559,6 +759,75 @@ export default function BienvenidaPage() {
         }
         .name-input:focus-visible {
           border-bottom-color: var(--accent);
+        }
+
+        /* Atribución */
+        .attr-display {
+          font-size: clamp(44px, 11vw, 60px);
+        }
+        .attr-sub {
+          font-family: var(--font-display);
+          font-style: italic;
+          font-weight: 400;
+          font-size: 16px;
+          line-height: 1.45;
+          color: var(--ink);
+          opacity: 0.72;
+          max-width: 380px;
+        }
+        .attr-grid {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 8px;
+          margin-top: 6px;
+        }
+        .attr-chip {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          background: var(--crema-soft);
+          color: var(--ink);
+          font-family: var(--font-mono);
+          font-size: 11px;
+          letter-spacing: 0.1em;
+          text-transform: uppercase;
+          font-weight: 600;
+          padding: 8px 12px;
+          border: 1px solid rgba(13, 15, 61, 0.1);
+          border-radius: var(--r-pill);
+          cursor: pointer;
+          transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+        }
+        .attr-chip:hover,
+        .attr-chip:focus-visible {
+          background: var(--cobalto);
+          color: var(--crema);
+          border-color: var(--cobalto);
+          outline: none;
+        }
+        .attr-chip.selected {
+          background: var(--cobalto);
+          color: var(--crema);
+          border-color: var(--cobalto);
+        }
+        .attr-chip-ico {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+        }
+        .attr-confirm {
+          margin-top: 10px;
+          font-family: var(--font-body);
+          font-size: 13px;
+          line-height: 1.45;
+          color: var(--ink);
+          opacity: 0.75;
+        }
+        .attr-confirm strong {
+          font-family: var(--font-display);
+          font-style: italic;
+          font-weight: 600;
+          color: var(--cobalto);
         }
 
         .visually-hidden {
