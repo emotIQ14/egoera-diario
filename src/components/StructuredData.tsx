@@ -11,11 +11,8 @@ const schema = {
     price: '0',
     priceCurrency: 'EUR',
   },
-  aggregateRating: {
-    '@type': 'AggregateRating',
-    ratingValue: '4.8',
-    ratingCount: '127',
-  },
+  // aggregateRating eliminada: era ficticia (4.8/127 reseñas inventadas).
+  // Google penaliza fake reviews. Cuando haya reseñas reales, re-añadir desde fuente verificable.
   author: {
     '@type': 'Person',
     name: 'Ander Bilbao Castejón',

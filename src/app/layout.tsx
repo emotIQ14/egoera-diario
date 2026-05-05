@@ -24,6 +24,9 @@ export const metadata: Metadata = {
     ],
     apple: '/icons/apple-touch-icon.png',
   },
+  alternates: {
+    canonical: '/',
+  },
   openGraph: {
     type: 'website',
     locale: 'es_ES',
@@ -44,8 +47,7 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
+  // a11y: permitimos zoom para WCAG 1.4.4 (Resize Text)
   themeColor: [
     { media: '(prefers-color-scheme: light)', color: '#f1ead8' },
     { media: '(prefers-color-scheme: dark)', color: '#0d0f3d' },
