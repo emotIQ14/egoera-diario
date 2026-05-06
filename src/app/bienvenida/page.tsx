@@ -4,10 +4,77 @@ import { useCallback, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import OnboardingStep from '@/components/onboarding/OnboardingStep';
 
-const TOTAL_STEPS = 6;
+const TOTAL_STEPS = 7;
 const NAME_KEY = 'egoera-diario-name';
 const ONBOARDED_KEY = 'egoera-diario-onboarded';
 const ATTRIBUTION_KEY = 'egoera-attribution';
+const RESONANCE_KEY = 'egoera-onboarding-resonance';
+
+type RelatablePhrase = {
+  text: string;
+  icon: React.ReactElement;
+};
+
+const RELATABLE_PHRASES: RelatablePhrase[] = [
+  {
+    text: 'Vuelvo a la misma frase a las 3 de la mañana.',
+    icon: (
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden>
+        <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z" />
+      </svg>
+    ),
+  },
+  {
+    text: 'Si me dejan elegir, prefiero callarme.',
+    icon: (
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden>
+        <path d="M9 11a3 3 0 0 1 6 0v3a3 3 0 0 1-6 0zM5 11a7 7 0 0 0 14 0M12 18v3" strokeLinecap="round" />
+      </svg>
+    ),
+  },
+  {
+    text: 'Mando un mensaje y reviso el móvil 40 veces.',
+    icon: (
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden>
+        <rect x="6" y="2" width="12" height="20" rx="2" />
+        <path d="M11 18h2" strokeLinecap="round" />
+      </svg>
+    ),
+  },
+  {
+    text: 'Confundo cuidar con sostener al otro entero.',
+    icon: (
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden>
+        <path d="M20.8 8.6a4.6 4.6 0 0 0-7.8-2.5l-1 1-1-1A4.6 4.6 0 1 0 4.5 12L12 19.5 19.5 12a4.6 4.6 0 0 0 1.3-3.4z" strokeLinejoin="round" />
+      </svg>
+    ),
+  },
+  {
+    text: 'Lloro por algo que «no era para tanto».',
+    icon: (
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden>
+        <circle cx="12" cy="12" r="9" />
+        <path d="M12 14c2 1 3 2 3 4M9 10h.01M15 10h.01" strokeLinecap="round" />
+      </svg>
+    ),
+  },
+  {
+    text: 'Pienso tres veces lo mismo y lo llamo reflexionar.',
+    icon: (
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden>
+        <path d="M9 3a7 7 0 0 1 6 12v3a2 2 0 0 1-2 2h-2a2 2 0 0 1-2-2v-3A7 7 0 0 1 9 3zM10 21h4" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    ),
+  },
+  {
+    text: 'Digo que sí cuando quiero decir que no.',
+    icon: (
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden>
+        <path d="M4 6l16 12M20 6L4 18" strokeLinecap="round" />
+      </svg>
+    ),
+  },
+];
 
 type Authority = {
   pill: string;
@@ -165,6 +232,16 @@ export default function BienvenidaPage() {
     }
   }, []);
 
+  const handleResonance = useCallback(
+    (level: 'high' | 'low') => {
+      if (typeof window !== 'undefined') {
+        window.localStorage.setItem(RESONANCE_KEY, level);
+      }
+      goNext();
+    },
+    [goNext],
+  );
+
   const handleFinishFromAttribution = useCallback(() => {
     finishOnboarding(true);
   }, [finishOnboarding]);
@@ -233,11 +310,49 @@ export default function BienvenidaPage() {
         </div>
       </OnboardingStep>
 
-      {/* 02 — Authority / Ciencia */}
+      {/* 02 — Relatable questions (Spada v4) */}
       <OnboardingStep
         index={1}
         total={TOTAL_STEPS}
         active={currentStep === 1}
+        background="cream"
+        onSkip={handleSkip}
+        onNext={() => handleResonance('high')}
+        ctaLabel="Sí, varias me suenan →"
+        ctaTone="cobalto"
+      >
+        <div className="hero hero-cream">
+          <p className="eyebrow">— ¿TE SUENA? —</p>
+          <h1 className="display relatable-display">
+            Si lo lees y dices «<em>sí</em>»,
+            <br />
+            esto es para ti.
+          </h1>
+          <ul className="relatable-list" aria-label="Frases que pueden sonarte">
+            {RELATABLE_PHRASES.map((phrase) => (
+              <li key={phrase.text} className="relatable-item">
+                <span className="relatable-ico" aria-hidden>
+                  {phrase.icon}
+                </span>
+                <p className="relatable-text">«{phrase.text}»</p>
+              </li>
+            ))}
+          </ul>
+          <button
+            type="button"
+            className="relatable-secondary"
+            onClick={() => handleResonance('low')}
+          >
+            No tanto, sigo →
+          </button>
+        </div>
+      </OnboardingStep>
+
+      {/* 03 — Authority / Ciencia */}
+      <OnboardingStep
+        index={2}
+        total={TOTAL_STEPS}
+        active={currentStep === 2}
         background="cobalto"
         onSkip={handleSkip}
         onNext={goNext}
@@ -265,11 +380,11 @@ export default function BienvenidaPage() {
         </div>
       </OnboardingStep>
 
-      {/* 03 — Promesa concreta */}
+      {/* 04 — Promesa concreta */}
       <OnboardingStep
-        index={2}
+        index={3}
         total={TOTAL_STEPS}
-        active={currentStep === 2}
+        active={currentStep === 3}
         background="cream"
         onSkip={handleSkip}
         onNext={goNext}
@@ -295,11 +410,11 @@ export default function BienvenidaPage() {
         </div>
       </OnboardingStep>
 
-      {/* 04 — Timeline visualizado */}
+      {/* 05 — Timeline visualizado */}
       <OnboardingStep
-        index={3}
+        index={4}
         total={TOTAL_STEPS}
-        active={currentStep === 3}
+        active={currentStep === 4}
         background="cream"
         onSkip={handleSkip}
         onNext={goNext}
@@ -446,11 +561,11 @@ export default function BienvenidaPage() {
         </div>
       </OnboardingStep>
 
-      {/* 05 — Setup nombre */}
+      {/* 06 — Setup nombre */}
       <OnboardingStep
-        index={4}
+        index={5}
         total={TOTAL_STEPS}
-        active={currentStep === 4}
+        active={currentStep === 5}
         background="cream"
         onSkip={handleSkip}
         onNext={handleSubmitName}
@@ -482,7 +597,7 @@ export default function BienvenidaPage() {
               onChange={(e) => setName(e.target.value)}
               placeholder="Tu nombre…"
               autoComplete="given-name"
-              autoFocus={currentStep === 4}
+              autoFocus={currentStep === 5}
               maxLength={40}
               aria-label="Tu nombre"
             />
@@ -490,11 +605,11 @@ export default function BienvenidaPage() {
         </div>
       </OnboardingStep>
 
-      {/* 06 — Atribución */}
+      {/* 07 — Atribución */}
       <OnboardingStep
-        index={5}
+        index={6}
         total={TOTAL_STEPS}
-        active={currentStep === 5}
+        active={currentStep === 6}
         background="cream"
         onSkip={handleSkip}
         onNext={handleFinishFromAttribution}
@@ -840,6 +955,67 @@ export default function BienvenidaPage() {
           clip: rect(0, 0, 0, 0);
           white-space: nowrap;
           border: 0;
+        }
+
+        /* Relatable questions (paso 2 · Spada v4) */
+        .relatable-display {
+          font-size: clamp(40px, 7.5vw, 60px);
+          line-height: 1.02;
+        }
+        .relatable-list {
+          list-style: none;
+          padding: 0;
+          margin: 4px 0 0;
+          display: flex;
+          flex-direction: column;
+        }
+        .relatable-item {
+          display: flex;
+          align-items: flex-start;
+          gap: 14px;
+          padding: 14px 4px;
+          border-bottom: 1px dashed rgba(13, 15, 61, 0.18);
+        }
+        .relatable-item:last-child {
+          border-bottom: none;
+        }
+        .relatable-ico {
+          flex-shrink: 0;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          color: var(--cobalto);
+          opacity: 0.4;
+          margin-top: 4px;
+        }
+        .relatable-text {
+          font-family: var(--font-hand);
+          font-style: italic;
+          font-weight: 500;
+          font-size: clamp(24px, 6vw, 32px);
+          line-height: 1.25;
+          color: var(--ink);
+          letter-spacing: 0;
+        }
+        .relatable-secondary {
+          align-self: flex-start;
+          margin-top: 14px;
+          background: transparent;
+          border: none;
+          padding: 6px 2px;
+          font-family: var(--font-mono);
+          font-size: 11px;
+          letter-spacing: 0.12em;
+          text-transform: uppercase;
+          color: var(--ink);
+          opacity: 0.55;
+          cursor: pointer;
+          transition: opacity 0.15s ease;
+        }
+        .relatable-secondary:hover,
+        .relatable-secondary:focus-visible {
+          opacity: 0.9;
+          outline: none;
         }
       `}</style>
     </>
