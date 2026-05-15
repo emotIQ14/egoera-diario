@@ -225,7 +225,7 @@ export default function DiarioV2() {
         {CARDS.map((c, i) => (
           <Link
             key={c.kanji + i}
-            href="/diario"
+            href="/v2/diario"
             className={`${styles.card} ${c.size === 'large' ? styles.cardLarge : ''} ${styles.fadeIn} ${styles[`fadeIn${Math.min(i + 1, 5)}` as keyof typeof styles] || ''}`}
           >
             <div className={styles.cardKanji}>金<br/>銀<br/>花</div>
@@ -305,7 +305,7 @@ export default function DiarioV2() {
 
       {/* CTA */}
       <div className={styles.ctaWrap}>
-        <Link href="/diario" className={styles.ctaButton}>
+        <Link href="/v2/diario" className={styles.ctaButton}>
           <div className={styles.left}>
             <div className={styles.ctaJP}>新しい記録 · empezar nueva entrada</div>
             <div className={styles.ctaTitle}>Cuenta tu día en tres minutos</div>
