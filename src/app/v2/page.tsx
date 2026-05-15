@@ -314,6 +314,24 @@ export default function DiarioV2() {
         </Link>
       </div>
 
+      {/* SECTION TAG patrones */}
+      <div className={styles.sectionTag}>
+        <span className={styles.sectionTagJP}>自分のリズム</span>
+        <span className={styles.sectionTagText}>tu ritmo</span>
+        <span className={styles.sectionTagLine}></span>
+      </div>
+
+      {/* Link a patrones */}
+      <div className={styles.ctaWrap}>
+        <Link href="/v2/patrones" className={styles.ctaButton} style={{ background: 'transparent', color: 'var(--ink)', border: '1.5px solid var(--line)' }}>
+          <div className={styles.left}>
+            <div className={styles.ctaJP} style={{ color: 'var(--ink-mute)' }}>律 · ver patrones de la semana</div>
+            <div className={styles.ctaTitle} style={{ color: 'var(--ink)' }}>Mira cómo va tu ritmo</div>
+          </div>
+          <div className={styles.arrow}>→</div>
+        </Link>
+      </div>
+
       {/* FOOTER meta */}
       <footer className={styles.footer}>
         <div><span className={styles.key}>Egoera Psikologia</span> · diario v2</div>
