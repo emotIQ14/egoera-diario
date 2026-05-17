@@ -3,6 +3,7 @@
 import { useCallback, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import OnboardingStep from '@/components/onboarding/OnboardingStep';
+import Peep from '@/components/peeps/Peep';
 
 const TOTAL_STEPS = 7;
 const NAME_KEY = 'egoera-diario-name';
@@ -10,185 +11,97 @@ const ONBOARDED_KEY = 'egoera-diario-onboarded';
 const ATTRIBUTION_KEY = 'egoera-attribution';
 const RESONANCE_KEY = 'egoera-onboarding-resonance';
 
+/**
+ * 7 frases relatables, cada una asociada a una amiga (peep)
+ * con significado emocional concreto.
+ */
 type RelatablePhrase = {
   text: string;
-  icon: React.ReactElement;
+  peep: string;       // ruta sin /peeps/amigas/ prefix
+  meaning: string;    // qué representa esta amiga
 };
 
 const RELATABLE_PHRASES: RelatablePhrase[] = [
   {
     text: 'Vuelvo a la misma frase a las 3 de la mañana.',
-    icon: (
-      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden>
-        <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z" />
-      </svg>
-    ),
+    peep: 'iris',
+    meaning: 'Iris · la insomne · el bucle nocturno',
   },
   {
     text: 'Si me dejan elegir, prefiero callarme.',
-    icon: (
-      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden>
-        <path d="M9 11a3 3 0 0 1 6 0v3a3 3 0 0 1-6 0zM5 11a7 7 0 0 0 14 0M12 18v3" strokeLinecap="round" />
-      </svg>
-    ),
+    peep: 'mira',
+    meaning: 'Mira · la silenciosa · evitar conflicto',
   },
   {
     text: 'Mando un mensaje y reviso el móvil 40 veces.',
-    icon: (
-      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden>
-        <rect x="6" y="2" width="12" height="20" rx="2" />
-        <path d="M11 18h2" strokeLinecap="round" />
-      </svg>
-    ),
+    peep: 'lola',
+    meaning: 'Lola · la ansiosa · espera y vigilancia',
   },
   {
     text: 'Confundo cuidar con sostener al otro entero.',
-    icon: (
-      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden>
-        <path d="M20.8 8.6a4.6 4.6 0 0 0-7.8-2.5l-1 1-1-1A4.6 4.6 0 1 0 4.5 12L12 19.5 19.5 12a4.6 4.6 0 0 0 1.3-3.4z" strokeLinejoin="round" />
-      </svg>
-    ),
+    peep: 'eva',
+    meaning: 'Eva · la cuidadora · sobrecarga emocional',
   },
   {
     text: 'Lloro por algo que «no era para tanto».',
-    icon: (
-      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden>
-        <circle cx="12" cy="12" r="9" />
-        <path d="M12 14c2 1 3 2 3 4M9 10h.01M15 10h.01" strokeLinecap="round" />
-      </svg>
-    ),
+    peep: 'zuri',
+    meaning: 'Zuri · la sensible · desborde silencioso',
   },
   {
     text: 'Pienso tres veces lo mismo y lo llamo reflexionar.',
-    icon: (
-      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden>
-        <path d="M9 3a7 7 0 0 1 6 12v3a2 2 0 0 1-2 2h-2a2 2 0 0 1-2-2v-3A7 7 0 0 1 9 3zM10 21h4" strokeLinecap="round" strokeLinejoin="round" />
-      </svg>
-    ),
+    peep: 'june',
+    meaning: 'June · la rumiadora · pensar disfrazado de pensar bien',
   },
   {
     text: 'Digo que sí cuando quiero decir que no.',
-    icon: (
-      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden>
-        <path d="M4 6l16 12M20 6L4 18" strokeLinecap="round" />
-      </svg>
-    ),
+    peep: 'oli',
+    meaning: 'Oli · la complaciente · perder los bordes propios',
   },
 ];
 
+/**
+ * Autoridades — cada una con un arquetipo IFS de fondo:
+ * Bowlby = Exiliado (heridas tempranas)
+ * Rosenberg = Manager (mediación, lenguaje)
+ * Kabat-Zinn = Self (presencia)
+ */
 type Authority = {
   pill: string;
   name: string;
   quote: string;
+  arq: 'exiliado' | 'manager' | 'self';
 };
 
 const AUTHORITIES: Authority[] = [
-  { pill: '01', name: 'John Bowlby', quote: 'Teoría del apego — 1969' },
-  { pill: '02', name: 'Marshall Rosenberg', quote: 'Comunicación No Violenta — 2003' },
-  { pill: '03', name: 'Jon Kabat-Zinn', quote: 'Mindfulness clínico — 1979' },
+  { pill: '01', name: 'John Bowlby', quote: 'Teoría del apego — 1969', arq: 'exiliado' },
+  { pill: '02', name: 'Marshall Rosenberg', quote: 'Comunicación No Violenta — 2003', arq: 'manager' },
+  { pill: '03', name: 'Jon Kabat-Zinn', quote: 'Mindfulness clínico — 1979', arq: 'self' },
 ];
 
-const CHECKLIST = [
-  '01 · Identificar tus emociones recurrentes.',
-  '02 · Encontrar tu palabra de la semana.',
-  '03 · Conectar emociones con momentos del día.',
-] as const;
+const CHECKLIST: { n: string; text: string }[] = [
+  { n: '01', text: 'Identificar tus emociones recurrentes.' },
+  { n: '02', text: 'Encontrar tu palabra de la semana.' },
+  { n: '03', text: 'Conectar emociones con momentos del día.' },
+];
 
 type AttributionOption = {
   slug: string;
   label: string;
-  icon: React.ReactElement;
 };
 
 const ATTRIBUTION_OPTIONS: AttributionOption[] = [
-  {
-    slug: 'instagram',
-    label: 'Instagram',
-    icon: (
-      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden>
-        <rect x="3" y="3" width="18" height="18" rx="5" />
-        <circle cx="12" cy="12" r="4" />
-        <circle cx="17.5" cy="6.5" r="0.8" fill="currentColor" />
-      </svg>
-    ),
-  },
-  {
-    slug: 'tiktok',
-    label: 'TikTok',
-    icon: (
-      <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden>
-        <path d="M14.5 3v10.5a2.5 2.5 0 1 1-2.5-2.5h.5V8.5h-.5a5.5 5.5 0 1 0 5.5 5.5V8a5 5 0 0 0 4 1.95V7a3 3 0 0 1-3-3h-4z" />
-      </svg>
-    ),
-  },
-  {
-    slug: 'youtube',
-    label: 'YouTube',
-    icon: (
-      <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden>
-        <path d="M21.6 7.2c-.2-1-1-1.7-2-2C17.7 5 12 5 12 5s-5.7 0-7.6.2c-1 .3-1.8 1-2 2C2 9.1 2 12 2 12s0 2.9.4 4.8c.2 1 1 1.7 2 2 1.9.2 7.6.2 7.6.2s5.7 0 7.6-.2c1-.3 1.8-1 2-2 .4-1.9.4-4.8.4-4.8s0-2.9-.4-4.8zM10 15.5v-7l6 3.5-6 3.5z" />
-      </svg>
-    ),
-  },
-  {
-    slug: 'x',
-    label: 'X (Twitter)',
-    icon: (
-      <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden>
-        <path d="M18.3 3h3l-6.6 7.6L22.5 21h-6.1l-4.8-6.2L6.1 21H3l7.1-8.1L2.5 3h6.2l4.3 5.7L18.3 3zm-1.1 16.2h1.7L7 4.7H5.2l12 14.5z" />
-      </svg>
-    ),
-  },
-  {
-    slug: 'vlog-egoera',
-    label: 'Vlog Egoera (egoera.es)',
-    icon: (
-      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden>
-        <rect x="3" y="5" width="18" height="14" rx="2" />
-        <path d="M10 9l5 3-5 3z" fill="currentColor" />
-      </svg>
-    ),
-  },
-  {
-    slug: 'bidaiatzen',
-    label: 'Bidaiatzen (alguien me lo recomendó allí)',
-    icon: (
-      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden>
-        <path d="M12 2l1.7 5.2H19l-4.4 3.2 1.7 5.2L12 12.4 7.7 15.6l1.7-5.2L5 7.2h5.3z" />
-      </svg>
-    ),
-  },
-  {
-    slug: 'google',
-    label: 'Buscando en Google',
-    icon: (
-      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden>
-        <circle cx="11" cy="11" r="6" />
-        <path d="M16 16l4 4" strokeLinecap="round" />
-      </svg>
-    ),
-  },
-  {
-    slug: 'amigo',
-    label: 'Un amigo me lo dijo',
-    icon: (
-      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden>
-        <circle cx="12" cy="8" r="4" />
-        <path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8" />
-      </svg>
-    ),
-  },
-  {
-    slug: 'otro',
-    label: 'Otro',
-    icon: (
-      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden>
-        <circle cx="12" cy="12" r="9" />
-        <path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.7.4-1 .9-1 1.7M12 17.2v.1" strokeLinecap="round" />
-      </svg>
-    ),
-  },
+  { slug: 'instagram', label: 'Instagram' },
+  { slug: 'tiktok', label: 'TikTok' },
+  { slug: 'youtube', label: 'YouTube' },
+  { slug: 'x', label: 'X (Twitter)' },
+  { slug: 'vlog-egoera', label: 'Vlog Egoera (egoera.es)' },
+  { slug: 'bidaiatzen', label: 'Bidaiatzen' },
+  { slug: 'google', label: 'Buscando en Google' },
+  { slug: 'amigo', label: 'Me lo dijo alguien' },
+  { slug: 'otro', label: 'Otro' },
 ];
+
+/* ---------- Página ---------- */
 
 export default function BienvenidaPage() {
   const router = useRouter();
@@ -248,7 +161,7 @@ export default function BienvenidaPage() {
 
   return (
     <>
-      {/* 01 — Bienvenida */}
+      {/* 01 — Bienvenida · NORA da la bienvenida */}
       <OnboardingStep
         index={0}
         total={TOTAL_STEPS}
@@ -267,50 +180,22 @@ export default function BienvenidaPage() {
             <em>despacio</em>.
           </h1>
           <p className="lede">
-            Sin gamificación. Sin métricas raras. Sin atajos. Solo tú escuchándote.
+            Sin gamificación. Sin métricas raras.
+            <br />
+            Sin atajos. Solo tú escuchándote.
           </p>
-          <svg
-            className="brain-tree"
-            viewBox="0 0 200 140"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.4"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            aria-hidden="true"
-          >
-            <path
-              d="M100 130 C100 100, 100 70, 100 30"
-              stroke="var(--cobalto)"
-            />
-            <path
-              d="M100 60 C 80 45, 60 50, 50 30"
-              stroke="var(--cobalto)"
-              opacity="0.75"
-            />
-            <path
-              d="M100 75 C 120 60, 145 65, 155 45"
-              stroke="var(--cobalto)"
-              opacity="0.75"
-            />
-            <path
-              d="M100 95 C 85 85, 70 90, 60 80"
-              stroke="var(--cobalto)"
-              opacity="0.45"
-            />
-            <path
-              d="M100 95 C 115 85, 130 90, 140 80"
-              stroke="var(--cobalto)"
-              opacity="0.45"
-            />
-            <circle cx="100" cy="28" r="3" fill="var(--cobalto)" />
-            <circle cx="50" cy="30" r="2.5" fill="var(--cobalto)" opacity="0.75" />
-            <circle cx="155" cy="45" r="2.5" fill="var(--cobalto)" opacity="0.75" />
-          </svg>
+          <div className="peep-stage peep-stage-solo">
+            <Peep name="nora" size={180} alt="" />
+            <p className="peep-caption">
+              <em>Hola.</em> Soy Nora.
+              <br />
+              Esto va a tu ritmo.
+            </p>
+          </div>
         </div>
       </OnboardingStep>
 
-      {/* 02 — Relatable questions (Spada v4) */}
+      {/* 02 — Relatable · cada frase con su amiga */}
       <OnboardingStep
         index={1}
         total={TOTAL_STEPS}
@@ -329,10 +214,10 @@ export default function BienvenidaPage() {
             esto es para ti.
           </h1>
           <ul className="relatable-list" aria-label="Frases que pueden sonarte">
-            {RELATABLE_PHRASES.map((phrase) => (
+            {RELATABLE_PHRASES.map((phrase, i) => (
               <li key={phrase.text} className="relatable-item">
-                <span className="relatable-ico" aria-hidden>
-                  {phrase.icon}
+                <span className="relatable-peep">
+                  <Peep name={phrase.peep} size={56} alt={phrase.meaning} delay={i * 60} />
                 </span>
                 <p className="relatable-text">«{phrase.text}»</p>
               </li>
@@ -348,7 +233,7 @@ export default function BienvenidaPage() {
         </div>
       </OnboardingStep>
 
-      {/* 03 — Authority / Ciencia */}
+      {/* 03 — Authority · cada autor con arquetipo IFS */}
       <OnboardingStep
         index={2}
         total={TOTAL_STEPS}
@@ -362,10 +247,19 @@ export default function BienvenidaPage() {
         <div className="authority">
           <p className="eyebrow eyebrow-cream">— BASADO EN —</p>
           <ul className="auth-list">
-            {AUTHORITIES.map((a) => (
+            {AUTHORITIES.map((a, i) => (
               <li key={a.name} className="auth-card">
-                <span className="auth-pill">{a.pill}</span>
+                <span className="auth-portrait">
+                  <Peep
+                    name={a.arq}
+                    folder="arquetipos"
+                    size={64}
+                    alt={`Arquetipo ${a.arq}`}
+                    delay={i * 120}
+                  />
+                </span>
                 <div className="auth-text">
+                  <span className="auth-pill">{a.pill}</span>
                   <h3 className="auth-name">{a.name}</h3>
                   <p className="auth-quote">{a.quote}</p>
                 </div>
@@ -380,7 +274,7 @@ export default function BienvenidaPage() {
         </div>
       </OnboardingStep>
 
-      {/* 04 — Promesa concreta */}
+      {/* 04 — Promesa · TEO acompaña la lista */}
       <OnboardingStep
         index={3}
         total={TOTAL_STEPS}
@@ -400,17 +294,26 @@ export default function BienvenidaPage() {
             <br />
             escondidos.
           </h1>
-          <ul className="check-list" aria-label="Lo que verás">
-            {CHECKLIST.map((item) => (
-              <li key={item} className="check-item">
-                {item}
-              </li>
-            ))}
-          </ul>
+          <div className="check-block">
+            <div className="check-peep">
+              <Peep name="teo" size={96} alt="Teo · el estructurado" />
+              <p className="check-peep-caption">
+                <em>Teo</em> ordena.
+              </p>
+            </div>
+            <ul className="check-list" aria-label="Lo que verás">
+              {CHECKLIST.map((item) => (
+                <li key={item.n} className="check-item">
+                  <span className="check-n">{item.n}</span>
+                  <span className="check-text">{item.text}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
       </OnboardingStep>
 
-      {/* 05 — Timeline visualizado */}
+      {/* 05 — Timeline · LOLA al inicio (D7), MAU al final (D30) */}
       <OnboardingStep
         index={4}
         total={TOTAL_STEPS}
@@ -429,125 +332,34 @@ export default function BienvenidaPage() {
             Menos <em className="accent">rumiación</em>.
           </h1>
 
-          <svg
-            className="curve"
-            viewBox="0 0 320 180"
-            role="img"
-            aria-label="Curva descendente de ansiedad a lo largo de 30 días"
-          >
-            {/* Eje X */}
-            <line
-              x1="36"
-              y1="148"
-              x2="304"
-              y2="148"
-              stroke="var(--ink)"
-              strokeOpacity="0.18"
-              strokeWidth="1"
-            />
-            {/* Eje Y */}
-            <line
-              x1="36"
-              y1="20"
-              x2="36"
-              y2="148"
-              stroke="var(--ink)"
-              strokeOpacity="0.18"
-              strokeWidth="1"
-            />
-            {/* Banda accent translúcida */}
-            <path
-              d="M36 50 C 110 70, 180 110, 304 130 L 304 148 L 36 148 Z"
-              fill="var(--accent)"
-              fillOpacity="0.18"
-            />
-            {/* Línea principal */}
-            <path
-              d="M36 50 C 110 70, 180 110, 304 130"
-              fill="none"
-              stroke="var(--cobalto)"
-              strokeWidth="2.4"
-              strokeLinecap="round"
-            />
-            {/* Hitos */}
-            <circle cx="92" cy="68" r="4" fill="var(--cobalto)" />
-            <circle cx="156" cy="92" r="4" fill="var(--cobalto)" />
-            <circle cx="304" cy="130" r="4" fill="var(--cobalto)" />
-            {/* Etiquetas eje Y */}
-            <text
-              x="22"
-              y="28"
-              fontFamily="JetBrains Mono, monospace"
-              fontSize="9"
-              fill="var(--ink)"
-              opacity="0.55"
-              textAnchor="end"
+          <div className="curve-stage">
+            <span className="curve-peep curve-peep-start">
+              <Peep name="lola" size={64} alt="Lola · ansiosa al inicio" />
+            </span>
+            <span className="curve-peep curve-peep-end">
+              <Peep name="mau" size={64} alt="Mau · calmada al final" delay={400} />
+            </span>
+            <svg
+              className="curve"
+              viewBox="0 0 320 180"
+              role="img"
+              aria-label="Curva descendente de ansiedad a lo largo de 30 días"
             >
-              7
-            </text>
-            <text
-              x="22"
-              y="152"
-              fontFamily="JetBrains Mono, monospace"
-              fontSize="9"
-              fill="var(--ink)"
-              opacity="0.55"
-              textAnchor="end"
-            >
-              3
-            </text>
-            <text
-              x="22"
-              y="92"
-              fontFamily="JetBrains Mono, monospace"
-              fontSize="8"
-              fill="var(--ink)"
-              opacity="0.55"
-              textAnchor="end"
-              transform="rotate(-90 22 92)"
-            >
-              ANSIEDAD
-            </text>
-            {/* Etiquetas eje X */}
-            <text
-              x="92"
-              y="164"
-              fontFamily="JetBrains Mono, monospace"
-              fontSize="9"
-              fill="var(--ink)"
-              opacity="0.55"
-              textAnchor="middle"
-            >
-              D7
-            </text>
-            <text
-              x="156"
-              y="164"
-              fontFamily="JetBrains Mono, monospace"
-              fontSize="9"
-              fill="var(--ink)"
-              opacity="0.55"
-              textAnchor="middle"
-            >
-              D14
-            </text>
-            <text
-              x="304"
-              y="164"
-              fontFamily="JetBrains Mono, monospace"
-              fontSize="9"
-              fill="var(--ink)"
-              opacity="0.55"
-              textAnchor="middle"
-            >
-              D30
-            </text>
-          </svg>
-
-          <p className="caption">
-            Estudios muestran que escribir 5 min/día reduce ansiedad un 30 % en
-            4 semanas. — <em>Pennebaker, 1997</em>.
-          </p>
+              <line x1="36" y1="148" x2="304" y2="148" stroke="var(--ink)" strokeOpacity="0.18" strokeWidth="1" />
+              <line x1="36" y1="20" x2="36" y2="148" stroke="var(--ink)" strokeOpacity="0.18" strokeWidth="1" />
+              <path d="M36 50 C 110 70, 180 110, 304 130 L 304 148 L 36 148 Z" fill="var(--accent)" fillOpacity="0.18" />
+              <path d="M36 50 C 110 70, 180 110, 304 130" fill="none" stroke="var(--cobalto)" strokeWidth="2.4" strokeLinecap="round" />
+              <circle cx="92" cy="68" r="4" fill="var(--cobalto)" />
+              <circle cx="156" cy="92" r="4" fill="var(--cobalto)" />
+              <circle cx="304" cy="130" r="4" fill="var(--cobalto)" />
+              <text x="22" y="28" fontFamily="JetBrains Mono, monospace" fontSize="9" fill="var(--ink)" opacity="0.55" textAnchor="end">7</text>
+              <text x="22" y="152" fontFamily="JetBrains Mono, monospace" fontSize="9" fill="var(--ink)" opacity="0.55" textAnchor="end">3</text>
+              <text x="22" y="92" fontFamily="JetBrains Mono, monospace" fontSize="8" fill="var(--ink)" opacity="0.55" textAnchor="end" transform="rotate(-90 22 92)">ANSIEDAD</text>
+              <text x="92" y="164" fontFamily="JetBrains Mono, monospace" fontSize="9" fill="var(--ink)" opacity="0.55" textAnchor="middle">D7</text>
+              <text x="156" y="164" fontFamily="JetBrains Mono, monospace" fontSize="9" fill="var(--ink)" opacity="0.55" textAnchor="middle">D14</text>
+              <text x="304" y="164" fontFamily="JetBrains Mono, monospace" fontSize="9" fill="var(--ink)" opacity="0.55" textAnchor="middle">D30</text>
+            </svg>
+          </div>
 
           <div className="claim-stat">
             <p className="claim-stat-text">
@@ -561,7 +373,7 @@ export default function BienvenidaPage() {
         </div>
       </OnboardingStep>
 
-      {/* 06 — Setup nombre */}
+      {/* 06 — Setup nombre · NORA acompaña */}
       <OnboardingStep
         index={5}
         total={TOTAL_STEPS}
@@ -574,11 +386,14 @@ export default function BienvenidaPage() {
       >
         <div className="hero hero-cream">
           <p className="eyebrow">— PARA TERMINAR —</p>
-          <h1 className="display">
-            ¿Cómo
-            <br />
-            te <em>llamas</em>?
-          </h1>
+          <div className="name-stage">
+            <Peep name="nora" size={96} alt="Nora te saluda" />
+            <h1 className="display name-display">
+              ¿Cómo
+              <br />
+              te <em>llamas</em>?
+            </h1>
+          </div>
           <form
             className="name-form"
             onSubmit={(e) => {
@@ -602,10 +417,15 @@ export default function BienvenidaPage() {
               aria-label="Tu nombre"
             />
           </form>
+          {name.trim().length > 0 ? (
+            <p className="name-confirm">
+              Encantada, <em>{name.trim()}</em>.
+            </p>
+          ) : null}
         </div>
       </OnboardingStep>
 
-      {/* 07 — Atribución */}
+      {/* 07 — Atribución · MIRA agradece tras seleccionar */}
       <OnboardingStep
         index={6}
         total={TOTAL_STEPS}
@@ -639,9 +459,6 @@ export default function BienvenidaPage() {
                   className={`attr-chip ${selected ? 'selected' : ''}`}
                   onClick={() => handleSelectAttribution(opt.slug)}
                 >
-                  <span className="attr-chip-ico" aria-hidden>
-                    {opt.icon}
-                  </span>
                   <span className="attr-chip-label">{opt.label}</span>
                 </button>
               );
@@ -649,9 +466,12 @@ export default function BienvenidaPage() {
           </div>
 
           {attribution ? (
-            <p className="attr-confirm" aria-live="polite">
-              Gracias. Toma nota: <strong>{attribution}</strong>.
-            </p>
+            <div className="attr-thanks" aria-live="polite">
+              <Peep name="mira" size={64} alt="Mira agradece" />
+              <p className="attr-confirm">
+                Gracias. Apuntado: <strong>{attribution}</strong>.
+              </p>
+            </div>
           ) : null}
         </div>
       </OnboardingStep>
@@ -668,7 +488,7 @@ export default function BienvenidaPage() {
           font-family: var(--font-display);
           font-style: italic;
           font-weight: 600;
-          font-size: clamp(56px, 14vw, 78px);
+          font-size: clamp(52px, 13vw, 72px);
           line-height: 0.96;
           letter-spacing: -0.02em;
           color: var(--ink);
@@ -688,23 +508,35 @@ export default function BienvenidaPage() {
           opacity: 0.78;
           max-width: 380px;
         }
-        .brain-tree {
-          width: 180px;
-          height: 130px;
-          margin: 8px auto 0;
-          color: var(--ink);
-          opacity: 0.92;
+
+        /* Stage solo (paso 1) */
+        .peep-stage-solo {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 10px;
+          margin-top: 6px;
         }
-        .eyebrow-cream {
-          color: var(--crema);
-          opacity: 0.85;
+        .peep-caption {
+          font-family: var(--font-display);
+          font-style: italic;
+          font-weight: 400;
+          font-size: 18px;
+          line-height: 1.3;
+          color: var(--ink);
+          opacity: 0.7;
+          text-align: center;
+        }
+        .peep-caption em {
+          color: var(--cobalto);
+          font-style: italic;
         }
 
         /* Authority */
         .authority {
           display: flex;
           flex-direction: column;
-          gap: 24px;
+          gap: 22px;
           max-width: 380px;
           margin: 0 auto;
         }
@@ -714,7 +546,7 @@ export default function BienvenidaPage() {
           margin: 0;
           display: flex;
           flex-direction: column;
-          gap: 12px;
+          gap: 14px;
         }
         .auth-card {
           display: flex;
@@ -725,26 +557,34 @@ export default function BienvenidaPage() {
           border-radius: var(--r-md);
           padding: 14px 16px;
         }
-        .auth-pill {
+        .auth-portrait {
           flex-shrink: 0;
-          display: inline-flex;
+          width: 64px;
+          height: 64px;
+          background: rgba(241, 234, 216, 0.14);
+          border-radius: 50%;
+          display: flex;
           align-items: center;
           justify-content: center;
-          min-width: 30px;
-          height: 22px;
-          padding: 0 8px;
+          overflow: hidden;
+        }
+        .auth-pill {
+          display: inline-block;
+          padding: 2px 8px;
           background: var(--crema);
           color: var(--cobalto);
           font-family: var(--font-mono);
-          font-size: 10px;
+          font-size: 9px;
           letter-spacing: 0.18em;
           font-weight: 700;
           border-radius: var(--r-pill);
+          margin-bottom: 4px;
         }
         .auth-text {
           display: flex;
           flex-direction: column;
           gap: 2px;
+          min-width: 0;
         }
         .auth-name {
           font-family: var(--font-display);
@@ -753,6 +593,7 @@ export default function BienvenidaPage() {
           font-size: 18px;
           line-height: 1.1;
           color: var(--crema);
+          margin: 0;
         }
         .auth-quote {
           font-family: var(--font-mono);
@@ -766,10 +607,10 @@ export default function BienvenidaPage() {
           font-family: var(--font-display);
           font-style: italic;
           font-weight: 500;
-          font-size: clamp(28px, 7vw, 36px);
-          line-height: 1.05;
+          font-size: clamp(24px, 6vw, 32px);
+          line-height: 1.1;
           color: var(--crema);
-          margin-top: 8px;
+          margin-top: 4px;
         }
         .auth-foot em {
           color: var(--crema);
@@ -778,46 +619,102 @@ export default function BienvenidaPage() {
           text-underline-offset: 6px;
           text-decoration-thickness: 1.5px;
         }
+        .eyebrow-cream {
+          color: var(--crema);
+          opacity: 0.85;
+        }
 
-        /* Checklist */
+        /* Promesa · checklist con peep */
+        .check-block {
+          display: flex;
+          gap: 16px;
+          align-items: flex-start;
+          margin-top: 6px;
+        }
+        .check-peep {
+          flex-shrink: 0;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 4px;
+          padding-top: 4px;
+        }
+        .check-peep-caption {
+          font-family: var(--font-mono);
+          font-size: 10px;
+          letter-spacing: 0.14em;
+          text-transform: uppercase;
+          color: var(--ink);
+          opacity: 0.55;
+        }
+        .check-peep-caption em {
+          color: var(--cobalto);
+          font-style: italic;
+          text-transform: none;
+          letter-spacing: 0;
+          font-family: var(--font-display);
+          font-size: 14px;
+        }
         .check-list {
           list-style: none;
           padding: 0;
-          margin: 8px 0 0;
+          margin: 0;
           display: flex;
           flex-direction: column;
           gap: 10px;
+          flex: 1;
+          min-width: 0;
         }
         .check-item {
-          font-family: var(--font-mono);
-          font-size: 12px;
-          letter-spacing: 0.06em;
-          line-height: 1.55;
+          display: flex;
+          align-items: flex-start;
+          gap: 10px;
+          font-family: var(--font-body);
+          font-size: 14px;
+          line-height: 1.45;
           color: var(--ink);
           padding: 12px 14px;
           background: rgba(13, 15, 61, 0.04);
           border: 1px solid rgba(13, 15, 61, 0.08);
           border-radius: var(--r-md);
         }
+        .check-n {
+          font-family: var(--font-mono);
+          font-size: 10px;
+          letter-spacing: 0.16em;
+          color: var(--cobalto);
+          font-weight: 700;
+          padding-top: 2px;
+          flex-shrink: 0;
+        }
 
-        /* Curve / Caption */
+        /* Curve stage */
+        .curve-stage {
+          position: relative;
+          width: 100%;
+          max-width: 380px;
+          margin-top: 4px;
+        }
         .curve {
           width: 100%;
           height: auto;
-          max-width: 380px;
-          margin-top: 6px;
+          display: block;
         }
-        .caption {
-          font-family: var(--font-body);
-          font-size: 13px;
-          line-height: 1.55;
-          color: var(--ink);
-          opacity: 0.7;
-          max-width: 380px;
+        .curve-peep {
+          position: absolute;
+          top: 0;
+          z-index: 2;
+          pointer-events: none;
         }
-        .caption em {
-          font-style: italic;
+        .curve-peep-start {
+          left: 6%;
+          top: 4%;
         }
+        .curve-peep-end {
+          right: 0;
+          top: 38%;
+        }
+
         .claim-stat {
           margin-top: 4px;
           padding: 14px 16px;
@@ -848,9 +745,19 @@ export default function BienvenidaPage() {
           opacity: 0.55;
         }
 
-        /* Name input */
+        /* Name */
+        .name-stage {
+          display: flex;
+          align-items: flex-end;
+          gap: 12px;
+          margin-top: -8px;
+        }
+        .name-display {
+          font-size: clamp(48px, 12vw, 64px);
+          margin: 0;
+        }
         .name-form {
-          margin-top: 12px;
+          margin-top: 8px;
         }
         .name-input {
           width: 100%;
@@ -875,10 +782,23 @@ export default function BienvenidaPage() {
         .name-input:focus-visible {
           border-bottom-color: var(--accent);
         }
+        .name-confirm {
+          font-family: var(--font-display);
+          font-style: italic;
+          font-weight: 400;
+          font-size: 18px;
+          color: var(--ink);
+          opacity: 0.7;
+        }
+        .name-confirm em {
+          color: var(--cobalto);
+          font-style: italic;
+          font-weight: 600;
+        }
 
         /* Atribución */
         .attr-display {
-          font-size: clamp(44px, 11vw, 60px);
+          font-size: clamp(40px, 10vw, 56px);
         }
         .attr-sub {
           font-family: var(--font-display);
@@ -925,18 +845,19 @@ export default function BienvenidaPage() {
           color: var(--crema);
           border-color: var(--cobalto);
         }
-        .attr-chip-ico {
-          display: inline-flex;
+        .attr-thanks {
+          margin-top: 12px;
+          display: flex;
           align-items: center;
-          justify-content: center;
+          gap: 12px;
         }
         .attr-confirm {
-          margin-top: 10px;
           font-family: var(--font-body);
           font-size: 13px;
           line-height: 1.45;
           color: var(--ink);
           opacity: 0.75;
+          margin: 0;
         }
         .attr-confirm strong {
           font-family: var(--font-display);
@@ -957,9 +878,9 @@ export default function BienvenidaPage() {
           border: 0;
         }
 
-        /* Relatable questions (paso 2 · Spada v4) */
+        /* Relatable */
         .relatable-display {
-          font-size: clamp(40px, 7.5vw, 60px);
+          font-size: clamp(38px, 7vw, 56px);
           line-height: 1.02;
         }
         .relatable-list {
@@ -971,31 +892,31 @@ export default function BienvenidaPage() {
         }
         .relatable-item {
           display: flex;
-          align-items: flex-start;
+          align-items: center;
           gap: 14px;
-          padding: 14px 4px;
+          padding: 10px 4px;
           border-bottom: 1px dashed rgba(13, 15, 61, 0.18);
         }
         .relatable-item:last-child {
           border-bottom: none;
         }
-        .relatable-ico {
+        .relatable-peep {
           flex-shrink: 0;
-          display: inline-flex;
+          width: 56px;
+          height: 56px;
+          display: flex;
           align-items: center;
           justify-content: center;
-          color: var(--cobalto);
-          opacity: 0.4;
-          margin-top: 4px;
         }
         .relatable-text {
           font-family: var(--font-hand);
           font-style: italic;
           font-weight: 500;
-          font-size: clamp(24px, 6vw, 32px);
-          line-height: 1.25;
+          font-size: clamp(20px, 5vw, 26px);
+          line-height: 1.22;
           color: var(--ink);
           letter-spacing: 0;
+          margin: 0;
         }
         .relatable-secondary {
           align-self: flex-start;
