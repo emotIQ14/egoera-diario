@@ -4,6 +4,7 @@ import { SpeedInsights } from '@vercel/speed-insights/next';
 import './globals.css';
 import { ServiceWorkerRegister } from '@/components/ServiceWorkerRegister';
 import { StructuredData } from '@/components/StructuredData';
+import { ToastProvider } from '@/components/toast/ToastProvider';
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL ?? 'https://egoera-diario.vercel.app'),
@@ -65,7 +66,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body>
         <ServiceWorkerRegister />
-        {children}
+        <ToastProvider>
+          {children}
+        </ToastProvider>
         <StructuredData />
         <Analytics />
         <SpeedInsights />

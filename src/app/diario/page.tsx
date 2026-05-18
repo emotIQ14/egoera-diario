@@ -8,15 +8,18 @@ import SafetyBar from '@/components/SafetyBar';
 import { saveEntry, makeId } from '@/lib/storage';
 import type { DiaryEntry, Emotion } from '@/lib/storage';
 import { EMOTIONS } from '@/lib/types';
+import { useToast } from '@/components/toast/ToastProvider';
 
 const DEFAULT_MOOD = 7;
 
 export default function DiarioPage() {
   const router = useRouter();
+  const toast = useToast();
   const [mood, setMood] = useState<number>(DEFAULT_MOOD);
   const [moodTouched, setMoodTouched] = useState<boolean>(false);
   const [emotions, setEmotions] = useState<Emotion[]>([]);
   const [text, setText] = useState<string>('');
+  const [saving, setSaving] = useState<boolean>(false);
 
   const canSave = moodTouched || emotions.length > 0 || text.trim().length > 0;
 
@@ -32,7 +35,11 @@ export default function DiarioPage() {
   }
 
   function handleSave() {
-    if (!canSave) return;
+    if (!canSave) {
+      toast.info('Cuando quieras: mueve el ánimo, marca una emoción o escribe algo. Lo que sea.');
+      return;
+    }
+    setSaving(true);
     const entry: DiaryEntry = {
       id: makeId(),
       createdAt: new Date().toISOString(),
@@ -40,12 +47,21 @@ export default function DiarioPage() {
       emotions,
       text: text.trim(),
     };
-    saveEntry(entry);
-    router.push('/');
+    try {
+      saveEntry(entry);
+      toast.success('Entrada guardada · escucharte cuenta.');
+      router.push('/');
+    } catch (err) {
+      console.error('saveEntry failed', err);
+      setSaving(false);
+      toast.error('No se pudo guardar. Tu texto sigue aquí.', {
+        retry: handleSave,
+      });
+    }
   }
 
   function handleVoice() {
-    alert('Próximamente');
+    toast.info('La voz llega pronto. Te avisamos cuando esté.');
   }
 
   return (
@@ -147,9 +163,10 @@ export default function DiarioPage() {
           type="button"
           className="btn btn-outline save-btn"
           onClick={handleSave}
-          disabled={!canSave}
+          aria-busy={saving}
+          disabled={saving}
         >
-          Guardar entrada
+          {saving ? 'Guardando…' : 'Guardar entrada'}
         </button>
       </Screen>
 

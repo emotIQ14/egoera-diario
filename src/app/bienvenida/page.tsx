@@ -1,11 +1,13 @@
 'use client';
 
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import OnboardingStep from '@/components/onboarding/OnboardingStep';
 import Peep from '@/components/peeps/Peep';
+import { useToast } from '@/components/toast/ToastProvider';
 
-const TOTAL_STEPS = 7;
+const TOTAL_STEPS = 8;     // 7 originales + 1 pantalla "Listo"
+const FINAL_STEP_DELAY_MS = 2200;
 const NAME_KEY = 'egoera-diario-name';
 const ONBOARDED_KEY = 'egoera-diario-onboarded';
 const ATTRIBUTION_KEY = 'egoera-attribution';
@@ -105,6 +107,7 @@ const ATTRIBUTION_OPTIONS: AttributionOption[] = [
 
 export default function BienvenidaPage() {
   const router = useRouter();
+  const toast = useToast();
   const [currentStep, setCurrentStep] = useState<number>(0);
   const [name, setName] = useState<string>('');
   const [attribution, setAttribution] = useState<string | null>(null);
@@ -113,24 +116,38 @@ export default function BienvenidaPage() {
     setCurrentStep((s) => Math.min(s + 1, TOTAL_STEPS - 1));
   }, []);
 
+  /**
+   * Persiste estado y navega al home. Si `viaFinalStep`, asume que ya
+   * estamos en la pantalla #8 y muestra un toast de bienvenida al llegar
+   * al home; si no (skip), navega directo sin celebración.
+   */
   const finishOnboarding = useCallback(
-    (saveName: boolean) => {
+    (saveName: boolean, viaFinalStep: boolean = false) => {
       if (typeof window !== 'undefined') {
+        let storedName = '';
         if (saveName) {
           const trimmed = name.trim();
           if (trimmed.length > 0) {
             window.localStorage.setItem(NAME_KEY, trimmed);
+            storedName = trimmed;
           }
         }
         window.localStorage.setItem(ONBOARDED_KEY, 'true');
+        if (viaFinalStep) {
+          // Toast de bienvenida cuando aterrice en el home.
+          const greet = storedName
+            ? `Bienvenida, ${storedName}. 5 min/día, tu ritmo.`
+            : 'Bienvenida a egoera. 5 min/día, tu ritmo.';
+          window.setTimeout(() => toast.success(greet, { duration: 4000 }), 400);
+        }
       }
       router.push('/');
     },
-    [name, router],
+    [name, router, toast],
   );
 
   const handleSkip = useCallback(() => {
-    finishOnboarding(false);
+    finishOnboarding(false, false);
   }, [finishOnboarding]);
 
   const handleSubmitName = useCallback(() => {
@@ -155,9 +172,24 @@ export default function BienvenidaPage() {
     [goNext],
   );
 
+  /**
+   * En el paso 7 (atribución), avanzamos al paso 8 (pantalla "Listo, [nombre]")
+   * en lugar de cerrar el onboarding. El cierre lo hace un setTimeout en
+   * el efecto del paso 7.
+   */
   const handleFinishFromAttribution = useCallback(() => {
-    finishOnboarding(true);
-  }, [finishOnboarding]);
+    goNext();
+  }, [goNext]);
+
+  // Cuando el usuario llega al paso 7 (índice 7 = pantalla final), arrancamos
+  // un timer para auto-cerrar tras FINAL_STEP_DELAY_MS.
+  useEffect(() => {
+    if (currentStep !== 7) return;
+    const id = window.setTimeout(() => {
+      finishOnboarding(true, true);
+    }, FINAL_STEP_DELAY_MS);
+    return () => window.clearTimeout(id);
+  }, [currentStep, finishOnboarding]);
 
   return (
     <>
@@ -473,6 +505,46 @@ export default function BienvenidaPage() {
               </p>
             </div>
           ) : null}
+        </div>
+      </OnboardingStep>
+
+      {/* 08 — Cierre · MAU respira · pantalla auto-cierre 2.2 s */}
+      <OnboardingStep
+        index={7}
+        total={TOTAL_STEPS}
+        active={currentStep === 7}
+        background="cream"
+        onSkip={handleSkip}
+        hideSkip
+        ctaLabel=""
+      >
+        <div className="hero hero-cream final-stage">
+          <p className="eyebrow">— LISTO —</p>
+          <h1 className="display final-display">
+            {name.trim().length > 0 ? (
+              <>
+                {name.trim()},<br />
+                tu diario te <em>espera</em>.
+              </>
+            ) : (
+              <>
+                Tu diario te
+                <br />
+                <em>espera</em>.
+              </>
+            )}
+          </h1>
+          <div className="final-peep">
+            <Peep name="mau" size={200} alt="Mau respira" priority />
+          </div>
+          <p className="final-caption">
+            <em>5 minutos al día.</em>
+            <br />
+            Tu ritmo. Sin presión.
+          </p>
+          <p className="final-fine" aria-live="polite">
+            Entrando…
+          </p>
         </div>
       </OnboardingStep>
 
@@ -937,6 +1009,53 @@ export default function BienvenidaPage() {
         .relatable-secondary:focus-visible {
           opacity: 0.9;
           outline: none;
+        }
+
+        /* Paso 8 · Cierre */
+        .final-stage {
+          align-items: center;
+          text-align: center;
+          gap: 24px;
+        }
+        .final-display {
+          font-size: clamp(48px, 12vw, 68px);
+          line-height: 1.0;
+          margin: 0;
+        }
+        .final-peep {
+          margin: 14px 0 8px;
+          animation: breath 2.6s ease-in-out infinite;
+        }
+        @keyframes breath {
+          0%, 100% { transform: scale(1); }
+          50% { transform: scale(1.05); }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .final-peep { animation: none; }
+        }
+        .final-caption {
+          font-family: var(--font-display);
+          font-style: italic;
+          font-weight: 400;
+          font-size: 22px;
+          line-height: 1.4;
+          color: var(--ink);
+          opacity: 0.78;
+          margin: 0;
+        }
+        .final-caption em {
+          color: var(--cobalto);
+          font-style: italic;
+          font-weight: 600;
+        }
+        .final-fine {
+          font-family: var(--font-mono);
+          font-size: 11px;
+          letter-spacing: 0.28em;
+          text-transform: uppercase;
+          color: var(--ink);
+          opacity: 0.45;
+          margin-top: 12px;
         }
       `}</style>
     </>

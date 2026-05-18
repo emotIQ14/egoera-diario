@@ -7,6 +7,7 @@ import TabBar from '@/components/TabBar';
 import { loadEntries, streakDays } from '@/lib/storage';
 import type { DiaryEntry } from '@/lib/storage';
 import { EMOTIONS } from '@/lib/types';
+import { useToast } from '@/components/toast/ToastProvider';
 
 const NAME_KEY = 'egoera-diario-name';
 const LANG_KEY = 'egoera-lang';
@@ -146,6 +147,7 @@ function importFromJson(file: File): Promise<DiaryEntry[]> {
 
 export default function TuPage() {
   const router = useRouter();
+  const toast = useToast();
   const [name, setName] = useState<string>('Ander Bilbao');
   const [editingName, setEditingName] = useState<boolean>(false);
   const [draftName, setDraftName] = useState<string>('');
@@ -224,24 +226,26 @@ export default function TuPage() {
   }
 
   function handleReminder() {
-    window.alert('Próximamente');
+    toast.info('Los recordatorios llegan pronto. Te avisamos cuando estén.');
   }
 
   function toggleLang() {
     const next: Lang = lang === 'ES' ? 'EU' : 'ES';
     setLang(next);
     window.localStorage.setItem(LANG_KEY, next);
+    toast.success(next === 'ES' ? 'Idioma: español.' : 'Hizkuntza: euskara.');
   }
 
   function handleExport() {
     const entries = loadEntries();
     if (entries.length === 0) {
-      window.alert('Aún no hay entradas que exportar.');
+      toast.info('Aún no hay entradas que exportar. Empieza por una.');
       return;
     }
     const md = exportToMarkdown(entries);
     const today = isoDate(new Date());
     triggerDownload(md, `egoera-diario-${today}.md`);
+    toast.success(`${entries.length} entradas exportadas a .md.`);
   }
 
   function handleImportClick() {
@@ -256,10 +260,10 @@ export default function TuPage() {
       const imported = await importFromJson(file);
       setTotalEntries(imported.length);
       setStreak(streakDays());
-      window.alert(`${imported.length} entradas importadas. Recarga la app para ver los cambios.`);
+      toast.success(`${imported.length} entradas importadas. Recarga para verlas.`);
     } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Error al importar.';
-      window.alert(msg);
+      const msg = err instanceof Error ? err.message : 'No se pudo importar.';
+      toast.error(msg);
     }
   }
 
@@ -269,11 +273,23 @@ export default function TuPage() {
     );
     if (confirmation === null) return;
     if (confirmation.trim().toUpperCase() !== 'BORRAR') {
-      window.alert('Cancelado. No se borró nada.');
+      toast.info('Cancelado. No se borró nada.');
       return;
     }
+    // Backup en memoria para permitir undo durante 5.5s
+    const backup = window.localStorage.getItem(ENTRIES_KEY);
     window.localStorage.removeItem(ENTRIES_KEY);
-    window.location.reload();
+    setTotalEntries(0);
+    toast.action('Diario borrado.', {
+      actionLabel: 'Deshacer',
+      onAction: () => {
+        if (backup !== null) {
+          window.localStorage.setItem(ENTRIES_KEY, backup);
+          setTotalEntries(loadEntries().length);
+          toast.success('Restaurado. Nada se ha perdido.');
+        }
+      },
+    });
   }
 
   return (
