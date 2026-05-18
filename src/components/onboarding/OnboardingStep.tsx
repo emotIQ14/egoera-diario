@@ -116,21 +116,33 @@ export default function OnboardingStep({
         }
         .skip {
           font-family: var(--font-mono);
-          font-size: 11px;
-          letter-spacing: 0.18em;
+          font-size: 12px;
+          letter-spacing: 0.2em;
           text-transform: uppercase;
-          font-weight: 500;
-          opacity: 0.6;
-          padding: 6px 4px;
+          font-weight: 600;
+          opacity: 0.85;
+          /* Tap target ≥44px tall, padding generoso para pulgar derecho */
+          min-height: 44px;
+          min-width: 44px;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          padding: 10px 14px;
           background: none;
           border: none;
           color: inherit;
           cursor: pointer;
+          border-radius: 8px;
+          transition: opacity 0.15s ease, background 0.15s ease;
         }
         .skip:hover,
         .skip:focus-visible {
           opacity: 1;
           outline: none;
+          background: rgba(13, 15, 61, 0.06);
+        }
+        @media (max-width: 480px) {
+          .skip { font-size: 11.5px; }
         }
         .body {
           flex: 1;
