@@ -260,6 +260,16 @@ export default function HistorialPage() {
     setEmotionFilter(new Set());
   }
 
+  function surpriseMe() {
+    if (entries.length === 0) return;
+    const pick = entries[Math.floor(Math.random() * entries.length)];
+    setExpanded((prev) => { const n = new Set(prev); n.add(pick.id); return n; });
+    // Scroll after React repaints
+    setTimeout(() => {
+      document.getElementById(`entry-${pick.id}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 80);
+  }
+
   const hasFilter = search.trim().length > 0 || emotionFilter.size > 0;
 
   const filteredEntries = hasFilter
@@ -293,11 +303,23 @@ export default function HistorialPage() {
               has <em>escrito</em>.
             </h1>
           </div>
-          <p className="entry-count">
-            {entries.length === 0
-              ? 'Todavía sin entradas'
-              : `${entries.length} ${entries.length === 1 ? 'entrada' : 'entradas'}`}
-          </p>
+          <div className="hdr-bottom">
+            <p className="entry-count">
+              {entries.length === 0
+                ? 'Todavía sin entradas'
+                : `${entries.length} ${entries.length === 1 ? 'entrada' : 'entradas'}`}
+            </p>
+            {entries.length >= 2 && (
+              <button
+                type="button"
+                className="surprise-btn"
+                onClick={surpriseMe}
+                aria-label="Abrir una entrada aleatoria"
+              >
+                Sorpréndeme →
+              </button>
+            )}
+          </div>
         </header>
 
         {/* ── search + filter ── */}
@@ -422,7 +444,7 @@ export default function HistorialPage() {
                 const hasText = entry.text.trim().length > 0;
 
                 return (
-                  <li key={entry.id} className={`entry-card ${isOpen ? 'open' : ''} ${isEditing ? 'editing' : ''}`}>
+                  <li key={entry.id} id={`entry-${entry.id}`} className={`entry-card ${isOpen ? 'open' : ''} ${isEditing ? 'editing' : ''}`}>
                     {/* ── card top row ── */}
                     <div className="card-top">
                       <button
@@ -622,13 +644,35 @@ export default function HistorialPage() {
         .back-btn:hover { opacity: 1; }
         .hdr-text { display: flex; flex-direction: column; gap: 10px; }
         .entry-count {
-          margin-top: 6px;
           font-family: var(--font-mono);
           font-size: 11px;
           letter-spacing: 0.18em;
           text-transform: uppercase;
           opacity: 0.5;
         }
+
+        .hdr-bottom {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 8px;
+          margin-top: 6px;
+        }
+        .surprise-btn {
+          background: none;
+          border: none;
+          padding: 0;
+          font-family: var(--font-mono);
+          font-size: 10px;
+          letter-spacing: 0.14em;
+          text-transform: uppercase;
+          color: var(--cobalto);
+          cursor: pointer;
+          opacity: 0.6;
+          transition: opacity 0.15s;
+          flex-shrink: 0;
+        }
+        .surprise-btn:hover { opacity: 1; }
 
         /* ── empty ── */
         .empty {

@@ -79,6 +79,14 @@ function pad2(n: number): string {
   return n < 10 ? `0${n}` : `${n}`;
 }
 
+function totalWordsWritten(entries: DiaryEntry[]): number {
+  let total = 0;
+  for (const e of entries) {
+    if (e.text) total += e.text.trim().split(/\s+/).filter(Boolean).length;
+  }
+  return total;
+}
+
 function allTimeStreakDays(entries: DiaryEntry[]): number {
   if (entries.length === 0) return 0;
   const seen = new Set<string>();
@@ -219,6 +227,7 @@ export default function TuPage() {
   const [daysSinceFirst, setDaysSinceFirst] = useState<number>(0);
   const [avgMood, setAvgMood] = useState<number | null>(null);
   const [topEmotion, setTopEmotion] = useState<string | null>(null);
+  const [totalWords, setTotalWords] = useState<number>(0);
   const [sparkDots, setSparkDots] = useState<SparkDot[]>([]);
   const [reminderTime, setReminderTime] = useState<string | null>(null);
   const [hydrated, setHydrated] = useState<boolean>(false);
@@ -236,6 +245,7 @@ export default function TuPage() {
     setTotalEntries(entries.length);
     setStreak(streakDays());
     setBestStreak(allTimeStreakDays(entries));
+    setTotalWords(totalWordsWritten(entries));
 
     if (entries.length > 0) {
       const sorted = [...entries].sort(
@@ -513,6 +523,10 @@ export default function TuPage() {
           <div className="stat">
             <div className="stat-num">{hydrated ? bestStreak : 0}</div>
             <div className="eyebrow stat-eyebrow">— Récord racha —</div>
+          </div>
+          <div className="stat stat-words-cell">
+            <div className="stat-num">{hydrated ? totalWords.toLocaleString('es-ES') : 0}</div>
+            <div className="eyebrow stat-eyebrow">— Palabras escritas —</div>
           </div>
         </div>
 
@@ -860,6 +874,7 @@ export default function TuPage() {
           text-transform: lowercase;
         }
         /* stat-emo-cell removed: emotion stat is now a regular cell in the 6-cell grid */
+        .stat-words-cell { grid-column: span 2; }
         .stat-eyebrow {
           font-size: 9.5px;
           opacity: 0.55;
