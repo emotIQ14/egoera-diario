@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import OnboardingStep from '@/components/onboarding/OnboardingStep';
 import Peep from '@/components/peeps/Peep';
 import { useToast } from '@/components/toast/ToastProvider';
+import { track } from '@/lib/track';
 
 const TOTAL_STEPS = 8;     // 7 originales + 1 pantalla "Listo"
 const FINAL_STEP_DELAY_MS = 2200;
@@ -172,6 +173,7 @@ export default function BienvenidaPage() {
           }
         }
         window.localStorage.setItem(ONBOARDED_KEY, 'true');
+        track(viaFinalStep ? 'onboarding_completed' : 'onboarding_skipped');
         if (viaFinalStep) {
           // Toast de bienvenida cuando aterrice en el home.
           const greet = storedName

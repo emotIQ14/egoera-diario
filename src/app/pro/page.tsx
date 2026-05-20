@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Screen from '@/components/Screen';
 import TabBar from '@/components/TabBar';
+import { track } from '@/lib/track';
 
 type FaqItem = { q: string; a: string };
 
@@ -183,6 +184,7 @@ export default function ProPage(): React.ReactElement {
   const [openIdx, setOpenIdx] = useState<number | null>(0);
 
   function handleCta(): void {
+    track('pro_cta_clicked');
     if (typeof window !== 'undefined') {
       window.alert('Próximamente. Mientras, todo está gratis.');
     }
