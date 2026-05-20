@@ -103,20 +103,32 @@ function matchesEmotionFilter(entry: DiaryEntry, filter: Set<Emotion>): boolean 
 
 type DayGroup = { key: string; label: string; entries: DiaryEntry[] };
 
-function groupByDayWithin(entries: DiaryEntry[]): DayGroup[] {
+function isoDay(d: Date): string {
+  return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
+}
+
+function groupByDayWithin(entries: DiaryEntry[], now = new Date()): DayGroup[] {
+  const todayKey = isoDay(now);
+  const yesterday = new Date(now);
+  yesterday.setDate(now.getDate() - 1);
+  const yesterdayKey = isoDay(yesterday);
+
   const map = new Map<string, DiaryEntry[]>();
   const order: string[] = [];
   for (const e of entries) {
     const d = new Date(e.createdAt);
-    const k = `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
+    const k = isoDay(d);
     if (!map.has(k)) { map.set(k, []); order.push(k); }
     map.get(k)!.push(e);
   }
   return order.map((k) => {
     const dayEntries = map.get(k)!;
     const d = new Date(dayEntries[0].createdAt);
-    const weekday = WEEKDAYS[d.getDay()];
-    return { key: k, label: `${weekday} ${d.getDate()}`, entries: dayEntries };
+    const label =
+      k === todayKey ? 'Hoy'
+      : k === yesterdayKey ? 'Ayer'
+      : `${WEEKDAYS[d.getDay()]} ${d.getDate()}`;
+    return { key: k, label, entries: dayEntries };
   });
 }
 
