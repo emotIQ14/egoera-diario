@@ -214,6 +214,7 @@ export default function HomePage() {
   const [diaryExcerpt, setDiaryExcerpt] = useState<{ date: string; text: string; mood: number } | null>(null);
   const [weekSummary, setWeekSummary] = useState<{ count: number; avgMood: number; topEmotion: string | null } | null>(null);
   const [totalEntries, setTotalEntries] = useState<number>(0);
+  const [hasDraft, setHasDraft] = useState<boolean>(false);
 
   // Redirige a /bienvenida si el usuario aún no ha hecho onboarding.
   useEffect(() => {
@@ -308,6 +309,19 @@ export default function HomePage() {
       }
     }
 
+    // Detectar borrador guardado
+    try {
+      const rawDraft = window.localStorage.getItem('egoera-diario-draft');
+      if (rawDraft) {
+        const parsed = JSON.parse(rawDraft) as { text?: string; emotions?: string[]; moodTouched?: boolean };
+        const meaningful =
+          (parsed.text && parsed.text.trim().length > 0) ||
+          (parsed.emotions && parsed.emotions.length > 0) ||
+          parsed.moodTouched === true;
+        setHasDraft(!!meaningful);
+      }
+    } catch { /* silencioso */ }
+
     const currentStreak = streakDays();
     setStreak(currentStreak);
     // Celebrar hitos de racha (solo la primera vez que se alcanzan)
@@ -388,7 +402,9 @@ export default function HomePage() {
         >
           <div className="card-row">
             <span className="pill-num">01 · Diario</span>
-            {streak > 0 ? (
+            {hasDraft ? (
+              <span className="pill-draft">Borrador guardado ·</span>
+            ) : streak > 0 ? (
               <span className="pill-yellow">
                 +{streak}{weekActive > 0 ? ` · ${weekActive} sem` : ''}
               </span>
@@ -397,11 +413,15 @@ export default function HomePage() {
             ) : null}
           </div>
           <h2 className="card-title">
-            Anota cómo
-            <br />
-            estás hoy.
+            {hasDraft ? (
+              <>Continúa<br />donde lo dejaste.</>
+            ) : (
+              <>Anota cómo<br />estás hoy.</>
+            )}
           </h2>
-          <p className="card-sub">3 minutos. Sin presión, sin métricas raras.</p>
+          <p className="card-sub">
+            {hasDraft ? 'Tu borrador te está esperando.' : '3 minutos. Sin presión, sin métricas raras.'}
+          </p>
         </button>
 
         <button

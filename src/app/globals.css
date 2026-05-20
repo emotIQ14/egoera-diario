@@ -179,6 +179,17 @@ body {
   border-radius: var(--r-pill);
   font-weight: 600;
 }
+.pill-draft {
+  background: rgba(244, 200, 66, 0.28);
+  color: #7a6000;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  padding: 5px 11px;
+  border-radius: var(--r-pill);
+  font-weight: 700;
+}
 
 /* M-card (Merl-style card) */
 .m-card {
