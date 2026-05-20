@@ -12,6 +12,8 @@ const NAME_KEY = 'egoera-diario-name';
 const ONBOARDED_KEY = 'egoera-diario-onboarded';
 const ATTRIBUTION_KEY = 'egoera-attribution';
 const RESONANCE_KEY = 'egoera-onboarding-resonance';
+const SEED_FEELING_KEY = 'egoera-seed-feeling';   // primera intención capturada vía peep-prompt
+const FEELING_MAX_LENGTH = 280;                    // límite anti-spam y para que quepa en una entrada
 
 /**
  * 7 frases relatables, cada una asociada a una amiga (peep)
@@ -113,6 +115,41 @@ export default function BienvenidaPage() {
   const [name, setName] = useState<string>('');
   const [attribution, setAttribution] = useState<string | null>(null);
   const fromPeepPrompt = searchParams?.get('from') === 'peep-prompt';
+
+  /**
+   * Captura el `feeling` del query param cuando viene de un peep-spawn.
+   * Lo persiste en localStorage como "primera intención" para que la
+   * primera entrada del diario lo lleve pre-rellenado en /diario.
+   * Limpia el query param de la URL tras capturarlo (UX limpia y
+   * evita que se reactive si el usuario recarga).
+   */
+  const rawFeeling = searchParams?.get('feeling') ?? '';
+  const seedFeeling = rawFeeling
+    .trim()
+    .slice(0, FEELING_MAX_LENGTH);
+
+  useEffect(() => {
+    if (!fromPeepPrompt || !seedFeeling) return;
+    if (typeof window === 'undefined') return;
+    try {
+      window.localStorage.setItem(
+        SEED_FEELING_KEY,
+        JSON.stringify({
+          text: seedFeeling,
+          source: 'peep-prompt',
+          ts: new Date().toISOString(),
+        }),
+      );
+    } catch {
+      // localStorage puede fallar en modo privado iOS — fail silently
+    }
+    // Limpiar el ?feeling= de la URL para no exponerlo en el address bar
+    if (window.history?.replaceState) {
+      const url = new URL(window.location.href);
+      url.searchParams.delete('feeling');
+      window.history.replaceState({}, '', url.toString());
+    }
+  }, [fromPeepPrompt, seedFeeling]);
 
   const goNext = useCallback(() => {
     setCurrentStep((s) => Math.min(s + 1, TOTAL_STEPS - 1));
@@ -227,9 +264,21 @@ export default function BienvenidaPage() {
             </p>
           </div>
           {fromPeepPrompt ? (
-            <p className="from-peep-prompt" aria-live="polite">
-              ¿Vienes desde un artículo? Empieza por anotar la frase que te resonó.
-            </p>
+            <div className="from-peep-prompt" aria-live="polite">
+              {seedFeeling ? (
+                <>
+                  <p className="seed-meta">— LO QUE ESCRIBISTE —</p>
+                  <p className="seed-text">«{seedFeeling}»</p>
+                  <p className="seed-hint">
+                    Lo guardo para tu primera entrada. Sigue cuando quieras.
+                  </p>
+                </>
+              ) : (
+                <p>
+                  ¿Vienes desde un artículo? Empieza por anotar la frase que te resonó.
+                </p>
+              )}
+            </div>
           ) : null}
         </div>
       </OnboardingStep>
@@ -611,8 +660,8 @@ export default function BienvenidaPage() {
           font-style: italic;
         }
         .from-peep-prompt {
-          margin-top: 14px;
-          padding: 12px 14px;
+          margin-top: 18px;
+          padding: 14px 16px;
           background: rgba(29, 43, 219, 0.08);
           border-left: 3px solid var(--cobalto);
           border-radius: var(--r-md);
@@ -620,9 +669,36 @@ export default function BienvenidaPage() {
           font-size: 14px;
           line-height: 1.5;
           color: var(--ink);
-          opacity: 0.88;
+          opacity: 0.95;
           max-width: 360px;
           text-align: left;
+        }
+        .from-peep-prompt p {
+          margin: 0;
+        }
+        .from-peep-prompt .seed-meta {
+          font-family: var(--font-mono);
+          font-size: 10px;
+          letter-spacing: 0.22em;
+          text-transform: uppercase;
+          color: var(--cobalto);
+          opacity: 0.7;
+          margin-bottom: 6px;
+        }
+        .from-peep-prompt .seed-text {
+          font-family: var(--font-display);
+          font-style: italic;
+          font-weight: 500;
+          font-size: 18px;
+          line-height: 1.35;
+          color: var(--ink);
+          margin-bottom: 8px;
+        }
+        .from-peep-prompt .seed-hint {
+          font-size: 13px;
+          line-height: 1.45;
+          color: var(--ink);
+          opacity: 0.72;
         }
 
         /* Authority */

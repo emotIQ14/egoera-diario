@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Screen from '@/components/Screen';
 import TabBar from '@/components/TabBar';
@@ -11,6 +11,7 @@ import { EMOTIONS } from '@/lib/types';
 import { useToast } from '@/components/toast/ToastProvider';
 
 const DEFAULT_MOOD = 7;
+const SEED_FEELING_KEY = 'egoera-seed-feeling';
 
 export default function DiarioPage() {
   const router = useRouter();
@@ -20,6 +21,30 @@ export default function DiarioPage() {
   const [emotions, setEmotions] = useState<Emotion[]>([]);
   const [text, setText] = useState<string>('');
   const [saving, setSaving] = useState<boolean>(false);
+  const [seededFromPeep, setSeededFromPeep] = useState<boolean>(false);
+
+  /**
+   * Si el usuario llegó vía peep-prompt y escribió algo en la mini-modal
+   * del post, lo capturamos como "seed" para pre-rellenar el textarea
+   * de la primera entrada. Lo consumimos UNA vez (lo borramos tras leer)
+   * para que no aparezca en siguientes entradas.
+   */
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    try {
+      const raw = window.localStorage.getItem(SEED_FEELING_KEY);
+      if (!raw) return;
+      const parsed = JSON.parse(raw) as { text?: string; source?: string };
+      if (parsed?.text && typeof parsed.text === 'string') {
+        setText(parsed.text);
+        setSeededFromPeep(true);
+        // Consumir: borrar para que no se rellene de nuevo en próximas entradas
+        window.localStorage.removeItem(SEED_FEELING_KEY);
+      }
+    } catch {
+      // JSON corrupto u otro fallo: ignorar
+    }
+  }, []);
 
   const canSave = moodTouched || emotions.length > 0 || text.trim().length > 0;
 
@@ -126,16 +151,27 @@ export default function DiarioPage() {
         </section>
 
         <section className="text-section">
+          {seededFromPeep ? (
+            <p className="seed-note" aria-live="polite">
+              — Lo que escribiste en el artículo está abajo. Puedes editarlo, borrarlo
+              o sumar a partir de ahí.
+            </p>
+          ) : null}
           <label htmlFor="diary-text" className="sr-only">
             Cuéntalo si quieres
           </label>
           <textarea
             id="diary-text"
-            className="diary-text"
+            className={`diary-text ${seededFromPeep ? 'seeded' : ''}`}
             placeholder="Cuéntalo si quieres…"
-            rows={3}
+            rows={4}
             value={text}
-            onChange={(e) => setText(e.target.value)}
+            onChange={(e) => {
+              setText(e.target.value);
+              if (seededFromPeep && e.target.value !== text) {
+                setSeededFromPeep(false); // ya editó, dejar de mostrarlo como seed
+              }
+            }}
           />
         </section>
 
@@ -319,6 +355,19 @@ export default function DiarioPage() {
         .text-section {
           margin: 0 0 24px;
         }
+        .seed-note {
+          font-family: var(--font-mono);
+          font-size: 11px;
+          letter-spacing: 0.06em;
+          line-height: 1.45;
+          color: var(--cobalto);
+          opacity: 0.72;
+          margin: 0 0 8px;
+          padding: 8px 12px;
+          background: rgba(29, 43, 219, 0.06);
+          border-left: 2px solid var(--cobalto);
+          border-radius: 6px;
+        }
         .diary-text {
           width: 100%;
           font-family: var(--font-body);
@@ -332,7 +381,13 @@ export default function DiarioPage() {
           resize: vertical;
           min-height: 88px;
           outline: none;
-          transition: border-color 0.15s ease;
+          transition: border-color 0.15s ease, background 0.15s ease;
+        }
+        .diary-text.seeded {
+          background: rgba(29, 43, 219, 0.04);
+          border-color: rgba(29, 43, 219, 0.32);
+          font-family: var(--font-display);
+          font-style: italic;
         }
         .diary-text::placeholder {
           font-family: var(--font-display);
