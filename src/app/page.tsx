@@ -271,6 +271,8 @@ export default function HomePage() {
     return { next, daysLeft: next - streak };
   }, [streak]);
 
+  const weekActive = useMemo(() => weekDots.filter(Boolean).length, [weekDots]);
+
   const streakAtRisk = useMemo(() => {
     if (!now) return false;
     return streak >= 3 && todayCount === 0 && now.getHours() >= 17;
@@ -308,7 +310,9 @@ export default function HomePage() {
           <div className="card-row">
             <span className="pill-num">01 · Diario</span>
             {streak > 0 ? (
-              <span className="pill-yellow">+{streak} días</span>
+              <span className="pill-yellow">
+                +{streak}{weekActive > 0 ? ` · ${weekActive} sem` : ''}
+              </span>
             ) : null}
           </div>
           <h2 className="card-title">
