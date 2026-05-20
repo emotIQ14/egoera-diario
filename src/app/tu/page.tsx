@@ -79,6 +79,25 @@ function pad2(n: number): string {
   return n < 10 ? `0${n}` : `${n}`;
 }
 
+function allTimeStreakDays(entries: DiaryEntry[]): number {
+  if (entries.length === 0) return 0;
+  const seen = new Set<string>();
+  for (const e of entries) {
+    const d = new Date(e.createdAt);
+    d.setHours(0, 0, 0, 0);
+    seen.add(d.toISOString().slice(0, 10));
+  }
+  const sorted = Array.from(seen).sort();
+  let max = 1;
+  let cur = 1;
+  for (let i = 1; i < sorted.length; i++) {
+    const diff = (new Date(sorted[i]).getTime() - new Date(sorted[i - 1]).getTime()) / 86_400_000;
+    if (diff === 1) { cur++; if (cur > max) max = cur; }
+    else cur = 1;
+  }
+  return max;
+}
+
 function isoDate(d: Date): string {
   return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
 }
@@ -196,6 +215,7 @@ export default function TuPage() {
   const [lang, setLang] = useState<Lang>('ES');
   const [totalEntries, setTotalEntries] = useState<number>(0);
   const [streak, setStreak] = useState<number>(0);
+  const [bestStreak, setBestStreak] = useState<number>(0);
   const [daysSinceFirst, setDaysSinceFirst] = useState<number>(0);
   const [avgMood, setAvgMood] = useState<number | null>(null);
   const [topEmotion, setTopEmotion] = useState<string | null>(null);
@@ -215,6 +235,7 @@ export default function TuPage() {
     const entries = loadEntries();
     setTotalEntries(entries.length);
     setStreak(streakDays());
+    setBestStreak(allTimeStreakDays(entries));
 
     if (entries.length > 0) {
       const sorted = [...entries].sort(
@@ -382,6 +403,7 @@ export default function TuPage() {
       const imported = await importFromJson(file);
       setTotalEntries(imported.length);
       setStreak(streakDays());
+      setBestStreak(allTimeStreakDays(imported));
       toast.success(`${imported.length} entradas importadas. Recarga para verlas.`);
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'No se pudo importar.';
@@ -482,11 +504,15 @@ export default function TuPage() {
             </div>
             <div className="eyebrow stat-eyebrow">— Ánimo medio —</div>
           </div>
-          <div className="stat stat-emo-cell">
+          <div className="stat">
             <div className="stat-num stat-num-emo">
               {hydrated && topEmotion ? topEmotion : '—'}
             </div>
             <div className="eyebrow stat-eyebrow">— Más frecuente —</div>
+          </div>
+          <div className="stat">
+            <div className="stat-num">{hydrated ? bestStreak : 0}</div>
+            <div className="eyebrow stat-eyebrow">— Récord racha —</div>
           </div>
         </div>
 
@@ -833,9 +859,7 @@ export default function TuPage() {
           color: var(--cobalto);
           text-transform: lowercase;
         }
-        .stat-emo-cell {
-          grid-column: span 2;
-        }
+        /* stat-emo-cell removed: emotion stat is now a regular cell in the 6-cell grid */
         .stat-eyebrow {
           font-size: 9.5px;
           opacity: 0.55;
