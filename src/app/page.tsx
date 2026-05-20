@@ -126,6 +126,43 @@ function greetingFor(hour: number): string {
   return 'Buenas';
 }
 
+function buildGreetingQuestion(
+  now: Date,
+  streak: number,
+  todayCount: number,
+  totalEntries: number
+): string {
+  const h = now.getHours();
+  const dow = now.getDay(); // 0=dom, 1=lun…6=sab
+
+  // Ya escribió hoy
+  if (todayCount > 0) return '¿Algo más\nque soltar hoy?';
+
+  // Tarde del viernes → cierre de semana
+  if (dow === 5 && h >= 17) return '¿Cómo cierras\nla semana?';
+
+  // Domingo → reflexión semanal
+  if (dow === 0) return '¿Cómo fue\ntu semana?';
+
+  // Noche → cierre del día
+  if (h >= 21 || h < 6) return '¿Cómo terminas\nel día?';
+
+  // Lunes por la mañana → inicio de semana
+  if (dow === 1 && h < 12) return '¿Cómo empiezas\nla semana?';
+
+  // Mañana general
+  if (h < 12) return '¿Cómo empiezas\nel día?';
+
+  // Usuario que regresa tras pausa (racha rota, hay historial)
+  if (streak === 0 && totalEntries >= 3) return 'Sin prisa.\n¿Cómo llegas hoy?';
+
+  // Racha alta → reconocimiento
+  if (streak >= 14) return '¿Qué traes\nhoy contigo?';
+
+  // Default
+  return '¿Cómo te\nencuentras?';
+}
+
 function pad2(n: number): string {
   return n < 10 ? `0${n}` : `${n}`;
 }
@@ -296,6 +333,11 @@ export default function HomePage() {
     return greetingFor(now.getHours());
   }, [now]);
 
+  const greetingQuestion = useMemo(() => {
+    if (!now) return '¿Cómo te\nencuentras?';
+    return buildGreetingQuestion(now, streak, todayCount, totalEntries);
+  }, [now, streak, todayCount, totalEntries]);
+
   const streakGoal = useMemo(() => {
     if (streak <= 0) return null;
     const next = MILESTONES.find((m) => m > streak);
@@ -327,7 +369,12 @@ export default function HomePage() {
         <h1 className="s-greet">
           {greeting}, <em>{name}</em>.
           <br />
-          ¿Cómo te encuentras?
+          {greetingQuestion.split('\n').map((line, i, arr) => (
+            <span key={i}>
+              {line}
+              {i < arr.length - 1 ? <br /> : null}
+            </span>
+          ))}
         </h1>
         <p className="s-date">{dateLine}</p>
       </header>
