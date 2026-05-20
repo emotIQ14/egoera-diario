@@ -1,6 +1,11 @@
 import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
 
+// La página usa useSearchParams para detectar ?from=peep-prompt,
+// y todo el estado vive en localStorage (cliente). No hace falta SSG.
+// Forzar dynamic rendering evita el error de Suspense boundary en Next 15.
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = {
   title: 'Bienvenida · Egoera Diario',
   description: 'Empieza tu diario emocional. Sin gamificación, sin métricas raras. Solo tú escuchándote.',
