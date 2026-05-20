@@ -132,6 +132,78 @@ function groupByDayWithin(entries: DiaryEntry[], now = new Date()): DayGroup[] {
   });
 }
 
+// ─── sparkline ───────────────────────────────────────────────────────────────
+
+function MoodSparkline({ entries }: { entries: DiaryEntry[] }): React.ReactElement | null {
+  const pts = entries.slice(0, 21).reverse();
+  if (pts.length < 4) return null;
+
+  const W = 200;
+  const H = 38;
+  const PX = 5;
+  const PY = 4;
+
+  const xs = pts.map((_, i) => PX + (i / (pts.length - 1)) * (W - 2 * PX));
+  const ys = pts.map((e) => PY + ((10 - e.mood) / 10) * (H - 2 * PY));
+  const polyline = xs.map((x, i) => `${x.toFixed(1)},${ys[i].toFixed(1)}`).join(' ');
+  const fillPoly = [
+    `${xs[0].toFixed(1)},${H}`,
+    ...xs.map((x, i) => `${x.toFixed(1)},${ys[i].toFixed(1)}`),
+    `${xs[xs.length - 1].toFixed(1)},${H}`,
+  ].join(' ');
+
+  const avg = Math.round((pts.reduce((s, e) => s + e.mood, 0) / pts.length) * 10) / 10;
+
+  const half = Math.floor(pts.length / 2);
+  const early = pts.slice(0, half).reduce((s, e) => s + e.mood, 0) / half;
+  const recent = pts.slice(half).reduce((s, e) => s + e.mood, 0) / (pts.length - half);
+  const trendArrow = recent - early > 0.6 ? '↗' : recent - early < -0.6 ? '↘' : '→';
+  const trendLabel = recent - early > 0.6 ? 'subiendo' : recent - early < -0.6 ? 'bajando' : 'estable';
+
+  return (
+    <div className="sparkline-row" aria-label={`Ánimo medio ${avg.toFixed(1)} de 10, tendencia ${trendLabel}`}>
+      <svg
+        width={W}
+        height={H}
+        viewBox={`0 0 ${W} ${H}`}
+        className="sparkline-svg"
+        aria-hidden="true"
+      >
+        <defs>
+          <linearGradient id="sg" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#1d2bdb" stopOpacity="0.13" />
+            <stop offset="100%" stopColor="#1d2bdb" stopOpacity="0" />
+          </linearGradient>
+        </defs>
+        <polygon points={fillPoly} fill="url(#sg)" />
+        <polyline
+          points={polyline}
+          fill="none"
+          stroke="#1d2bdb"
+          strokeWidth="1.7"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          opacity="0.55"
+        />
+        <circle
+          cx={xs[xs.length - 1].toFixed(1)}
+          cy={ys[ys.length - 1].toFixed(1)}
+          r="3"
+          fill="#1d2bdb"
+          opacity="0.8"
+        />
+      </svg>
+      <div className="sparkline-meta">
+        <div className="sparkline-top">
+          <span className="sparkline-avg">{avg.toFixed(1)}</span>
+          <span className="sparkline-trend" aria-hidden="true">{trendArrow}</span>
+        </div>
+        <span className="sparkline-sub">últimos {pts.length} registros</span>
+      </div>
+    </div>
+  );
+}
+
 // ─── edit form state ─────────────────────────────────────────────────────────
 
 type EditDraft = { mood: number; emotions: Emotion[]; text: string };
@@ -315,6 +387,7 @@ export default function HistorialPage() {
               has <em>escrito</em>.
             </h1>
           </div>
+          <MoodSparkline entries={entries} />
           <div className="hdr-bottom">
             <p className="entry-count">
               {entries.length === 0
@@ -685,6 +758,48 @@ export default function HistorialPage() {
           flex-shrink: 0;
         }
         .surprise-btn:hover { opacity: 1; }
+
+        /* ── sparkline ── */
+        .sparkline-row {
+          display: flex;
+          align-items: center;
+          gap: 14px;
+          padding: 8px 0 4px;
+        }
+        .sparkline-svg { display: block; flex-shrink: 0; }
+        .sparkline-meta {
+          display: flex;
+          flex-direction: column;
+          gap: 2px;
+        }
+        .sparkline-top {
+          display: flex;
+          align-items: baseline;
+          gap: 5px;
+        }
+        .sparkline-avg {
+          font-family: var(--font-display);
+          font-style: italic;
+          font-weight: 800;
+          font-size: 26px;
+          line-height: 1;
+          color: var(--cobalto);
+          letter-spacing: -0.03em;
+        }
+        .sparkline-trend {
+          font-size: 16px;
+          color: var(--cobalto);
+          opacity: 0.55;
+          line-height: 1;
+        }
+        .sparkline-sub {
+          font-family: var(--font-mono);
+          font-size: 9px;
+          letter-spacing: 0.18em;
+          text-transform: uppercase;
+          color: var(--ink);
+          opacity: 0.38;
+        }
 
         /* ── empty ── */
         .empty {
