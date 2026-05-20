@@ -112,10 +112,9 @@ const WRITING_PROMPTS = [
   '¿Qué necesito escuchar aunque me cueste?',
 ] as const;
 
-function getDailyPrompt(): string {
-  if (typeof window === 'undefined') return WRITING_PROMPTS[0];
-  const dayOfYear = Math.floor(Date.now() / 86_400_000);
-  return WRITING_PROMPTS[dayOfYear % WRITING_PROMPTS.length];
+function getDailyPromptIdx(): number {
+  if (typeof window === 'undefined') return 0;
+  return Math.floor(Date.now() / 86_400_000) % WRITING_PROMPTS.length;
 }
 
 type LastCtx = { mood: number; topEmotion: string | null; daysAgo: number };
@@ -157,7 +156,19 @@ export default function DiarioPage() {
   const [recording, setRecording] = useState<boolean>(false);
   const [voiceInterim, setVoiceInterim] = useState<string>('');
   const [todayCtx, setTodayCtx] = useState<{ count: number; lastTime: string } | null>(null);
+  const [promptIdx, setPromptIdx] = useState<number>(0);
   const recognitionRef = useRef<SpeechRecognitionLike | null>(null);
+
+  /**
+   * Si el usuario llegó vía peep-prompt y escribió algo en la mini-modal
+   * del post, lo capturamos como "seed" para pre-rellenar el textarea
+   * de la primera entrada. Lo consumimos UNA vez (lo borramos tras leer)
+   * para que no aparezca en siguientes entradas.
+   */
+  // Inicializar prompt del día al montar (client-side, evita hidratación SSR)
+  useEffect(() => {
+    setPromptIdx(getDailyPromptIdx());
+  }, []);
 
   /**
    * Si el usuario llegó vía peep-prompt y escribió algo en la mini-modal
@@ -521,15 +532,33 @@ export default function DiarioPage() {
             </div>
           )}
           {!text.trim() && (
-            <button
-              type="button"
-              className="prompt-sugg"
-              onClick={() => setText(getDailyPrompt())}
-              aria-label="Usar este prompt de escritura"
-            >
-              <span className="prompt-icon" aria-hidden="true">✎</span>
-              <span className="prompt-text">{getDailyPrompt()}</span>
-            </button>
+            <div className="prompt-row">
+              <button
+                type="button"
+                className="prompt-sugg"
+                onClick={() => setText(WRITING_PROMPTS[promptIdx])}
+                aria-label="Usar este prompt de escritura"
+              >
+                <span className="prompt-icon" aria-hidden="true">✎</span>
+                <span className="prompt-text">{WRITING_PROMPTS[promptIdx]}</span>
+              </button>
+              <button
+                type="button"
+                className="prompt-shuffle"
+                onClick={() =>
+                  setPromptIdx((i) => (i + 1) % WRITING_PROMPTS.length)
+                }
+                aria-label="Ver otro prompt de escritura"
+                title="Otro prompt"
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="M17 1l4 4-4 4" />
+                  <path d="M3 11V9a4 4 0 0 1 4-4h14" />
+                  <path d="M7 23l-4-4 4-4" />
+                  <path d="M21 13v2a4 4 0 0 1-4 4H3" />
+                </svg>
+              </button>
+            </div>
           )}
         </section>
 
@@ -916,17 +945,22 @@ export default function DiarioPage() {
         }
 
         /* === Prompt sugerido === */
+        .prompt-row {
+          display: flex;
+          align-items: stretch;
+          gap: 6px;
+          margin-top: 8px;
+        }
         .prompt-sugg {
           display: flex;
           align-items: flex-start;
           gap: 7px;
-          margin-top: 8px;
           padding: 9px 12px;
           background: none;
           border: 1px dashed rgba(13, 15, 61, 0.2);
           border-radius: var(--r-md);
           cursor: pointer;
-          width: 100%;
+          flex: 1;
           text-align: left;
           font: inherit;
           -webkit-tap-highlight-color: transparent;
@@ -950,6 +984,34 @@ export default function DiarioPage() {
           line-height: 1.45;
           color: var(--ink);
           opacity: 0.55;
+        }
+        .prompt-shuffle {
+          flex-shrink: 0;
+          width: 36px;
+          border: 1px dashed rgba(13, 15, 61, 0.2);
+          border-radius: var(--r-md);
+          background: none;
+          color: var(--ink);
+          opacity: 0.38;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          -webkit-tap-highlight-color: transparent;
+          transition: opacity 0.15s, border-color 0.15s, transform 0.15s;
+          padding: 0;
+        }
+        .prompt-shuffle:hover {
+          opacity: 0.75;
+          border-color: var(--cobalto);
+        }
+        .prompt-shuffle:active {
+          transform: rotate(180deg);
+          opacity: 1;
+        }
+        .prompt-shuffle svg {
+          width: 14px;
+          height: 14px;
         }
 
         /* === Voice interim === */
