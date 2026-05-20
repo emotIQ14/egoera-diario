@@ -215,6 +215,8 @@ export default function HomePage() {
   const [weekSummary, setWeekSummary] = useState<{ count: number; avgMood: number; topEmotion: string | null } | null>(null);
   const [totalEntries, setTotalEntries] = useState<number>(0);
   const [hasDraft, setHasDraft] = useState<boolean>(false);
+  const [lowMoodAlert, setLowMoodAlert] = useState<boolean>(false);
+  const [lowMoodDismissed, setLowMoodDismissed] = useState<boolean>(false);
 
   // Redirige a /bienvenida si el usuario aún no ha hecho onboarding.
   useEffect(() => {
@@ -307,6 +309,22 @@ export default function HomePage() {
             : null;
         setWeekSummary({ count: weekEntries.length, avgMood: avg, topEmotion: topEmo });
       }
+    }
+
+    // Low mood alert: ≥2 días únicos con mood ≤4 en los últimos 7 días
+    {
+      const lowEntries = allEntries.filter((e) => {
+        const d = new Date(e.createdAt);
+        d.setHours(0, 0, 0, 0);
+        const diff = Math.round((todayKey.getTime() - d.getTime()) / 86_400_000);
+        return diff >= 0 && diff < 7 && e.mood <= 4;
+      });
+      const lowDays = new Set(lowEntries.map((e) => {
+        const d = new Date(e.createdAt);
+        d.setHours(0, 0, 0, 0);
+        return d.getTime();
+      }));
+      if (lowDays.size >= 2) setLowMoodAlert(true);
     }
 
     // Detectar borrador guardado
@@ -520,6 +538,28 @@ export default function HomePage() {
           <span className="risk-text">Sin entrada hoy · racha en riesgo</span>
           <span className="risk-arrow">→</span>
         </button>
+      ) : null}
+
+      {lowMoodAlert && !lowMoodDismissed ? (
+        <div className="low-mood-card" role="complementary" aria-label="Apoyo en momentos difíciles">
+          <button
+            type="button"
+            className="low-mood-dismiss"
+            aria-label="Cerrar"
+            onClick={() => setLowMoodDismissed(true)}
+          >
+            ×
+          </button>
+          <p className="low-mood-title">Ha habido días difíciles esta semana.</p>
+          <p className="low-mood-sub">Está bien que así sea. La conversa está aquí cuando quieras ponerlo en palabras.</p>
+          <button
+            type="button"
+            className="low-mood-cta"
+            onClick={() => router.push('/conversa')}
+          >
+            Hablar →
+          </button>
+        </div>
       ) : null}
 
       {todayCount > 0 && todayStat ? (
@@ -1029,6 +1069,69 @@ export default function HomePage() {
           letter-spacing: 0.1em;
           color: var(--cobalto);
           opacity: 0.6;
+        }
+
+        /* === Low mood support card === */
+        .low-mood-card {
+          position: relative;
+          background: var(--ink);
+          color: var(--crema);
+          border-radius: var(--r-md);
+          padding: 18px 20px 16px;
+          margin: 0 0 12px;
+          animation: fadeSlideUp 0.3s ease both;
+        }
+        .low-mood-dismiss {
+          position: absolute;
+          top: 10px;
+          right: 12px;
+          font-size: 18px;
+          line-height: 1;
+          color: var(--crema);
+          opacity: 0.4;
+          padding: 2px 6px;
+          border-radius: 6px;
+          transition: opacity 0.15s ease;
+        }
+        .low-mood-dismiss:hover { opacity: 0.75; }
+        .low-mood-title {
+          font-family: var(--font-display);
+          font-style: italic;
+          font-size: 17px;
+          font-weight: 700;
+          line-height: 1.2;
+          color: var(--crema);
+          margin: 0 0 6px;
+          padding-right: 28px;
+        }
+        .low-mood-sub {
+          font-family: var(--font-body);
+          font-size: 13px;
+          line-height: 1.5;
+          color: var(--crema);
+          opacity: 0.72;
+          margin: 0 0 14px;
+        }
+        .low-mood-cta {
+          display: inline-flex;
+          align-items: center;
+          gap: 4px;
+          background: rgba(241, 234, 216, 0.12);
+          color: var(--crema);
+          font-family: var(--font-mono);
+          font-size: 11px;
+          letter-spacing: 0.14em;
+          text-transform: uppercase;
+          font-weight: 600;
+          padding: 8px 14px;
+          border-radius: var(--r-pill);
+          border: 1px solid rgba(241, 234, 216, 0.2);
+          transition: background 0.15s ease;
+        }
+        .low-mood-cta:hover { background: rgba(241, 234, 216, 0.2); }
+        @keyframes fadeSlideUp {
+          from { opacity: 0; transform: translateY(8px); }
+          to   { opacity: 1; transform: translateY(0); }
         }
       `}</style>
     </Screen>
