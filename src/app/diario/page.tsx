@@ -85,6 +85,8 @@ function getMoodNumColor(m: number): string {
   return '#c25a3a'; // coral oscuro
 }
 
+function pad2D(n: number): string { return n < 10 ? `0${n}` : `${n}`; }
+
 // ─── Prompts de escritura ────────────────────────────────────────────────────
 
 const WRITING_PROMPTS = [
@@ -154,6 +156,7 @@ export default function DiarioPage() {
   const [lastCtx, setLastCtx] = useState<LastCtx | null>(null);
   const [recording, setRecording] = useState<boolean>(false);
   const [voiceInterim, setVoiceInterim] = useState<string>('');
+  const [todayCtx, setTodayCtx] = useState<{ count: number; lastTime: string } | null>(null);
   const recognitionRef = useRef<SpeechRecognitionLike | null>(null);
 
   /**
@@ -196,22 +199,37 @@ export default function DiarioPage() {
     setDraftRestored(true);
   }, []);
 
-  // Contexto última entrada (ayer o entre 2-7 días atrás)
+  // Contexto última entrada (ayer o entre 2-7 días atrás) + entradas de hoy
   useEffect(() => {
     if (typeof window === 'undefined') return;
     try {
       const all = loadEntries();
       if (all.length === 0) return;
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      // Entradas de hoy
+      const todayEntries = all.filter((e) => {
+        const d = new Date(e.createdAt);
+        d.setHours(0, 0, 0, 0);
+        return d.getTime() === today.getTime();
+      });
+      if (todayEntries.length > 0) {
+        const latest = todayEntries.sort(
+          (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        )[0];
+        const d = new Date(latest.createdAt);
+        setTodayCtx({ count: todayEntries.length, lastTime: `${pad2D(d.getHours())}:${pad2D(d.getMinutes())}` });
+      }
+
+      // Última entrada de días anteriores (1-7 días atrás)
       const sorted = [...all].sort(
         (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
       );
       const last = sorted[0];
       const lastDate = new Date(last.createdAt);
       lastDate.setHours(0, 0, 0, 0);
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
       const daysAgo = Math.round((today.getTime() - lastDate.getTime()) / 86400000);
-      // 0 = hoy (no mostrar), >7 = demasiado lejos (no relevante)
       if (daysAgo < 1 || daysAgo > 7) return;
       const topEmotion = last.emotions.length > 0
         ? emotionLabelDiary(last.emotions[0])
@@ -228,6 +246,7 @@ export default function DiarioPage() {
   }, [mood, moodTouched, emotions, text]);
 
   const canSave = moodTouched || emotions.length > 0 || text.trim().length > 0;
+  const wordCount = text.trim() ? text.trim().split(/\s+/).filter(Boolean).length : 0;
 
   function toggleEmotion(id: Emotion) {
     setEmotions((prev) =>
@@ -364,6 +383,17 @@ export default function DiarioPage() {
           </h1>
         </header>
 
+        {todayCtx ? (
+          <div className="today-ctx" role="status" aria-label="Ya escribiste hoy">
+            <span className="today-ctx-dot" aria-hidden="true" />
+            <span className="today-ctx-text">
+              {todayCtx.count === 1
+                ? `1 entrada hoy · ${todayCtx.lastTime}`
+                : `${todayCtx.count} entradas hoy · última a las ${todayCtx.lastTime}`}
+            </span>
+          </div>
+        ) : null}
+
         {lastCtx ? (
           <div className="last-ctx" role="status" aria-label="Tu última entrada">
             <span className="last-ctx-time">
@@ -485,6 +515,11 @@ export default function DiarioPage() {
               }
             }}
           />
+          {wordCount > 0 && (
+            <div className="word-count" aria-live="polite" aria-atomic="true">
+              {wordCount} {wordCount === 1 ? 'palabra' : 'palabras'}
+            </div>
+          )}
           {!text.trim() && (
             <button
               type="button"
@@ -609,6 +644,47 @@ export default function DiarioPage() {
           outline: 2px solid var(--cobalto);
           outline-offset: 2px;
           border-radius: 3px;
+        }
+
+        /* === Today context banner === */
+        .today-ctx {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          padding: 8px 14px;
+          margin-bottom: 10px;
+          background: rgba(29, 43, 219, 0.06);
+          border: 1px solid rgba(29, 43, 219, 0.14);
+          border-radius: var(--r-md);
+        }
+        .today-ctx-dot {
+          width: 6px;
+          height: 6px;
+          border-radius: 50%;
+          background: var(--cobalto);
+          flex-shrink: 0;
+          opacity: 0.7;
+        }
+        .today-ctx-text {
+          font-family: var(--font-mono);
+          font-size: 10px;
+          letter-spacing: 0.14em;
+          text-transform: uppercase;
+          color: var(--cobalto);
+          opacity: 0.75;
+        }
+
+        /* === Word count === */
+        .word-count {
+          font-family: var(--font-mono);
+          font-size: 10px;
+          letter-spacing: 0.12em;
+          text-transform: uppercase;
+          color: var(--ink);
+          opacity: 0.35;
+          text-align: right;
+          padding-top: 4px;
+          user-select: none;
         }
 
         /* === Last context bar === */
