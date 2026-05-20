@@ -229,6 +229,7 @@ export default function TuPage() {
   const [topEmotion, setTopEmotion] = useState<string | null>(null);
   const [totalWords, setTotalWords] = useState<number>(0);
   const [sparkDots, setSparkDots] = useState<SparkDot[]>([]);
+  const [emotionProfile, setEmotionProfile] = useState<Array<{ id: string; label: string; pct: number; count: number }>>([]);
   const [reminderTime, setReminderTime] = useState<string | null>(null);
   const [hydrated, setHydrated] = useState<boolean>(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -265,16 +266,31 @@ export default function TuPage() {
       const moodSum = entries.reduce((acc, e) => acc + e.mood, 0);
       setAvgMood(Math.round((moodSum / entries.length) * 10) / 10);
 
-      // top emotion
-      const freq = new Map<string, number>();
+      // emotion frequency per entry (not total occurrences)
+      const emoEntryCount = new Map<string, number>();
       for (const e of entries) {
+        const seen = new Set<string>();
         for (const emo of e.emotions) {
-          freq.set(emo, (freq.get(emo) ?? 0) + 1);
+          if (!seen.has(emo)) {
+            emoEntryCount.set(emo, (emoEntryCount.get(emo) ?? 0) + 1);
+            seen.add(emo);
+          }
         }
       }
-      if (freq.size > 0) {
-        const [topId] = Array.from(freq.entries()).sort((a, b) => b[1] - a[1])[0];
+      if (emoEntryCount.size > 0) {
+        const sorted = Array.from(emoEntryCount.entries())
+          .sort((a, b) => b[1] - a[1])
+          .slice(0, 5);
+        const [topId] = sorted[0];
         setTopEmotion(emotionLabel(topId));
+        setEmotionProfile(
+          sorted.map(([id, count]) => ({
+            id,
+            label: emotionLabel(id),
+            count,
+            pct: Math.round((count / entries.length) * 100),
+          }))
+        );
       }
 
       // sparkline
@@ -563,6 +579,29 @@ export default function TuPage() {
           </div>
         ) : null}
       </header>
+
+      {hydrated && emotionProfile.length > 0 ? (
+        <section className="emo-profile" aria-label="Tu perfil emocional">
+          <span className="eyebrow block-eyebrow">— Tu perfil emocional —</span>
+          <div className="emo-bars">
+            {emotionProfile.map((e) => (
+              <div key={e.id} className="emo-bar-row">
+                <span className="emo-bar-label">{e.label}</span>
+                <div className="emo-bar-track" aria-label={`${e.label}: ${e.pct}% de entradas`}>
+                  <div
+                    className="emo-bar-fill"
+                    style={{ width: `${e.pct}%` }}
+                  />
+                </div>
+                <span className="emo-bar-pct">{e.pct}%</span>
+              </div>
+            ))}
+          </div>
+          <p className="emo-bar-hint">
+            % de entradas en las que aparece cada emoción
+          </p>
+        </section>
+      ) : null}
 
       <section className="block" aria-labelledby="acc-eyebrow">
         <span id="acc-eyebrow" className="eyebrow block-eyebrow">
@@ -1098,6 +1137,72 @@ export default function TuPage() {
           height: 44px;
           display: block;
           overflow: visible;
+        }
+
+        /* ── emotion profile ── */
+        .emo-profile {
+          margin-bottom: 28px;
+          background: var(--crema);
+          border: 1px solid rgba(13, 15, 61, 0.1);
+          border-radius: var(--r-md);
+          padding: 16px 16px 12px;
+        }
+        .emo-bars {
+          display: flex;
+          flex-direction: column;
+          gap: 9px;
+          margin-top: 12px;
+        }
+        .emo-bar-row {
+          display: flex;
+          align-items: center;
+          gap: 9px;
+        }
+        .emo-bar-label {
+          font-family: var(--font-body);
+          font-size: 12px;
+          font-weight: 500;
+          color: var(--ink);
+          width: 76px;
+          flex-shrink: 0;
+          text-transform: capitalize;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+        .emo-bar-track {
+          flex: 1;
+          height: 7px;
+          background: rgba(13, 15, 61, 0.07);
+          border-radius: 99px;
+          overflow: hidden;
+        }
+        .emo-bar-fill {
+          height: 100%;
+          background: var(--cobalto);
+          border-radius: 99px;
+          min-width: 3px;
+          transition: width 0.5s ease;
+          opacity: 0.7;
+        }
+        .emo-bar-pct {
+          font-family: var(--font-mono);
+          font-size: 11px;
+          letter-spacing: 0.06em;
+          color: var(--ink);
+          opacity: 0.55;
+          width: 30px;
+          text-align: right;
+          flex-shrink: 0;
+        }
+        .emo-bar-hint {
+          font-family: var(--font-mono);
+          font-size: 10px;
+          letter-spacing: 0.1em;
+          text-transform: uppercase;
+          opacity: 0.38;
+          color: var(--ink);
+          margin-top: 10px;
         }
 
         /* ── reminder ── */
