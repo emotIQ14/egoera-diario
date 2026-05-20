@@ -75,6 +75,29 @@ function groupByMonth(entries: DiaryEntry[]): Group[] {
     }));
 }
 
+// ─── filter helpers ──────────────────────────────────────────────────────────
+
+function normalizeSearch(s: string): string {
+  return s
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '');
+}
+
+function matchesSearch(entry: DiaryEntry, needle: string): boolean {
+  if (!needle) return true;
+  const n = normalizeSearch(needle);
+  return (
+    normalizeSearch(entry.text).includes(n) ||
+    entry.emotions.some((e) => normalizeSearch(emotionLabel(e)).includes(n))
+  );
+}
+
+function matchesEmotionFilter(entry: DiaryEntry, filter: Set<Emotion>): boolean {
+  if (filter.size === 0) return true;
+  return entry.emotions.some((e) => filter.has(e));
+}
+
 // ─── edit form state ─────────────────────────────────────────────────────────
 
 type EditDraft = { mood: number; emotions: Emotion[]; text: string };
@@ -90,6 +113,9 @@ export default function HistorialPage() {
   const [pendingDelete, setPendingDelete] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [draft, setDraft] = useState<EditDraft | null>(null);
+  // ── filter state ──
+  const [search, setSearch] = useState<string>('');
+  const [emotionFilter, setEmotionFilter] = useState<Set<Emotion>>(new Set());
 
   useEffect(() => {
     setEntries(loadEntries());
@@ -165,7 +191,31 @@ export default function HistorialPage() {
     toast.success('Entrada actualizada.');
   }
 
-  const groups = groupByMonth(entries);
+  function toggleEmotionFilter(id: Emotion) {
+    setEmotionFilter((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
+
+  function clearFilters() {
+    setSearch('');
+    setEmotionFilter(new Set());
+  }
+
+  const hasFilter = search.trim().length > 0 || emotionFilter.size > 0;
+
+  const filteredEntries = hasFilter
+    ? entries.filter(
+        (e) =>
+          matchesSearch(e, search.trim()) &&
+          matchesEmotionFilter(e, emotionFilter)
+      )
+    : entries;
+
+  const groups = groupByMonth(filteredEntries);
 
   return (
     <>
@@ -195,6 +245,68 @@ export default function HistorialPage() {
           </p>
         </header>
 
+        {/* ── search + filter ── */}
+        {entries.length > 0 ? (
+          <div className="filter-zone">
+            <div className="search-wrap">
+              <svg className="search-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <circle cx="11" cy="11" r="7" />
+                <line x1="21" y1="21" x2="16.65" y2="16.65" />
+              </svg>
+              <input
+                type="search"
+                className="search-input"
+                placeholder="Buscar en mis entradas…"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                aria-label="Buscar en entradas"
+              />
+              {search && (
+                <button
+                  type="button"
+                  className="search-clear"
+                  onClick={() => setSearch('')}
+                  aria-label="Limpiar búsqueda"
+                >
+                  ×
+                </button>
+              )}
+            </div>
+            <div className="emotion-filter" role="group" aria-label="Filtrar por emoción">
+              {EMOTIONS.map((emo) => {
+                const active = emotionFilter.has(emo.id as Emotion);
+                return (
+                  <button
+                    key={emo.id}
+                    type="button"
+                    role="checkbox"
+                    aria-checked={active}
+                    className={`filter-chip ${active ? 'filter-chip-on' : ''}`}
+                    onClick={() => toggleEmotionFilter(emo.id as Emotion)}
+                  >
+                    {emo.label}
+                  </button>
+                );
+              })}
+            </div>
+            {hasFilter && (
+              <div className="filter-summary">
+                <span className="filter-count">
+                  {filteredEntries.length} de {entries.length}{' '}
+                  {entries.length === 1 ? 'entrada' : 'entradas'}
+                </span>
+                <button
+                  type="button"
+                  className="filter-reset"
+                  onClick={clearFilters}
+                >
+                  Borrar filtros ×
+                </button>
+              </div>
+            )}
+          </div>
+        ) : null}
+
         {/* ── empty state ── */}
         {entries.length === 0 ? (
           <div className="empty">
@@ -207,6 +319,18 @@ export default function HistorialPage() {
               onClick={() => router.push('/diario')}
             >
               Escribir ahora →
+            </button>
+          </div>
+        ) : null}
+
+        {/* ── no results state ── */}
+        {hasFilter && filteredEntries.length === 0 ? (
+          <div className="empty">
+            <p className="empty-text">
+              No hay entradas que coincidan con esa búsqueda.
+            </p>
+            <button type="button" className="btn btn-outline" onClick={clearFilters}>
+              Quitar filtros →
             </button>
           </div>
         ) : null}
@@ -822,6 +946,114 @@ export default function HistorialPage() {
           transition: opacity 0.15s;
         }
         .confirm-no:hover { opacity: 1; }
+
+        /* ── search + filter zone ── */
+        .filter-zone {
+          margin-bottom: 24px;
+          display: flex;
+          flex-direction: column;
+          gap: 10px;
+        }
+        .search-wrap {
+          position: relative;
+          display: flex;
+          align-items: center;
+        }
+        .search-ico {
+          position: absolute;
+          left: 12px;
+          width: 16px;
+          height: 16px;
+          opacity: 0.4;
+          pointer-events: none;
+          flex-shrink: 0;
+        }
+        .search-input {
+          width: 100%;
+          padding: 11px 36px 11px 36px;
+          background: rgba(255,255,255,0.65);
+          border: 1px solid rgba(13, 15, 61, 0.15);
+          border-radius: var(--r-md);
+          font-family: var(--font-body);
+          font-size: 14px;
+          color: var(--ink);
+          outline: none;
+          transition: border-color 0.15s;
+          box-sizing: border-box;
+          -webkit-appearance: none;
+        }
+        .search-input:focus { border-color: var(--cobalto); }
+        .search-input::placeholder { color: rgba(13,15,61,0.38); }
+        /* remove native search clear on webkit */
+        .search-input::-webkit-search-cancel-button { display: none; }
+        .search-clear {
+          position: absolute;
+          right: 10px;
+          background: none;
+          border: none;
+          font-size: 18px;
+          line-height: 1;
+          color: rgba(13,15,61,0.45);
+          cursor: pointer;
+          padding: 4px;
+          transition: color 0.15s;
+        }
+        .search-clear:hover { color: var(--ink); }
+
+        .emotion-filter {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 6px;
+        }
+        .filter-chip {
+          font-family: var(--font-body);
+          font-size: 11px;
+          font-weight: 500;
+          padding: 4px 11px;
+          border-radius: 99px;
+          border: 1.5px solid rgba(13, 15, 61, 0.16);
+          background: transparent;
+          color: var(--ink);
+          cursor: pointer;
+          transition: background 0.12s, color 0.12s, border-color 0.12s;
+          opacity: 0.75;
+        }
+        .filter-chip:hover { opacity: 1; border-color: rgba(29,43,219,0.35); }
+        .filter-chip-on {
+          background: var(--cobalto);
+          color: var(--crema);
+          border-color: var(--cobalto);
+          opacity: 1;
+        }
+
+        .filter-summary {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 8px;
+        }
+        .filter-count {
+          font-family: var(--font-mono);
+          font-size: 10px;
+          letter-spacing: 0.14em;
+          text-transform: uppercase;
+          color: var(--cobalto);
+          opacity: 0.8;
+        }
+        .filter-reset {
+          background: none;
+          border: none;
+          padding: 0;
+          font-family: var(--font-mono);
+          font-size: 10px;
+          letter-spacing: 0.14em;
+          text-transform: uppercase;
+          color: var(--accent);
+          cursor: pointer;
+          opacity: 0.7;
+          transition: opacity 0.15s;
+        }
+        .filter-reset:hover { opacity: 1; }
       `}</style>
     </>
   );
