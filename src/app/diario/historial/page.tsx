@@ -99,6 +99,27 @@ function matchesEmotionFilter(entry: DiaryEntry, filter: Set<Emotion>): boolean 
   return entry.emotions.some((e) => filter.has(e));
 }
 
+// ─── day sub-grouping ────────────────────────────────────────────────────────
+
+type DayGroup = { key: string; label: string; entries: DiaryEntry[] };
+
+function groupByDayWithin(entries: DiaryEntry[]): DayGroup[] {
+  const map = new Map<string, DiaryEntry[]>();
+  const order: string[] = [];
+  for (const e of entries) {
+    const d = new Date(e.createdAt);
+    const k = `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
+    if (!map.has(k)) { map.set(k, []); order.push(k); }
+    map.get(k)!.push(e);
+  }
+  return order.map((k) => {
+    const dayEntries = map.get(k)!;
+    const d = new Date(dayEntries[0].createdAt);
+    const weekday = WEEKDAYS[d.getDay()];
+    return { key: k, label: `${weekday} ${d.getDate()}`, entries: dayEntries };
+  });
+}
+
 // ─── edit form state ─────────────────────────────────────────────────────────
 
 type EditDraft = { mood: number; emotions: Emotion[]; text: string };
@@ -371,8 +392,16 @@ export default function HistorialPage() {
               {group.label}
               <span className="month-count">{group.entries.length}</span>
             </h2>
+            {groupByDayWithin(group.entries).map((dayGroup) => (
+              <div key={dayGroup.key} className="day-group">
+                <div className="day-header" aria-label={dayGroup.label}>
+                  <span className="day-header-lbl">{dayGroup.label}</span>
+                  {dayGroup.entries.length > 1 && (
+                    <span className="day-entry-count">{dayGroup.entries.length}</span>
+                  )}
+                </div>
             <ul className="entry-list" role="list">
-              {group.entries.map((entry) => {
+              {dayGroup.entries.map((entry) => {
                 const isOpen = expanded.has(entry.id);
                 const isPending = pendingDelete === entry.id;
                 const isEditing = editingId === entry.id;
@@ -538,6 +567,8 @@ export default function HistorialPage() {
                 );
               })}
             </ul>
+              </div>
+            ))}
           </section>
         ))}
 
@@ -593,6 +624,31 @@ export default function HistorialPage() {
 
         /* ── month group ── */
         .month-group { margin-bottom: 32px; }
+        .day-group { margin-bottom: 16px; }
+        .day-header {
+          display: flex;
+          align-items: center;
+          gap: 7px;
+          margin: 0 0 6px 4px;
+        }
+        .day-header-lbl {
+          font-family: var(--font-mono);
+          font-size: 10px;
+          letter-spacing: 0.2em;
+          text-transform: uppercase;
+          color: var(--ink);
+          opacity: 0.4;
+        }
+        .day-entry-count {
+          font-family: var(--font-mono);
+          font-size: 9px;
+          letter-spacing: 0.1em;
+          background: rgba(13, 15, 61, 0.07);
+          color: var(--ink);
+          opacity: 0.6;
+          padding: 1px 6px;
+          border-radius: 99px;
+        }
         .month-label {
           display: flex;
           align-items: baseline;
