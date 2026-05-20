@@ -8,6 +8,7 @@ import { deleteEntry, loadEntries, updateEntry } from '@/lib/storage';
 import type { DiaryEntry, Emotion } from '@/lib/storage';
 import { EMOTIONS } from '@/lib/types';
 import { useToast } from '@/components/toast/ToastProvider';
+import { track } from '@/lib/track';
 
 // ─── helpers ────────────────────────────────────────────────────────────────
 
@@ -118,7 +119,9 @@ export default function HistorialPage() {
   const [emotionFilter, setEmotionFilter] = useState<Set<Emotion>>(new Set());
 
   useEffect(() => {
-    setEntries(loadEntries());
+    const all = loadEntries();
+    setEntries(all);
+    track('historial_opened', { total: all.length });
   }, []);
 
   function toggleExpand(id: string) {
@@ -146,6 +149,7 @@ export default function HistorialPage() {
     setEntries((prev) => prev.filter((e) => e.id !== id));
     setExpanded((prev) => { const n = new Set(prev); n.delete(id); return n; });
     setPendingDelete(null);
+    track('entry_deleted');
     toast.success('Entrada eliminada.');
   }
 
@@ -188,6 +192,7 @@ export default function HistorialPage() {
     setEntries((prev) => prev.map((e) => (e.id === entry.id ? updated : e)));
     setEditingId(null);
     setDraft(null);
+    track('entry_edited');
     toast.success('Entrada actualizada.');
   }
 
@@ -196,6 +201,7 @@ export default function HistorialPage() {
       const next = new Set(prev);
       if (next.has(id)) next.delete(id);
       else next.add(id);
+      track('historial_filter_used', { emotion: id, active: next.has(id) ? 1 : 0 });
       return next;
     });
   }

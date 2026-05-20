@@ -8,6 +8,7 @@ import { loadEntries, streakDays } from '@/lib/storage';
 import type { DiaryEntry } from '@/lib/storage';
 import { EMOTIONS } from '@/lib/types';
 import { useToast } from '@/components/toast/ToastProvider';
+import { track } from '@/lib/track';
 
 const NAME_KEY = 'egoera-diario-name';
 const LANG_KEY = 'egoera-lang';
@@ -245,6 +246,7 @@ export default function TuPage() {
     const md = exportToMarkdown(entries);
     const today = isoDate(new Date());
     triggerDownload(md, `egoera-diario-${today}.md`);
+    track('export_markdown', { entries: entries.length });
     toast.success(`${entries.length} entradas exportadas a .md.`);
   }
 

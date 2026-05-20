@@ -9,6 +9,7 @@ import { saveEntry, makeId } from '@/lib/storage';
 import type { DiaryEntry, Emotion } from '@/lib/storage';
 import { EMOTIONS } from '@/lib/types';
 import { useToast } from '@/components/toast/ToastProvider';
+import { track } from '@/lib/track';
 
 const DEFAULT_MOOD = 7;
 const SEED_FEELING_KEY = 'egoera-seed-feeling';
@@ -74,6 +75,7 @@ export default function DiarioPage() {
     };
     try {
       saveEntry(entry);
+      track('entry_saved', { mood: entry.mood, emotions: entry.emotions.length, has_text: entry.text.length > 0 ? 1 : 0 });
       toast.success('Entrada guardada · escucharte cuenta.');
       router.push('/');
     } catch (err) {

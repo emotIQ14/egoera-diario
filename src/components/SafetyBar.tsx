@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { track } from '@/lib/track';
 
 const CRISIS_PATTERN =
   /\b(suicid|matarme|acabar con|no quiero seguir|no aguanto m[aá]s|hacerme da[ñn]o)\b/i;
@@ -23,6 +24,7 @@ export default function SafetyBar({
     if (match) {
       if (!dismissedForCurrentMatchRef.current) {
         setVisible(true);
+        track('safety_bar_shown');
       }
     } else {
       dismissedForCurrentMatchRef.current = false;

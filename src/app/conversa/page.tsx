@@ -5,6 +5,7 @@ import Screen from '@/components/Screen';
 import TabBar from '@/components/TabBar';
 import SafetyBar from '@/components/SafetyBar';
 import { loadEntries } from '@/lib/storage';
+import { track } from '@/lib/track';
 
 type Message = { role: 'user' | 'assistant'; content: string };
 
@@ -127,6 +128,7 @@ export default function ConversaPage() {
     setMessages(next);
     setInput('');
     setLoading(true);
+    track('conversa_message_sent', { session: sessionN, turn: next.filter((m) => m.role === 'user').length });
 
     try {
       const recentEntries = loadEntries().slice(0, 5);
