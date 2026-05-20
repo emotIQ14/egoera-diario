@@ -260,6 +260,7 @@ export default function DiarioPage() {
   const wordCount = text.trim() ? text.trim().split(/\s+/).filter(Boolean).length : 0;
 
   function toggleEmotion(id: Emotion) {
+    navigator.vibrate?.(8);
     setEmotions((prev) =>
       prev.includes(id) ? prev.filter((e) => e !== id) : [...prev, id]
     );
@@ -285,6 +286,7 @@ export default function DiarioPage() {
     };
     try {
       saveEntry(entry);
+      navigator.vibrate?.([40, 20, 20]);
       clearDraft();
       track('entry_saved', { mood: entry.mood, emotions: entry.emotions.length, has_text: entry.text.length > 0 ? 1 : 0 });
       const totalNow = loadEntries().length;
