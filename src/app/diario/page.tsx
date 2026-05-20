@@ -71,6 +71,37 @@ function emotionLabelDiary(id: string): string {
   return EMOTIONS.find((e) => e.id === id)?.label ?? id;
 }
 
+// ─── Prompts de escritura ────────────────────────────────────────────────────
+
+const WRITING_PROMPTS = [
+  '¿Qué es lo que más me ha costado hoy?',
+  '¿Qué necesito que nadie me ha dado?',
+  '¿De qué me alegra haberme dado cuenta?',
+  '¿Qué emoción he ignorado esta semana?',
+  '¿Qué me digo a mí mismo cuando me equivoco?',
+  '¿Qué me cuesta soltar y por qué?',
+  '¿Cuándo me he sentido más yo mismo hoy?',
+  '¿Qué me genera más ansiedad ahora mismo?',
+  '¿A quién le daría más espacio en mi vida?',
+  '¿Qué estoy evitando pensar?',
+  '¿Qué le diría a la persona que era hace un año?',
+  '¿Cómo me trataría si fuera mi mejor amigo?',
+  '¿Qué quiero recordar de esta semana?',
+  '¿Cuándo fui amable conmigo mismo hoy?',
+  '¿Qué he aprendido sobre mí mismo esta semana?',
+  '¿Qué me hace sentir más ligero cuando lo hago?',
+  '¿Qué me gustaría cambiar de cómo actué hoy?',
+  '¿Qué me cuesta pedir y por qué?',
+  '¿Hay algo que estoy haciendo por los demás y no por mí?',
+  '¿Qué necesito escuchar aunque me cueste?',
+] as const;
+
+function getDailyPrompt(): string {
+  if (typeof window === 'undefined') return WRITING_PROMPTS[0];
+  const dayOfYear = Math.floor(Date.now() / 86_400_000);
+  return WRITING_PROMPTS[dayOfYear % WRITING_PROMPTS.length];
+}
+
 type LastCtx = { mood: number; topEmotion: string | null; daysAgo: number };
 
 type Draft = { mood: number; moodTouched: boolean; emotions: string[]; text: string };
@@ -434,6 +465,17 @@ export default function DiarioPage() {
               }
             }}
           />
+          {!text.trim() && (
+            <button
+              type="button"
+              className="prompt-sugg"
+              onClick={() => setText(getDailyPrompt())}
+              aria-label="Usar este prompt de escritura"
+            >
+              <span className="prompt-icon" aria-hidden="true">✎</span>
+              <span className="prompt-text">{getDailyPrompt()}</span>
+            </button>
+          )}
         </section>
 
         {voiceInterim ? (
@@ -775,6 +817,43 @@ export default function DiarioPage() {
         }
         .diary-text:focus {
           border-color: var(--cobalto);
+        }
+
+        /* === Prompt sugerido === */
+        .prompt-sugg {
+          display: flex;
+          align-items: flex-start;
+          gap: 7px;
+          margin-top: 8px;
+          padding: 9px 12px;
+          background: none;
+          border: 1px dashed rgba(13, 15, 61, 0.2);
+          border-radius: var(--r-md);
+          cursor: pointer;
+          width: 100%;
+          text-align: left;
+          font: inherit;
+          -webkit-tap-highlight-color: transparent;
+          transition: border-color 0.15s, background 0.15s;
+        }
+        .prompt-sugg:hover {
+          border-color: var(--cobalto);
+          background: rgba(29, 43, 219, 0.04);
+        }
+        .prompt-icon {
+          font-size: 12px;
+          opacity: 0.4;
+          flex-shrink: 0;
+          margin-top: 1px;
+          color: var(--ink);
+        }
+        .prompt-text {
+          font-family: var(--font-display);
+          font-style: italic;
+          font-size: 13px;
+          line-height: 1.45;
+          color: var(--ink);
+          opacity: 0.55;
         }
 
         /* === Voice interim === */
