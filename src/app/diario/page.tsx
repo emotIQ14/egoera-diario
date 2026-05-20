@@ -93,7 +93,17 @@ export default function DiarioPage() {
     <>
       <Screen background="cream">
         <header className="hdr">
-          <span className="eyebrow">— 02 · Diario —</span>
+          <div className="hdr-row">
+            <span className="eyebrow">— 02 · Diario —</span>
+            <button
+              type="button"
+              className="historial-link"
+              onClick={() => router.push('/diario/historial')}
+              aria-label="Ver historial de entradas"
+            >
+              Historial →
+            </button>
+          </div>
           <h1 className="s-greet">
             ¿Cómo lo
             <br />
@@ -241,6 +251,30 @@ export default function DiarioPage() {
           flex-direction: column;
           gap: 12px;
           margin-bottom: 28px;
+        }
+        .hdr-row {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+        }
+        .historial-link {
+          background: none;
+          border: none;
+          padding: 0;
+          font-family: var(--font-mono);
+          font-size: 11px;
+          letter-spacing: 0.18em;
+          text-transform: uppercase;
+          color: var(--cobalto);
+          cursor: pointer;
+          opacity: 0.65;
+          transition: opacity 0.15s;
+        }
+        .historial-link:hover { opacity: 1; }
+        .historial-link:focus-visible {
+          outline: 2px solid var(--cobalto);
+          outline-offset: 2px;
+          border-radius: 3px;
         }
 
         /* === Mood hero === */

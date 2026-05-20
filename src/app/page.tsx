@@ -188,7 +188,7 @@ export default function HomePage() {
           <button
             type="button"
             className="teaser-link"
-            onClick={() => router.push('/diario')}
+            onClick={() => router.push('/diario/historial')}
           >
             Ver entrada →
           </button>
