@@ -190,20 +190,63 @@ function weeklyNarrative(
   entries: DiaryEntry[],
   prevWeekEntries: DiaryEntry[],
 ): { headline: string; emphasis: string } {
-  if (entries.length < 3) {
+  if (entries.length === 0) {
     return { headline: 'Empieza a anotar para', emphasis: 'ver patrones' };
   }
+  if (entries.length === 1) {
+    return { headline: 'Un primer vistazo', emphasis: 'a esta semana' };
+  }
+  if (entries.length === 2) {
+    return { headline: 'Dos momentos anotados', emphasis: 'esta semana' };
+  }
+
   const dom = dominantEmotion(entries);
-  if (dom === 'tristeza') {
-    return { headline: 'Esta semana ha pesado', emphasis: 'la tristeza' };
-  }
-  if (dom === 'calma' || dom === 'esperanza') {
-    return { headline: 'Esta semana has sido', emphasis: 'menos ansioso' };
-  }
   const cur = avgMood(entries);
   const prev = avgMood(prevWeekEntries);
-  if (prevWeekEntries.length > 0 && cur > prev) {
-    return { headline: 'Esta semana has sido', emphasis: 'más estable' };
+  const hasPrev = prevWeekEntries.length > 0;
+
+  // Emociones pesadas
+  if (dom === 'tristeza') {
+    return cur >= 5
+      ? { headline: 'Tristeza presente pero', emphasis: 'aún en pie' }
+      : { headline: 'Esta semana ha pesado', emphasis: 'la tristeza' };
+  }
+  if (dom === 'ansiedad') {
+    return { headline: 'Esta semana ha habido', emphasis: 'mucha tensión' };
+  }
+  if (dom === 'rabia') {
+    return { headline: 'Algo te ha irritado', emphasis: 'esta semana' };
+  }
+  if (dom === 'miedo') {
+    return { headline: 'Esta semana algo', emphasis: 'te ha preocupado' };
+  }
+
+  // Emociones positivas / neutras
+  if (dom === 'calma') {
+    return { headline: 'Esta semana has llevado', emphasis: 'bastante calma' };
+  }
+  if (dom === 'esperanza') {
+    return { headline: 'Esta semana has mirado', emphasis: 'hacia adelante' };
+  }
+  if (dom === 'gratitud') {
+    return { headline: 'Esta semana has sentido', emphasis: 'agradecimiento' };
+  }
+
+  // Basado en tendencia de mood
+  if (cur >= 8.5) {
+    return { headline: 'Esta semana ha sido', emphasis: 'de las buenas' };
+  }
+  if (cur <= 3) {
+    return { headline: 'Esta semana', emphasis: 'ha pesado' };
+  }
+  if (hasPrev && cur > prev + 0.5) {
+    return { headline: 'Esta semana has ido', emphasis: 'a mejor' };
+  }
+  if (hasPrev && cur < prev - 0.5) {
+    return { headline: 'Esta semana ha sido', emphasis: 'más difícil' };
+  }
+  if (entries.length >= 6) {
+    return { headline: 'Una semana', emphasis: 'muy activa' };
   }
   return { headline: 'Esta semana has sido', emphasis: 'más tú' };
 }
