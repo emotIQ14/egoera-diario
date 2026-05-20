@@ -175,6 +175,7 @@ export default function HomePage() {
   const [todayStat, setTodayStat] = useState<{ avgMood: number; topEmotion: string | null } | null>(null);
   const [flashback, setFlashback] = useState<{ daysAgo: number; avgMood: number; topEmotion: string | null } | null>(null);
   const [diaryExcerpt, setDiaryExcerpt] = useState<{ date: string; text: string; mood: number } | null>(null);
+  const [weekSummary, setWeekSummary] = useState<{ count: number; avgMood: number; topEmotion: string | null } | null>(null);
 
   // Redirige a /bienvenida si el usuario aún no ha hecho onboarding.
   useEffect(() => {
@@ -237,6 +238,35 @@ export default function HomePage() {
       const dayOfYear = Math.floor(Date.now() / 86_400_000);
       const pick = pastWithText[dayOfYear % pastWithText.length];
       setDiaryExcerpt({ date: pick.createdAt, text: pick.text.trim(), mood: pick.mood });
+    }
+
+    // Resumen semana actual (Lun → hoy), mínimo 3 entradas para mostrar
+    {
+      const monday = new Date(current);
+      const dayIdx = monday.getDay() || 7;
+      monday.setDate(current.getDate() - (dayIdx - 1));
+      monday.setHours(0, 0, 0, 0);
+      const weekEntries = allEntries.filter((e) => {
+        const d = new Date(e.createdAt);
+        d.setHours(0, 0, 0, 0);
+        return d.getTime() >= monday.getTime() && d.getTime() <= todayKey.getTime();
+      });
+      if (weekEntries.length >= 3) {
+        const avg = Math.round(
+          (weekEntries.reduce((s, e) => s + e.mood, 0) / weekEntries.length) * 10
+        ) / 10;
+        const freq = new Map<string, number>();
+        for (const e of weekEntries)
+          for (const emo of e.emotions)
+            freq.set(emo, (freq.get(emo) ?? 0) + 1);
+        const topEmo =
+          freq.size > 0
+            ? emotionLabelHome(
+                Array.from(freq.entries()).sort((a, b) => b[1] - a[1])[0][0]
+              )
+            : null;
+        setWeekSummary({ count: weekEntries.length, avgMood: avg, topEmotion: topEmo });
+      }
     }
 
     const currentStreak = streakDays();
@@ -344,6 +374,12 @@ export default function HomePage() {
         >
           <div className="card-row">
             <span className="pill-num">03 · Patrones</span>
+            {weekSummary ? (
+              <span className="pill-week-stat">
+                {weekSummary.avgMood.toFixed(1)}
+                {weekSummary.topEmotion ? ` · ${weekSummary.topEmotion}` : ''}
+              </span>
+            ) : null}
           </div>
           <h2 className="card-title">
             ¿Qué se
@@ -352,7 +388,11 @@ export default function HomePage() {
             <br />
             semana?
           </h2>
-          <p className="card-sub">Tus emociones, sin interpretarlas por ti.</p>
+          <p className="card-sub">
+            {weekSummary
+              ? `${weekSummary.count} entradas · esta semana`
+              : 'Tus emociones, sin interpretarlas por ti.'}
+          </p>
         </button>
       </section>
 
