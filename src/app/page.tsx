@@ -5,8 +5,28 @@ import { useRouter } from 'next/navigation';
 import Screen from '@/components/Screen';
 import TabBar from '@/components/TabBar';
 import InstallPrompt from '@/components/InstallPrompt';
-import { entriesThisWeek, loadEntries, streakDays } from '@/lib/storage';
+import { entriesThisWeek, loadEntries, streakDays, type DiaryEntry } from '@/lib/storage';
+import { EMOTIONS } from '@/lib/types';
 import { useToast } from '@/components/toast/ToastProvider';
+
+function emotionLabelHome(id: string): string {
+  return EMOTIONS.find((e) => e.id === id)?.label ?? id;
+}
+
+function todayStats(entries: DiaryEntry[]): { avgMood: number; topEmotion: string | null } | null {
+  if (entries.length === 0) return null;
+  const avg = entries.reduce((s, e) => s + e.mood, 0) / entries.length;
+  const freq = new Map<string, number>();
+  for (const e of entries) {
+    for (const emo of e.emotions) freq.set(emo, (freq.get(emo) ?? 0) + 1);
+  }
+  let topEmotion: string | null = null;
+  if (freq.size > 0) {
+    const [topId] = Array.from(freq.entries()).sort((a, b) => b[1] - a[1])[0];
+    topEmotion = emotionLabelHome(topId);
+  }
+  return { avgMood: Math.round(avg * 10) / 10, topEmotion };
+}
 
 const STREAK_MILESTONE_KEY = 'egoera-streak-celebrated';
 const MILESTONES = [3, 7, 14, 30, 60, 100];
@@ -152,6 +172,7 @@ export default function HomePage() {
   const [streak, setStreak] = useState<number>(0);
   const [todayCount, setTodayCount] = useState<number>(0);
   const [weekDots, setWeekDots] = useState<boolean[]>(Array(7).fill(false) as boolean[]);
+  const [todayStat, setTodayStat] = useState<{ avgMood: number; topEmotion: string | null } | null>(null);
 
   // Redirige a /bienvenida si el usuario aún no ha hecho onboarding.
   useEffect(() => {
@@ -172,12 +193,14 @@ export default function HomePage() {
 
     const todayKey = new Date();
     todayKey.setHours(0, 0, 0, 0);
-    const count = loadEntries().filter((e) => {
+    const todayEntries = loadEntries().filter((e) => {
       const d = new Date(e.createdAt);
       d.setHours(0, 0, 0, 0);
       return d.getTime() === todayKey.getTime();
-    }).length;
+    });
+    const count = todayEntries.length;
     setTodayCount(count);
+    setTodayStat(todayStats(todayEntries));
 
     const currentStreak = streakDays();
     setStreak(currentStreak);
@@ -203,6 +226,13 @@ export default function HomePage() {
     if (!now) return 'Buenas';
     return greetingFor(now.getHours());
   }, [now]);
+
+  const streakGoal = useMemo(() => {
+    if (streak <= 0) return null;
+    const next = MILESTONES.find((m) => m > streak);
+    if (!next) return null;
+    return { next, daysLeft: next - streak };
+  }, [streak]);
 
   const weekday = useMemo(() => {
     if (!now) return '';
@@ -305,17 +335,44 @@ export default function HomePage() {
         </button>
       ) : null}
 
-      {todayCount > 0 ? (
-        <p className="teaser">
-          Hoy ya escribiste {todayCount} {todayCount === 1 ? 'vez' : 'veces'}.{' '}
-          <button
-            type="button"
-            className="teaser-link"
-            onClick={() => router.push('/diario/historial')}
-          >
-            Ver entrada →
-          </button>
-        </p>
+      {streakGoal ? (
+        <div className="streak-goal" aria-label={`${streakGoal.daysLeft} días hasta la racha de ${streakGoal.next}`}>
+          <div className="streak-goal-row">
+            <span className="streak-goal-text">
+              {streakGoal.daysLeft === 1 ? 'Mañana' : `${streakGoal.daysLeft} días`} para racha de {streakGoal.next}
+            </span>
+            <span className="streak-goal-num">{streak}/{streakGoal.next}</span>
+          </div>
+          <div className="streak-prog" role="progressbar" aria-valuenow={streak} aria-valuemin={0} aria-valuemax={streakGoal.next}>
+            <div
+              className="streak-prog-fill"
+              style={{ width: `${Math.round((streak / streakGoal.next) * 100)}%` }}
+            />
+          </div>
+        </div>
+      ) : null}
+
+      {todayCount > 0 && todayStat ? (
+        <button
+          type="button"
+          className="today-recap"
+          onClick={() => router.push('/diario/historial')}
+          aria-label="Ver entradas de hoy"
+        >
+          <div className="recap-mood">
+            <span className="recap-num">{todayStat.avgMood.toFixed(1)}</span>
+            <span className="recap-num-sub">hoy</span>
+          </div>
+          <div className="recap-text">
+            <span className="recap-line">
+              {todayCount === 1 ? '1 entrada · hoy' : `${todayCount} entradas · hoy`}
+            </span>
+            {todayStat.topEmotion && (
+              <span className="recap-emo">{todayStat.topEmotion}</span>
+            )}
+          </div>
+          <span className="recap-arrow">→</span>
+        </button>
       ) : null}
 
       <nav className="discover" aria-label="Descubrir más">
@@ -378,28 +435,126 @@ export default function HomePage() {
         .card-title-ink {
           color: var(--ink);
         }
-        .teaser {
-          margin-top: 18px;
+        /* ── streak goal ── */
+        .streak-goal {
+          margin-top: 12px;
+          display: flex;
+          flex-direction: column;
+          gap: 5px;
+        }
+        .streak-goal-row {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 8px;
+        }
+        .streak-goal-text {
           font-family: var(--font-mono);
-          font-size: 12px;
-          letter-spacing: 0.04em;
+          font-size: 10px;
+          letter-spacing: 0.12em;
+          text-transform: uppercase;
           color: var(--ink);
-          opacity: 0.7;
+          opacity: 0.5;
         }
-        .teaser-link {
-          background: none;
-          border: none;
-          padding: 0;
-          font: inherit;
+        .streak-goal-num {
+          font-family: var(--font-mono);
+          font-size: 10px;
+          letter-spacing: 0.1em;
           color: var(--cobalto);
-          cursor: pointer;
-          text-decoration: underline;
-          text-underline-offset: 3px;
+          opacity: 0.65;
         }
-        .teaser-link:focus-visible {
+        .streak-prog {
+          height: 3px;
+          width: 100%;
+          background: rgba(13, 15, 61, 0.1);
+          border-radius: 999px;
+          overflow: hidden;
+        }
+        .streak-prog-fill {
+          height: 100%;
+          background: var(--cobalto);
+          border-radius: 999px;
+          transition: width 0.4s ease;
+        }
+
+        /* ── today recap card ── */
+        .today-recap {
+          margin-top: 18px;
+          display: flex;
+          align-items: center;
+          gap: 14px;
+          width: 100%;
+          padding: 14px 16px;
+          background: rgba(29, 43, 219, 0.06);
+          border: 1px solid rgba(29, 43, 219, 0.14);
+          border-radius: var(--r-md);
+          cursor: pointer;
+          font: inherit;
+          text-align: left;
+          -webkit-tap-highlight-color: transparent;
+          transition: background 0.15s, border-color 0.15s;
+        }
+        .today-recap:hover {
+          background: rgba(29, 43, 219, 0.1);
+          border-color: rgba(29, 43, 219, 0.24);
+        }
+        .today-recap:focus-visible {
           outline: 2px solid var(--cobalto);
           outline-offset: 2px;
-          border-radius: 2px;
+        }
+        .recap-mood {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          flex-shrink: 0;
+          min-width: 44px;
+        }
+        .recap-num {
+          font-family: var(--font-display);
+          font-style: italic;
+          font-weight: 800;
+          font-size: 36px;
+          line-height: 1;
+          letter-spacing: -0.03em;
+          color: var(--cobalto);
+          font-variant-numeric: tabular-nums;
+        }
+        .recap-num-sub {
+          font-family: var(--font-mono);
+          font-size: 9px;
+          letter-spacing: 0.2em;
+          text-transform: uppercase;
+          opacity: 0.45;
+          color: var(--cobalto);
+        }
+        .recap-text {
+          flex: 1;
+          display: flex;
+          flex-direction: column;
+          gap: 3px;
+          min-width: 0;
+        }
+        .recap-line {
+          font-family: var(--font-mono);
+          font-size: 11px;
+          letter-spacing: 0.12em;
+          text-transform: uppercase;
+          color: var(--ink);
+          opacity: 0.65;
+        }
+        .recap-emo {
+          font-family: var(--font-display);
+          font-style: italic;
+          font-weight: 600;
+          font-size: 15px;
+          color: var(--cobalto);
+        }
+        .recap-arrow {
+          font-family: var(--font-mono);
+          font-size: 14px;
+          color: var(--cobalto);
+          opacity: 0.5;
+          flex-shrink: 0;
         }
         .discover {
           margin-top: 32px;

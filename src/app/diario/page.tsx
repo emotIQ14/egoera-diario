@@ -1,11 +1,11 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Screen from '@/components/Screen';
 import TabBar from '@/components/TabBar';
 import SafetyBar from '@/components/SafetyBar';
-import { saveEntry, makeId } from '@/lib/storage';
+import { loadEntries, saveEntry, makeId } from '@/lib/storage';
 import type { DiaryEntry, Emotion } from '@/lib/storage';
 import { EMOTIONS } from '@/lib/types';
 import { useToast } from '@/components/toast/ToastProvider';
@@ -14,6 +14,64 @@ import { track } from '@/lib/track';
 const DEFAULT_MOOD = 7;
 const SEED_FEELING_KEY = 'egoera-seed-feeling';
 const DRAFT_KEY = 'egoera-diario-draft';
+const MILESTONES_KEY = 'egoera-milestones-seen';
+
+const MILESTONE_MSGS: Record<number, string> = {
+  1:   '✦ Primera anotación. Ya empezaste.',
+  7:   '✦ 7 entradas. Estás creando algo tuyo.',
+  10:  '✦ 10 entradas. El hábito ya está aquí.',
+  30:  '✦ 30 entradas. Un mes contigo mismo.',
+  50:  '✦ 50 entradas. Esto ya es tuyo.',
+  100: '✦ 100 entradas. Esto es un diario de verdad.',
+};
+
+function getMilestoneSeen(): Set<number> {
+  try {
+    const raw = window.localStorage.getItem(MILESTONES_KEY);
+    if (!raw) return new Set();
+    return new Set(JSON.parse(raw) as number[]);
+  } catch { return new Set(); }
+}
+
+function markMilestoneSeen(n: number): void {
+  try {
+    const seen = getMilestoneSeen();
+    seen.add(n);
+    window.localStorage.setItem(MILESTONES_KEY, JSON.stringify([...seen]));
+  } catch { /* silencioso */ }
+}
+
+function popMilestoneMsg(count: number): string | null {
+  const msg = MILESTONE_MSGS[count];
+  if (!msg) return null;
+  const seen = getMilestoneSeen();
+  if (seen.has(count)) return null;
+  markMilestoneSeen(count);
+  return msg;
+}
+
+// Custom types for Web Speech API (not fully typed in this TS/DOM lib version)
+interface SpeechRecognitionLike {
+  lang: string;
+  interimResults: boolean;
+  continuous: boolean;
+  maxAlternatives: number;
+  onresult: ((event: SpeechRecognitionResultEvent) => void) | null;
+  onend: (() => void) | null;
+  onerror: ((event: Event) => void) | null;
+  start(): void;
+  stop(): void;
+}
+interface SpeechRecognitionResultEvent {
+  results: { [key: number]: { [key: number]: { transcript: string }; isFinal: boolean }; length: number };
+}
+interface SpeechRecognitionErrorLike { error: string; }
+
+function emotionLabelDiary(id: string): string {
+  return EMOTIONS.find((e) => e.id === id)?.label ?? id;
+}
+
+type LastCtx = { mood: number; topEmotion: string | null; daysAgo: number };
 
 type Draft = { mood: number; moodTouched: boolean; emotions: string[]; text: string };
 
@@ -48,6 +106,10 @@ export default function DiarioPage() {
   const [saving, setSaving] = useState<boolean>(false);
   const [seededFromPeep, setSeededFromPeep] = useState<boolean>(false);
   const [draftRestored, setDraftRestored] = useState<boolean>(false);
+  const [lastCtx, setLastCtx] = useState<LastCtx | null>(null);
+  const [recording, setRecording] = useState<boolean>(false);
+  const [voiceInterim, setVoiceInterim] = useState<string>('');
+  const recognitionRef = useRef<SpeechRecognitionLike | null>(null);
 
   /**
    * Si el usuario llegó vía peep-prompt y escribió algo en la mini-modal
@@ -89,6 +151,30 @@ export default function DiarioPage() {
     setDraftRestored(true);
   }, []);
 
+  // Contexto última entrada (ayer o entre 2-7 días atrás)
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    try {
+      const all = loadEntries();
+      if (all.length === 0) return;
+      const sorted = [...all].sort(
+        (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      );
+      const last = sorted[0];
+      const lastDate = new Date(last.createdAt);
+      lastDate.setHours(0, 0, 0, 0);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const daysAgo = Math.round((today.getTime() - lastDate.getTime()) / 86400000);
+      // 0 = hoy (no mostrar), >7 = demasiado lejos (no relevante)
+      if (daysAgo < 1 || daysAgo > 7) return;
+      const topEmotion = last.emotions.length > 0
+        ? emotionLabelDiary(last.emotions[0])
+        : null;
+      setLastCtx({ mood: last.mood, topEmotion, daysAgo });
+    } catch { /* silencioso */ }
+  }, []);
+
   // Auto-guardar borrador cada vez que cambia el contenido
   useEffect(() => {
     // No guardar el estado inicial vacío
@@ -126,7 +212,13 @@ export default function DiarioPage() {
       saveEntry(entry);
       clearDraft();
       track('entry_saved', { mood: entry.mood, emotions: entry.emotions.length, has_text: entry.text.length > 0 ? 1 : 0 });
-      toast.success('Entrada guardada · escucharte cuenta.');
+      const totalNow = loadEntries().length;
+      const milestone = popMilestoneMsg(totalNow);
+      if (milestone) {
+        toast.success(milestone);
+      } else {
+        toast.success('Entrada guardada · escucharte cuenta.');
+      }
       router.push('/');
     } catch (err) {
       console.error('saveEntry failed', err);
@@ -138,7 +230,71 @@ export default function DiarioPage() {
   }
 
   function handleVoice() {
-    toast.info('La voz llega pronto. Te avisamos cuando esté.');
+    if (typeof window === 'undefined') return;
+
+    // Detener si ya está grabando
+    if (recording) {
+      recognitionRef.current?.stop();
+      setRecording(false);
+      setVoiceInterim('');
+      return;
+    }
+
+    // Detectar soporte de la API
+    type RecognitionCtor = new () => SpeechRecognitionLike;
+    const w = window as unknown as Record<string, unknown>;
+    const RecognitionClass = (w['SpeechRecognition'] || w['webkitSpeechRecognition']) as RecognitionCtor | undefined;
+
+    if (!RecognitionClass) {
+      toast.info('Tu navegador no soporta dictado. Prueba Chrome o Safari.');
+      return;
+    }
+
+    const lang = window.localStorage.getItem('egoera-lang') === 'EU' ? 'eu-ES' : 'es-ES';
+    const recognition = new RecognitionClass();
+    recognition.lang = lang;
+    recognition.interimResults = true;
+    recognition.continuous = false;
+    recognition.maxAlternatives = 1;
+    recognitionRef.current = recognition;
+
+    recognition.onresult = (event: SpeechRecognitionResultEvent) => {
+      const last = event.results[event.results.length - 1];
+      const transcript = last[0].transcript;
+      if (last.isFinal) {
+        setText((prev) => (prev ? `${prev} ${transcript}` : transcript));
+        setVoiceInterim('');
+        setMoodTouched((t) => t); // trigger draft save
+      } else {
+        setVoiceInterim(transcript);
+      }
+    };
+
+    recognition.onend = () => {
+      setRecording(false);
+      setVoiceInterim('');
+      recognitionRef.current = null;
+    };
+
+    recognition.onerror = (event: Event) => {
+      const e = event as unknown as SpeechRecognitionErrorLike;
+      setRecording(false);
+      setVoiceInterim('');
+      if (e.error === 'not-allowed' || e.error === 'service-not-allowed') {
+        toast.error('Permiso de micrófono denegado. Actívalo en ajustes del navegador.');
+      } else if (e.error === 'no-speech') {
+        toast.info('No detecté nada. Habla cuando estés listo y pulsa el micro.');
+      } else if (e.error !== 'aborted') {
+        toast.error('Error de dictado. Inténtalo de nuevo.');
+      }
+    };
+
+    try {
+      recognition.start();
+      setRecording(true);
+    } catch {
+      toast.error('No se pudo iniciar el dictado. Inténtalo de nuevo.');
+    }
   }
 
   return (
@@ -162,6 +318,25 @@ export default function DiarioPage() {
             estás <em>llevando</em>?
           </h1>
         </header>
+
+        {lastCtx ? (
+          <div className="last-ctx" role="status" aria-label="Tu última entrada">
+            <span className="last-ctx-time">
+              {lastCtx.daysAgo === 1 ? 'Ayer' : `Hace ${lastCtx.daysAgo} días`}
+            </span>
+            <span className="last-ctx-sep" aria-hidden>·</span>
+            <span className="last-ctx-mood">
+              {lastCtx.mood}
+              <span aria-hidden>/10</span>
+            </span>
+            {lastCtx.topEmotion && (
+              <>
+                <span className="last-ctx-sep" aria-hidden>·</span>
+                <span className="last-ctx-emo">{lastCtx.topEmotion}</span>
+              </>
+            )}
+          </div>
+        ) : null}
 
         <section className="mood-hero" aria-labelledby="mood-label">
           <div className="mood-num" aria-hidden="true">
@@ -238,7 +413,7 @@ export default function DiarioPage() {
             </div>
           ) : null}
           <label htmlFor="diary-text" className="sr-only">
-            Cuéntalo si quieres
+            Cuéntalo si quieres (Cmd+Enter o Ctrl+Enter para guardar)
           </label>
           <textarea
             id="diary-text"
@@ -252,11 +427,24 @@ export default function DiarioPage() {
                 setSeededFromPeep(false); // ya editó, dejar de mostrarlo como seed
               }
             }}
+            onKeyDown={(e) => {
+              if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+                e.preventDefault();
+                handleSave();
+              }
+            }}
           />
         </section>
 
+        {voiceInterim ? (
+          <div className="voice-interim" role="status" aria-live="polite">
+            <span className="voice-dot" aria-hidden>●</span>
+            <span className="voice-interim-text">{voiceInterim}</span>
+          </div>
+        ) : null}
+
         <section
-          className="m-card m-card-cobalto voice-card"
+          className={`m-card m-card-cobalto voice-card ${recording ? 'voice-card-active' : ''}`}
           role="button"
           tabIndex={0}
           onClick={handleVoice}
@@ -266,12 +454,17 @@ export default function DiarioPage() {
               handleVoice();
             }
           }}
-          aria-label="Cuéntalo en alto, próximamente"
+          aria-label={recording ? 'Detener grabación' : 'Hablar para transcribir'}
+          aria-pressed={recording}
         >
-          <span className="pill-num">Voz · 2 min</span>
-          <h3 className="card-title">«Cuéntalo en alto»</h3>
+          <span className="pill-num">{recording ? '● Grabando…' : 'Voz · 2 min'}</span>
+          <h3 className="card-title">
+            {recording ? '«Escuchándote…»' : '«Cuéntalo en alto»'}
+          </h3>
           <p className="card-sub">
-            Si te cuesta escribir, habla. Lo transcribimos en privado.
+            {recording
+              ? 'Habla tranquilamente. Pulsa para parar.'
+              : 'Si te cuesta escribir, habla. Lo transcribimos en privado.'}
           </p>
         </section>
 
@@ -290,15 +483,24 @@ export default function DiarioPage() {
 
       <button
         type="button"
-        className="voice-fab"
+        className={`voice-fab ${recording ? 'voice-fab-active' : ''}`}
         onClick={handleVoice}
-        aria-label="Grabar voz, próximamente"
+        aria-label={recording ? 'Detener grabación de voz' : 'Iniciar dictado de voz'}
+        aria-pressed={recording}
       >
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-          <rect x="9" y="3" width="6" height="12" rx="3" />
-          <path d="M5 11a7 7 0 0 0 14 0" />
-          <path d="M12 18v3" />
-        </svg>
+        {recording ? (
+          /* Stop icon when recording */
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <rect x="6" y="6" width="12" height="12" rx="2" />
+          </svg>
+        ) : (
+          /* Mic icon when idle */
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <rect x="9" y="3" width="6" height="12" rx="3" />
+            <path d="M5 11a7 7 0 0 0 14 0" />
+            <path d="M12 18v3" />
+          </svg>
+        )}
       </button>
 
       <TabBar />
@@ -345,6 +547,53 @@ export default function DiarioPage() {
           outline: 2px solid var(--cobalto);
           outline-offset: 2px;
           border-radius: 3px;
+        }
+
+        /* === Last context bar === */
+        .last-ctx {
+          display: flex;
+          align-items: center;
+          gap: 7px;
+          padding: 9px 14px;
+          margin-bottom: 14px;
+          background: rgba(13, 15, 61, 0.04);
+          border: 1px solid rgba(13, 15, 61, 0.09);
+          border-radius: var(--r-md);
+          flex-wrap: wrap;
+        }
+        .last-ctx-time {
+          font-family: var(--font-mono);
+          font-size: 10px;
+          letter-spacing: 0.18em;
+          text-transform: uppercase;
+          opacity: 0.45;
+        }
+        .last-ctx-sep {
+          font-size: 10px;
+          opacity: 0.28;
+        }
+        .last-ctx-mood {
+          font-family: var(--font-display);
+          font-style: italic;
+          font-weight: 700;
+          font-size: 18px;
+          line-height: 1;
+          color: var(--cobalto);
+        }
+        .last-ctx-mood span {
+          font-family: var(--font-mono);
+          font-style: normal;
+          font-weight: 400;
+          font-size: 10px;
+          letter-spacing: 0.1em;
+          opacity: 0.55;
+        }
+        .last-ctx-emo {
+          font-family: var(--font-display);
+          font-style: italic;
+          font-size: 14px;
+          color: var(--ink);
+          opacity: 0.6;
         }
 
         /* === Mood hero === */
@@ -528,10 +777,54 @@ export default function DiarioPage() {
           border-color: var(--cobalto);
         }
 
+        /* === Voice interim === */
+        .voice-interim {
+          display: flex;
+          align-items: flex-start;
+          gap: 8px;
+          padding: 10px 14px;
+          margin-bottom: 12px;
+          background: rgba(29, 43, 219, 0.07);
+          border: 1px solid rgba(29, 43, 219, 0.18);
+          border-radius: var(--r-md);
+          animation: fadeIn 0.2s ease;
+        }
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(4px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        .voice-dot {
+          color: var(--cobalto);
+          font-size: 10px;
+          animation: pulse 1s ease-in-out infinite;
+          flex-shrink: 0;
+          margin-top: 2px;
+        }
+        @keyframes pulse {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.3; }
+        }
+        .voice-interim-text {
+          font-family: var(--font-display);
+          font-style: italic;
+          font-size: 15px;
+          line-height: 1.5;
+          color: var(--cobalto);
+          opacity: 0.85;
+        }
+
         /* === Voice card === */
         .voice-card {
           margin: 0 0 24px;
           cursor: pointer;
+        }
+        .voice-card-active {
+          background: var(--accent) !important;
+          animation: voicePulse 1.5s ease-in-out infinite;
+        }
+        @keyframes voicePulse {
+          0%, 100% { box-shadow: 0 6px 20px rgba(29, 43, 219, 0.3); }
+          50% { box-shadow: 0 6px 32px rgba(29, 43, 219, 0.55); }
         }
         .voice-card:focus-visible {
           outline: 2px solid var(--accent);
@@ -572,10 +865,19 @@ export default function DiarioPage() {
           align-items: center;
           justify-content: center;
           z-index: 30;
-          transition: transform 0.15s ease;
+          transition: transform 0.15s ease, background 0.2s ease, box-shadow 0.2s ease;
         }
         .voice-fab:active {
           transform: translateX(-50%) scale(0.94);
+        }
+        .voice-fab-active {
+          background: var(--accent) !important;
+          box-shadow: 0 18px 50px rgba(217, 119, 87, 0.55), 0 4px 12px rgba(13, 15, 61, 0.15) !important;
+          animation: fabPulse 1.4s ease-in-out infinite;
+        }
+        @keyframes fabPulse {
+          0%, 100% { box-shadow: 0 18px 40px rgba(217, 119, 87, 0.45); }
+          50% { box-shadow: 0 18px 60px rgba(217, 119, 87, 0.7); }
         }
         .voice-fab svg {
           width: 30px;

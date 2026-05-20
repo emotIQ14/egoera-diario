@@ -1,10 +1,10 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Screen from '@/components/Screen';
 import TabBar from '@/components/TabBar';
-import { deleteEntry, loadEntries, updateEntry } from '@/lib/storage';
+import { deleteEntry, loadEntries, saveEntry, updateEntry } from '@/lib/storage';
 import type { DiaryEntry, Emotion } from '@/lib/storage';
 import { EMOTIONS } from '@/lib/types';
 import { useToast } from '@/components/toast/ToastProvider';
@@ -117,6 +117,7 @@ export default function HistorialPage() {
   // ── filter state ──
   const [search, setSearch] = useState<string>('');
   const [emotionFilter, setEmotionFilter] = useState<Set<Emotion>>(new Set());
+  const searchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     const all = loadEntries();
@@ -145,12 +146,25 @@ export default function HistorialPage() {
   }
 
   function executeDelete(id: string) {
+    const backup = entries.find((e) => e.id === id) ?? null;
     deleteEntry(id);
     setEntries((prev) => prev.filter((e) => e.id !== id));
     setExpanded((prev) => { const n = new Set(prev); n.delete(id); return n; });
     setPendingDelete(null);
     track('entry_deleted');
-    toast.success('Entrada eliminada.');
+    toast.action('Entrada eliminada.', {
+      actionLabel: 'Deshacer',
+      onAction: () => {
+        if (!backup) return;
+        saveEntry(backup);
+        setEntries((prev) =>
+          [...prev, backup].sort(
+            (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+          )
+        );
+        toast.success('Entrada restaurada.');
+      },
+    });
   }
 
   function cancelDelete() {
@@ -264,7 +278,16 @@ export default function HistorialPage() {
                 className="search-input"
                 placeholder="Buscar en mis entradas…"
                 value={search}
-                onChange={(e) => setSearch(e.target.value)}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  setSearch(val);
+                  if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
+                  if (val.trim()) {
+                    searchTimerRef.current = setTimeout(() => {
+                      track('historial_search_used', { query_length: val.trim().length });
+                    }, 700);
+                  }
+                }}
                 aria-label="Buscar en entradas"
               />
               {search && (
@@ -344,7 +367,10 @@ export default function HistorialPage() {
         {/* ── entry list grouped by month ── */}
         {groups.map((group) => (
           <section key={group.key} className="month-group">
-            <h2 className="month-label">{group.label}</h2>
+            <h2 className="month-label">
+              {group.label}
+              <span className="month-count">{group.entries.length}</span>
+            </h2>
             <ul className="entry-list" role="list">
               {group.entries.map((entry) => {
                 const isOpen = expanded.has(entry.id);
@@ -568,6 +594,9 @@ export default function HistorialPage() {
         /* ── month group ── */
         .month-group { margin-bottom: 32px; }
         .month-label {
+          display: flex;
+          align-items: baseline;
+          gap: 8px;
           font-family: var(--font-mono);
           font-size: 11px;
           letter-spacing: 0.22em;
@@ -575,6 +604,11 @@ export default function HistorialPage() {
           opacity: 0.5;
           margin: 0 0 12px;
           padding: 0 4px;
+        }
+        .month-count {
+          font-size: 9px;
+          letter-spacing: 0.1em;
+          opacity: 0.7;
         }
         .entry-list {
           list-style: none;

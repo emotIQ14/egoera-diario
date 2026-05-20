@@ -35,6 +35,46 @@ function emotionLabel(id: string): string {
   return EMOTIONS.find((e) => e.id === id)?.label ?? id;
 }
 
+// ── sparkline helpers ─────────────────────────────────────────────────────────
+type SparkDot = { dayOffset: number; avgMood: number };
+
+function buildSparkDots(entries: DiaryEntry[], days = 14): SparkDot[] {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const buckets = new Map<number, { sum: number; count: number }>();
+  for (const e of entries) {
+    const d = new Date(e.createdAt);
+    d.setHours(0, 0, 0, 0);
+    const offset = Math.round((today.getTime() - d.getTime()) / 86400000);
+    if (offset < 0 || offset >= days) continue;
+    const prev = buckets.get(offset) ?? { sum: 0, count: 0 };
+    buckets.set(offset, { sum: prev.sum + e.mood, count: prev.count + 1 });
+  }
+  return Array.from(buckets.entries())
+    .map(([dayOffset, { sum, count }]) => ({ dayOffset, avgMood: sum / count }))
+    .sort((a, b) => b.dayOffset - a.dayOffset); // oldest first
+}
+
+const SPARK_W = 280;
+const SPARK_H = 44;
+const SPARK_PAD = 4;
+const SPARK_DAYS = 14;
+
+function buildSparkSvg(dots: SparkDot[]): { line: string; area: string; dotPts: Array<{ cx: number; cy: number; mood: number }> } {
+  if (dots.length < 2) return { line: '', area: '', dotPts: [] };
+  const toX = (offset: number) =>
+    SPARK_PAD + ((SPARK_DAYS - 1 - offset) / (SPARK_DAYS - 1)) * (SPARK_W - SPARK_PAD * 2);
+  const toY = (mood: number) =>
+    SPARK_PAD + (1 - mood / 10) * (SPARK_H - SPARK_PAD * 2);
+  const pts = dots.map((d) => ({ cx: toX(d.dayOffset), cy: toY(d.avgMood), mood: d.avgMood }));
+  const line = pts
+    .map((p, i) => `${i === 0 ? 'M' : 'L'}${p.cx.toFixed(1)},${p.cy.toFixed(1)}`)
+    .join(' ');
+  const baseY = (SPARK_H - SPARK_PAD).toFixed(1);
+  const area = `${line} L${pts[pts.length - 1].cx.toFixed(1)},${baseY} L${pts[0].cx.toFixed(1)},${baseY}Z`;
+  return { line, area, dotPts: pts };
+}
+
 function pad2(n: number): string {
   return n < 10 ? `0${n}` : `${n}`;
 }
@@ -86,8 +126,8 @@ function exportToMarkdown(entries: DiaryEntry[]): string {
   return lines.join('\n');
 }
 
-function triggerDownload(content: string, filename: string): void {
-  const blob = new Blob([content], { type: 'text/markdown;charset=utf-8' });
+function triggerDownload(content: string, filename: string, mimeType = 'text/markdown;charset=utf-8'): void {
+  const blob = new Blob([content], { type: mimeType });
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.href = url;
@@ -157,6 +197,9 @@ export default function TuPage() {
   const [totalEntries, setTotalEntries] = useState<number>(0);
   const [streak, setStreak] = useState<number>(0);
   const [daysSinceFirst, setDaysSinceFirst] = useState<number>(0);
+  const [avgMood, setAvgMood] = useState<number | null>(null);
+  const [topEmotion, setTopEmotion] = useState<string | null>(null);
+  const [sparkDots, setSparkDots] = useState<SparkDot[]>([]);
   const [reminderTime, setReminderTime] = useState<string | null>(null);
   const [hydrated, setHydrated] = useState<boolean>(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -186,6 +229,25 @@ export default function TuPage() {
         Math.round((today.getTime() - first.getTime()) / (1000 * 60 * 60 * 24))
       );
       setDaysSinceFirst(diff);
+
+      // average mood
+      const moodSum = entries.reduce((acc, e) => acc + e.mood, 0);
+      setAvgMood(Math.round((moodSum / entries.length) * 10) / 10);
+
+      // top emotion
+      const freq = new Map<string, number>();
+      for (const e of entries) {
+        for (const emo of e.emotions) {
+          freq.set(emo, (freq.get(emo) ?? 0) + 1);
+        }
+      }
+      if (freq.size > 0) {
+        const [topId] = Array.from(freq.entries()).sort((a, b) => b[1] - a[1])[0];
+        setTopEmotion(emotionLabel(topId));
+      }
+
+      // sparkline
+      setSparkDots(buildSparkDots(entries));
     }
 
     const storedReminder = window.localStorage.getItem(REMINDER_KEY);
@@ -202,6 +264,7 @@ export default function TuPage() {
   }, [editingName]);
 
   const initials = useMemo(() => initialsFrom(name), [name]);
+  const spark = useMemo(() => buildSparkSvg(sparkDots), [sparkDots]);
 
   function startEditingName() {
     setDraftName(name);
@@ -231,7 +294,7 @@ export default function TuPage() {
     window.localStorage.setItem(NAME_KEY, trimmed);
   }
 
-  function handleReminderToggle() {
+  async function handleReminderToggle(): Promise<void> {
     if (reminderTime) {
       // desactivar
       setReminderTime(null);
@@ -243,6 +306,24 @@ export default function TuPage() {
       setReminderTime(defaultTime);
       window.localStorage.setItem(REMINDER_KEY, defaultTime);
       toast.success('Recordatorio activado para las 20:00. Cámbialo abajo si quieres.');
+
+      // Solicitar permiso de notificaciones del navegador
+      if (typeof window !== 'undefined' && 'Notification' in window) {
+        try {
+          if (Notification.permission === 'default') {
+            const perm = await Notification.requestPermission();
+            if (perm === 'granted') {
+              new Notification('Egoera · Recordatorio activado', {
+                body: 'Cuando abras la app a partir de las 20:00 sin haber escrito, te lo recordaremos.',
+              });
+            }
+          } else if (Notification.permission === 'granted') {
+            new Notification('Egoera · Recordatorio activado', {
+              body: `A las ${defaultTime} te esperamos aquí.`,
+            });
+          }
+        } catch { /* silencioso */ }
+      }
     }
   }
 
@@ -269,6 +350,24 @@ export default function TuPage() {
     triggerDownload(md, `egoera-diario-${today}.md`);
     track('export_markdown', { entries: entries.length });
     toast.success(`${entries.length} entradas exportadas a .md.`);
+  }
+
+  function handleExportJson() {
+    const entries = loadEntries();
+    if (entries.length === 0) {
+      toast.info('Aún no hay entradas que exportar. Empieza por una.');
+      return;
+    }
+    const payload = {
+      version: '1',
+      exportedAt: new Date().toISOString(),
+      entries,
+    };
+    const content = JSON.stringify(payload, null, 2);
+    const today = isoDate(new Date());
+    triggerDownload(content, `egoera-diario-${today}.json`, 'application/json;charset=utf-8');
+    track('export_json', { entries: entries.length });
+    toast.success(`${entries.length} entradas exportadas a .json (para backup / importar).`);
   }
 
   function handleImportClick() {
@@ -377,7 +476,52 @@ export default function TuPage() {
             <div className="stat-num">{hydrated ? daysSinceFirst : 0}</div>
             <div className="eyebrow stat-eyebrow">— Desde ello —</div>
           </div>
+          <div className="stat">
+            <div className="stat-num">
+              {hydrated && avgMood !== null ? avgMood.toFixed(1) : '—'}
+            </div>
+            <div className="eyebrow stat-eyebrow">— Ánimo medio —</div>
+          </div>
+          <div className="stat stat-emo-cell">
+            <div className="stat-num stat-num-emo">
+              {hydrated && topEmotion ? topEmotion : '—'}
+            </div>
+            <div className="eyebrow stat-eyebrow">— Más frecuente —</div>
+          </div>
         </div>
+
+        {hydrated && spark.line ? (
+          <div className="sparkline-wrap" aria-label="Curva de ánimo últimos 14 días">
+            <span className="sparkline-eyebrow">— 14 días —</span>
+            <svg
+              className="sparkline-svg"
+              viewBox={`0 0 ${SPARK_W} ${SPARK_H}`}
+              preserveAspectRatio="none"
+              aria-hidden="true"
+            >
+              <path d={spark.area} fill="var(--cobalto)" fillOpacity="0.1" />
+              <path
+                d={spark.line}
+                fill="none"
+                stroke="var(--cobalto)"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              {spark.dotPts.map((p, i) => (
+                <circle
+                  key={i}
+                  cx={p.cx}
+                  cy={p.cy}
+                  r="3.5"
+                  fill="var(--cobalto)"
+                  stroke="var(--crema)"
+                  strokeWidth="1.5"
+                />
+              ))}
+            </svg>
+          </div>
+        ) : null}
       </header>
 
       <section className="block" aria-labelledby="acc-eyebrow">
@@ -458,6 +602,12 @@ export default function TuPage() {
             <button type="button" className="link-card" onClick={handleExport}>
               <span className="link-label">Exportar a Markdown</span>
               <span className="link-value">.md</span>
+            </button>
+          </li>
+          <li>
+            <button type="button" className="link-card" onClick={handleExportJson}>
+              <span className="link-label">Exportar a JSON</span>
+              <span className="link-value">.json</span>
             </button>
           </li>
           <li>
@@ -673,6 +823,19 @@ export default function TuPage() {
           color: var(--cobalto);
           font-variant-numeric: tabular-nums;
         }
+        .stat-num-emo {
+          font-family: var(--font-display);
+          font-style: italic;
+          font-weight: 700;
+          font-size: 22px;
+          line-height: 1.1;
+          letter-spacing: -0.01em;
+          color: var(--cobalto);
+          text-transform: lowercase;
+        }
+        .stat-emo-cell {
+          grid-column: span 2;
+        }
         .stat-eyebrow {
           font-size: 9.5px;
           opacity: 0.55;
@@ -874,6 +1037,28 @@ export default function TuPage() {
           color: var(--ink);
           opacity: 0.5;
           text-align: center;
+        }
+
+        /* ── sparkline ── */
+        .sparkline-wrap {
+          width: 100%;
+          margin-top: 16px;
+          display: flex;
+          flex-direction: column;
+          gap: 6px;
+        }
+        .sparkline-eyebrow {
+          font-family: var(--font-mono);
+          font-size: 9px;
+          letter-spacing: 0.2em;
+          text-transform: uppercase;
+          opacity: 0.4;
+        }
+        .sparkline-svg {
+          width: 100%;
+          height: 44px;
+          display: block;
+          overflow: visible;
         }
 
         /* ── reminder ── */

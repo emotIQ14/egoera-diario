@@ -5,7 +5,38 @@ import Screen from '@/components/Screen';
 import TabBar from '@/components/TabBar';
 import SafetyBar from '@/components/SafetyBar';
 import { loadEntries } from '@/lib/storage';
+import { EMOTIONS } from '@/lib/types';
 import { track } from '@/lib/track';
+
+function emotionLabelC(id: string): string {
+  return EMOTIONS.find((e) => e.id === id)?.label ?? id;
+}
+
+type TodayCtx = { mood: number; topEmotion: string | null };
+
+function getTodayEntry(): TodayCtx | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const all = loadEntries();
+    const todayEntries = all
+      .filter((e) => {
+        const d = new Date(e.createdAt);
+        d.setHours(0, 0, 0, 0);
+        return d.getTime() === today.getTime();
+      })
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    if (todayEntries.length === 0) return null;
+    const latest = todayEntries[0];
+    const topEmotion = latest.emotions.length > 0
+      ? emotionLabelC(latest.emotions[0])
+      : null;
+    return { mood: latest.mood, topEmotion };
+  } catch {
+    return null;
+  }
+}
 
 type Message = { role: 'user' | 'assistant'; content: string };
 
@@ -40,8 +71,17 @@ function pickSubtitle(): Subtitle {
   return pool[Math.floor(Math.random() * pool.length)];
 }
 
-function buildInitialMessage(name?: string): Message {
+function buildInitialMessage(name?: string, todayCtx?: TodayCtx | null): Message {
   const greeting = name && name.trim() ? `Hola, ${name.trim()}` : 'Hola';
+
+  if (todayCtx) {
+    const emoText = todayCtx.topEmotion ? ` y sientes ${todayCtx.topEmotion}` : '';
+    return {
+      role: 'assistant',
+      content: `${greeting}. Hoy anotaste un ${todayCtx.mood}/10${emoText}. ¿Qué hay detrás?`,
+    };
+  }
+
   return {
     role: 'assistant',
     content: `${greeting}. ¿Cómo estás llegando aquí hoy?`,
@@ -115,7 +155,8 @@ export default function ConversaPage() {
     const storedName = typeof window !== 'undefined'
       ? (window.localStorage.getItem(NAME_KEY) ?? undefined)
       : undefined;
-    const personalised = buildInitialMessage(storedName ?? undefined);
+    const todayCtx = getTodayEntry();
+    const personalised = buildInitialMessage(storedName ?? undefined, todayCtx);
     if (
       loaded.length === 1 &&
       loaded[0].role === 'assistant' &&
@@ -198,7 +239,8 @@ export default function ConversaPage() {
     const storedName = typeof window !== 'undefined'
       ? (window.localStorage.getItem(NAME_KEY) ?? undefined)
       : undefined;
-    setMessages([buildInitialMessage(storedName ?? undefined)]);
+    const todayCtx = getTodayEntry();
+    setMessages([buildInitialMessage(storedName ?? undefined, todayCtx)]);
     bumpSessionCount();
     setSessionN(loadSessionCount());
   }

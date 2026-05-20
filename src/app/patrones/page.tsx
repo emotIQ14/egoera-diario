@@ -5,6 +5,7 @@ import Link from 'next/link';
 import Screen from '@/components/Screen';
 import TabBar from '@/components/TabBar';
 import { loadEntries, type DiaryEntry, type Emotion } from '@/lib/storage';
+import { EMOTIONS } from '@/lib/types';
 
 const MONTHS_SHORT = [
   'ene',
@@ -207,6 +208,8 @@ function entriesLast30Days(all: DiaryEntry[], now: Date = new Date()): DiaryEntr
 
 type DayMood = { day: number; mood: number; date: Date };
 
+type HeatCell = { date: Date; avgMood: number | null; count: number; isFuture: boolean };
+
 function moodByDayLast30(entries: DiaryEntry[], now: Date = new Date()): DayMood[] {
   const start = new Date(now);
   start.setDate(now.getDate() - 29);
@@ -311,10 +314,85 @@ function fmtDateShort(d: Date): string {
   return `${pad2(d.getDate())} ${MONTHS_SHORT[d.getMonth()]}`;
 }
 
+function buildHeatmap(entries: DiaryEntry[]): HeatCell[] {
+  const now = new Date();
+  now.setHours(0, 0, 0, 0);
+  // Anchor on the most recent Monday, go back 12 weeks → 13 full weeks
+  const weekDay = now.getDay() || 7;
+  const thisMonday = new Date(now);
+  thisMonday.setDate(now.getDate() - (weekDay - 1));
+  const start = new Date(thisMonday);
+  start.setDate(thisMonday.getDate() - 12 * 7);
+  // mood map: dateKey → {sum, count}
+  const moodMap = new Map<string, { sum: number; count: number }>();
+  for (const e of entries) {
+    const d = new Date(e.createdAt);
+    const key = `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
+    const prev = moodMap.get(key);
+    if (prev) { prev.sum += e.mood; prev.count += 1; }
+    else moodMap.set(key, { sum: e.mood, count: 1 });
+  }
+  const cells: HeatCell[] = [];
+  for (let i = 0; i < 91; i++) {
+    const d = new Date(start);
+    d.setDate(start.getDate() + i);
+    const key = `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
+    const data = moodMap.get(key);
+    cells.push({
+      date: new Date(d),
+      avgMood: data ? data.sum / data.count : null,
+      count: data?.count ?? 0,
+      isFuture: d > now,
+    });
+  }
+  return cells;
+}
+
+function heatColor(avgMood: number | null, isFuture: boolean): string {
+  if (isFuture) return 'rgba(13,15,61,0.04)';
+  if (avgMood === null) return 'rgba(13,15,61,0.08)';
+  if (avgMood >= 8) return 'rgba(29,43,219,0.72)';
+  if (avgMood >= 6.5) return 'rgba(29,43,219,0.36)';
+  if (avgMood >= 5) return 'rgba(244,200,66,0.78)';
+  if (avgMood >= 3) return 'rgba(217,119,87,0.55)';
+  return 'rgba(217,119,87,0.85)';
+}
+
+type EmoCorr = { id: Emotion; label: string; avgMood: number; count: number };
+
+function emotionCorrelations(entries: DiaryEntry[]): EmoCorr[] {
+  const map = new Map<string, { sum: number; count: number; label: string }>();
+  for (const entry of entries) {
+    for (const emo of entry.emotions) {
+      const label = EMOTIONS.find((e) => e.id === emo)?.label ?? emo;
+      const prev = map.get(emo);
+      if (prev) { prev.sum += entry.mood; prev.count += 1; }
+      else map.set(emo, { sum: entry.mood, count: 1, label });
+    }
+  }
+  return Array.from(map.entries())
+    .map(([id, { sum, count, label }]) => ({
+      id: id as Emotion,
+      label,
+      avgMood: Math.round((sum / count) * 10) / 10,
+      count,
+    }))
+    .filter((e) => e.count >= 2)
+    .sort((a, b) => b.avgMood - a.avgMood)
+    .slice(0, 7);
+}
+
+function corrBarColor(avgMood: number): string {
+  if (avgMood >= 7.5) return 'rgba(29,43,219,0.72)';
+  if (avgMood >= 5) return 'rgba(244,200,66,0.9)';
+  return 'rgba(217,119,87,0.78)';
+}
+
 type State = {
   entries: DiaryEntry[];
   prev: DiaryEntry[];
   monthEntries: DiaryEntry[];
+  allEntries: DiaryEntry[];
   totalEntries: number;
   consecutiveDays: number;
   monday: Date;
@@ -357,6 +435,7 @@ export default function PatronesPage() {
       entries: entriesInRange(all, monday, sunday),
       prev: entriesInRange(all, prevMonday, prevSunday),
       monthEntries: entriesLast30Days(all, now),
+      allEntries: all,
       totalEntries: all.length,
       consecutiveDays: consecutiveDaysStreak(all, now),
       monday,
@@ -390,6 +469,15 @@ export default function PatronesPage() {
     return formatRange(state.monday, state.sunday);
   }, [state]);
 
+  const moodDelta = useMemo(() => {
+    if (!state || state.entries.length === 0 || state.prev.length === 0) return null;
+    const cur = avgMood(state.entries);
+    const prev = avgMood(state.prev);
+    const delta = Math.round((cur - prev) * 10) / 10;
+    if (Math.abs(delta) < 0.2) return null; // too small to be meaningful
+    return { delta, up: delta > 0 };
+  }, [state]);
+
   const monthCurve = useMemo(() => {
     if (!state) {
       return {
@@ -418,6 +506,31 @@ export default function PatronesPage() {
       realCount: real.length,
     };
   }, [state]);
+
+  const emoCorr = useMemo<EmoCorr[]>(() => {
+    if (!state) return [];
+    return emotionCorrelations(state.allEntries);
+  }, [state]);
+
+  const heatCells = useMemo<HeatCell[]>(() => {
+    if (!state) return [];
+    return buildHeatmap(state.allEntries);
+  }, [state]);
+
+  const heatMonths = useMemo(() => {
+    const labels: { label: string; col: number }[] = [];
+    let lastMonth = -1;
+    for (let col = 0; col < 13; col++) {
+      const cell = heatCells[col * 7];
+      if (!cell) continue;
+      const m = cell.date.getMonth();
+      if (m !== lastMonth) {
+        labels.push({ label: MONTHS_SHORT[m], col });
+        lastMonth = m;
+      }
+    }
+    return labels;
+  }, [heatCells]);
 
   // Estado inicial (pre-hidratación) → render mínimo para evitar mismatch.
   if (!state) {
@@ -487,6 +600,11 @@ export default function PatronesPage() {
         </h1>
         {showVeteranBadge ? (
           <span className="veteran-badge">Veterano · 30 días en Egoera</span>
+        ) : null}
+        {moodDelta ? (
+          <span className={`delta-pill ${moodDelta.up ? 'delta-up' : 'delta-down'}`} aria-label={`Variación respecto a la semana anterior: ${moodDelta.up ? '+' : ''}${moodDelta.delta}`}>
+            {moodDelta.up ? '↑' : '↓'} {moodDelta.up ? '+' : ''}{moodDelta.delta} vs semana pasada
+          </span>
         ) : null}
         <p className="s-date">{dateLine}</p>
       </header>
@@ -636,6 +754,92 @@ export default function PatronesPage() {
           </div>
         )}
       </section>
+
+      {heatCells.length > 0 ? (
+        <section className="heat-section" aria-label="Historial de estado de ánimo — últimos 91 días">
+          <p className="eyebrow eyebrow-section">— HISTORIAL 91 DÍAS —</p>
+          <div className="heat-layout">
+            {/* Day labels col */}
+            <div className="heat-days-col" aria-hidden="true">
+              {['L', '', 'X', '', 'V', '', 'D'].map((lbl, i) => (
+                <span key={i} className="heat-day-lbl">{lbl}</span>
+              ))}
+            </div>
+            {/* Grid + months */}
+            <div className="heat-right">
+              {/* Month labels */}
+              <div className="heat-months" aria-hidden="true">
+                {Array.from({ length: 13 }, (_, col) => {
+                  const found = heatMonths.find((m) => m.col === col);
+                  return (
+                    <span key={col} className="heat-month-lbl">{found ? found.label : ''}</span>
+                  );
+                })}
+              </div>
+              {/* Cells */}
+              <div className="heat-grid" role="img" aria-label="Mapa de calor de estado de ánimo">
+                {heatCells.map((cell, i) => (
+                  <div
+                    key={i}
+                    className={`heat-cell${cell.isFuture ? ' heat-cell-future' : ''}`}
+                    style={{ background: heatColor(cell.avgMood, cell.isFuture) }}
+                    title={
+                      cell.isFuture
+                        ? ''
+                        : cell.avgMood !== null
+                          ? `${fmtDateShort(cell.date)} · ${cell.avgMood.toFixed(1)}`
+                          : fmtDateShort(cell.date)
+                    }
+                  />
+                ))}
+              </div>
+              {/* Legend */}
+              <div className="heat-legend" aria-label="Leyenda: bajo a alto">
+                <span className="heat-legend-lbl">bajo</span>
+                {[
+                  'rgba(217,119,87,0.85)',
+                  'rgba(217,119,87,0.55)',
+                  'rgba(244,200,66,0.78)',
+                  'rgba(29,43,219,0.36)',
+                  'rgba(29,43,219,0.72)',
+                ].map((bg, i) => (
+                  <span key={i} className="heat-legend-cell" style={{ background: bg }} />
+                ))}
+                <span className="heat-legend-lbl">alto</span>
+              </div>
+            </div>
+          </div>
+        </section>
+      ) : null}
+
+      {emoCorr.length >= 2 ? (
+        <section className="emo-corr-section" aria-label="Correlación entre emociones y estado de ánimo">
+          <p className="eyebrow eyebrow-section">— EMOCIÓN &amp; ÁNIMO —</p>
+          <h2 className="sec-big sec-big-sm">
+            Cómo te va cuando
+            <br />
+            <em>sientes cada cosa</em>.
+          </h2>
+          <div className="corr-list">
+            {emoCorr.map((c) => (
+              <div key={c.id} className="corr-row" aria-label={`${c.label}: ánimo medio ${c.avgMood}`}>
+                <span className="corr-label">{c.label}</span>
+                <div className="corr-bar-track" aria-hidden="true">
+                  <div
+                    className="corr-bar"
+                    style={{
+                      width: `${Math.round((c.avgMood / 10) * 100)}%`,
+                      background: corrBarColor(c.avgMood),
+                    }}
+                  />
+                </div>
+                <span className="corr-num">{c.avgMood.toFixed(1)}</span>
+              </div>
+            ))}
+          </div>
+          <p className="corr-hint">Basado en tus últimas {state.allEntries.length} entradas</p>
+        </section>
+      ) : null}
 
       <section className="insights" aria-label="Insights de la semana">
         <article className="insight insight-cobalto">
@@ -841,6 +1045,24 @@ export default function PatronesPage() {
           margin-top: 8px;
           margin-bottom: 4px;
         }
+        .delta-pill {
+          display: inline-block;
+          font-family: var(--font-mono);
+          font-size: 11px;
+          letter-spacing: 0.1em;
+          padding: 4px 10px;
+          border-radius: 999px;
+          margin-top: 6px;
+          margin-bottom: 2px;
+        }
+        .delta-up {
+          background: rgba(29, 43, 219, 0.1);
+          color: var(--cobalto);
+        }
+        .delta-down {
+          background: rgba(217, 119, 87, 0.12);
+          color: var(--accent-deep);
+        }
 
         .month-curve {
           margin-top: 26px;
@@ -896,6 +1118,157 @@ export default function PatronesPage() {
           margin-bottom: 14px;
         }
         .curve-cta {
+          display: inline-block;
+        }
+
+        /* ── Emoción ↔ Ánimo correlations ── */
+        .emo-corr-section {
+          margin-top: 26px;
+          background: var(--crema);
+          border: 1px solid rgba(13, 15, 61, 0.1);
+          border-radius: var(--r-md);
+          padding: 18px 16px 14px;
+        }
+        .corr-list {
+          display: flex;
+          flex-direction: column;
+          gap: 9px;
+          margin-bottom: 10px;
+        }
+        .corr-row {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+        }
+        .corr-label {
+          font-family: var(--font-body);
+          font-size: 12px;
+          font-weight: 500;
+          color: var(--ink);
+          width: 72px;
+          flex-shrink: 0;
+          text-transform: capitalize;
+        }
+        .corr-bar-track {
+          flex: 1;
+          height: 8px;
+          background: rgba(13, 15, 61, 0.07);
+          border-radius: 99px;
+          overflow: hidden;
+        }
+        .corr-bar {
+          height: 100%;
+          border-radius: 99px;
+          transition: width 0.4s ease;
+        }
+        .corr-num {
+          font-family: var(--font-mono);
+          font-size: 11px;
+          letter-spacing: 0.06em;
+          color: var(--ink);
+          opacity: 0.7;
+          width: 28px;
+          text-align: right;
+          flex-shrink: 0;
+        }
+        .corr-hint {
+          font-family: var(--font-mono);
+          font-size: 10px;
+          letter-spacing: 0.14em;
+          text-transform: uppercase;
+          opacity: 0.45;
+          color: var(--ink);
+        }
+
+        /* ── Heatmap 91 días ── */
+        .heat-section {
+          margin-top: 26px;
+          background: var(--crema);
+          border: 1px solid rgba(13, 15, 61, 0.1);
+          border-radius: var(--r-md);
+          padding: 18px 16px 14px;
+        }
+        .heat-layout {
+          display: flex;
+          align-items: flex-start;
+          gap: 5px;
+        }
+        .heat-days-col {
+          display: flex;
+          flex-direction: column;
+          gap: 2.5px;
+          margin-top: 18px; /* align with cells below month row */
+          flex-shrink: 0;
+        }
+        .heat-day-lbl {
+          font-family: var(--font-mono);
+          font-size: 9px;
+          letter-spacing: 0.08em;
+          opacity: 0.5;
+          color: var(--ink);
+          height: 22px;
+          display: flex;
+          align-items: center;
+          width: 10px;
+        }
+        .heat-right {
+          flex: 1;
+          min-width: 0;
+        }
+        .heat-months {
+          display: grid;
+          grid-template-columns: repeat(13, 22px);
+          gap: 2.5px;
+          margin-bottom: 3px;
+        }
+        .heat-month-lbl {
+          font-family: var(--font-mono);
+          font-size: 9px;
+          letter-spacing: 0.1em;
+          text-transform: uppercase;
+          opacity: 0.55;
+          color: var(--ink);
+          height: 14px;
+          display: flex;
+          align-items: center;
+        }
+        .heat-grid {
+          display: grid;
+          grid-template-rows: repeat(7, 22px);
+          grid-auto-flow: column;
+          grid-auto-columns: 22px;
+          gap: 2.5px;
+        }
+        .heat-cell {
+          width: 22px;
+          height: 22px;
+          border-radius: 3px;
+          transition: opacity 0.15s;
+        }
+        .heat-cell:not(.heat-cell-future):hover {
+          opacity: 0.8;
+        }
+        .heat-cell-future {
+          cursor: default;
+        }
+        .heat-legend {
+          display: flex;
+          align-items: center;
+          gap: 3px;
+          margin-top: 8px;
+        }
+        .heat-legend-lbl {
+          font-family: var(--font-mono);
+          font-size: 9px;
+          letter-spacing: 0.08em;
+          opacity: 0.5;
+          color: var(--ink);
+          margin: 0 2px;
+        }
+        .heat-legend-cell {
+          width: 12px;
+          height: 12px;
+          border-radius: 2px;
           display: inline-block;
         }
 
