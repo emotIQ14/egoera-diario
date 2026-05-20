@@ -174,6 +174,7 @@ export default function HomePage() {
   const [weekDots, setWeekDots] = useState<boolean[]>(Array(7).fill(false) as boolean[]);
   const [todayStat, setTodayStat] = useState<{ avgMood: number; topEmotion: string | null } | null>(null);
   const [flashback, setFlashback] = useState<{ daysAgo: number; avgMood: number; topEmotion: string | null } | null>(null);
+  const [diaryExcerpt, setDiaryExcerpt] = useState<{ date: string; text: string; mood: number } | null>(null);
 
   // Redirige a /bienvenida si el usuario aún no ha hecho onboarding.
   useEffect(() => {
@@ -224,6 +225,18 @@ export default function HomePage() {
         setFlashback({ daysAgo, avgMood: avg, topEmotion: topEmo });
         break;
       }
+    }
+
+    // Daily excerpt: una entrada pasada con texto, semilla = día del año (mismo todo el día)
+    const pastWithText = allEntries.filter((e) => {
+      const d = new Date(e.createdAt);
+      d.setHours(0, 0, 0, 0);
+      return d.getTime() < todayKey.getTime() && e.text.trim().length > 30;
+    });
+    if (pastWithText.length > 0) {
+      const dayOfYear = Math.floor(Date.now() / 86_400_000);
+      const pick = pastWithText[dayOfYear % pastWithText.length];
+      setDiaryExcerpt({ date: pick.createdAt, text: pick.text.trim(), mood: pick.mood });
     }
 
     const currentStreak = streakDays();
@@ -434,6 +447,32 @@ export default function HomePage() {
             </>
           )}
           <span className="flashback-arrow">→</span>
+        </button>
+      ) : null}
+
+      {diaryExcerpt ? (
+        <button
+          type="button"
+          className="excerpt-card"
+          onClick={() => router.push('/diario/historial')}
+          aria-label="Ver esta entrada en el historial"
+        >
+          <span className="excerpt-eyebrow">— De tu diario —</span>
+          <p className="excerpt-text">
+            &ldquo;{diaryExcerpt.text.length > 110
+              ? `${diaryExcerpt.text.slice(0, 110)}…`
+              : diaryExcerpt.text}&rdquo;
+          </p>
+          <div className="excerpt-meta">
+            <span className="excerpt-date">
+              {new Date(diaryExcerpt.date).toLocaleDateString('es-ES', {
+                day: 'numeric',
+                month: 'long',
+                year: 'numeric',
+              })}
+            </span>
+            <span className="excerpt-mood">{diaryExcerpt.mood}/10</span>
+          </div>
         </button>
       ) : null}
 
@@ -809,6 +848,72 @@ export default function HomePage() {
         .today .day-lbl {
           opacity: 0.75;
           color: var(--cobalto);
+        }
+
+        /* ── diary excerpt card ── */
+        .excerpt-card {
+          margin-top: 14px;
+          display: flex;
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 8px;
+          width: 100%;
+          padding: 16px 18px;
+          background: rgba(255, 255, 255, 0.5);
+          border: 1px solid rgba(13, 15, 61, 0.1);
+          border-radius: var(--r-md);
+          cursor: pointer;
+          font: inherit;
+          text-align: left;
+          -webkit-tap-highlight-color: transparent;
+          transition: background 0.15s, border-color 0.15s;
+        }
+        .excerpt-card:hover {
+          background: rgba(255, 255, 255, 0.75);
+          border-color: rgba(13, 15, 61, 0.18);
+        }
+        .excerpt-card:focus-visible {
+          outline: 2px solid var(--cobalto);
+          outline-offset: 2px;
+        }
+        .excerpt-eyebrow {
+          font-family: var(--font-mono);
+          font-size: 9px;
+          letter-spacing: 0.22em;
+          text-transform: uppercase;
+          color: var(--ink);
+          opacity: 0.4;
+        }
+        .excerpt-text {
+          font-family: var(--font-display);
+          font-style: italic;
+          font-size: 15px;
+          line-height: 1.55;
+          color: var(--ink);
+          margin: 0;
+          opacity: 0.82;
+        }
+        .excerpt-meta {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          width: 100%;
+          justify-content: space-between;
+        }
+        .excerpt-date {
+          font-family: var(--font-mono);
+          font-size: 10px;
+          letter-spacing: 0.1em;
+          text-transform: capitalize;
+          color: var(--ink);
+          opacity: 0.4;
+        }
+        .excerpt-mood {
+          font-family: var(--font-mono);
+          font-size: 10px;
+          letter-spacing: 0.1em;
+          color: var(--cobalto);
+          opacity: 0.6;
         }
       `}</style>
     </Screen>
