@@ -13,6 +13,30 @@ import { track } from '@/lib/track';
 
 const DEFAULT_MOOD = 7;
 const SEED_FEELING_KEY = 'egoera-seed-feeling';
+const DRAFT_KEY = 'egoera-diario-draft';
+
+type Draft = { mood: number; moodTouched: boolean; emotions: string[]; text: string };
+
+function saveDraft(draft: Draft): void {
+  if (typeof window === 'undefined') return;
+  try {
+    window.localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
+  } catch { /* silencioso */ }
+}
+
+function loadDraft(): Draft | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    const raw = window.localStorage.getItem(DRAFT_KEY);
+    if (!raw) return null;
+    return JSON.parse(raw) as Draft;
+  } catch { return null; }
+}
+
+function clearDraft(): void {
+  if (typeof window === 'undefined') return;
+  window.localStorage.removeItem(DRAFT_KEY);
+}
 
 export default function DiarioPage() {
   const router = useRouter();
@@ -23,6 +47,7 @@ export default function DiarioPage() {
   const [text, setText] = useState<string>('');
   const [saving, setSaving] = useState<boolean>(false);
   const [seededFromPeep, setSeededFromPeep] = useState<boolean>(false);
+  const [draftRestored, setDraftRestored] = useState<boolean>(false);
 
   /**
    * Si el usuario llegó vía peep-prompt y escribió algo en la mini-modal
@@ -46,6 +71,30 @@ export default function DiarioPage() {
       // JSON corrupto u otro fallo: ignorar
     }
   }, []);
+
+  // Restaurar borrador (después del seed, para que el seed tenga prioridad)
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    // Si ya hay un seed del peep, no restauramos borrador (el seed tiene preferencia)
+    const hasSeed = !!window.localStorage.getItem(SEED_FEELING_KEY);
+    if (hasSeed) return;
+    const draft = loadDraft();
+    if (!draft) return;
+    // Solo restaurar si hay contenido real
+    if (!draft.moodTouched && draft.emotions.length === 0 && !draft.text.trim()) return;
+    setMood(draft.mood);
+    setMoodTouched(draft.moodTouched);
+    setEmotions(draft.emotions as Emotion[]);
+    setText(draft.text);
+    setDraftRestored(true);
+  }, []);
+
+  // Auto-guardar borrador cada vez que cambia el contenido
+  useEffect(() => {
+    // No guardar el estado inicial vacío
+    if (!moodTouched && emotions.length === 0 && !text.trim()) return;
+    saveDraft({ mood, moodTouched, emotions, text });
+  }, [mood, moodTouched, emotions, text]);
 
   const canSave = moodTouched || emotions.length > 0 || text.trim().length > 0;
 
@@ -75,6 +124,7 @@ export default function DiarioPage() {
     };
     try {
       saveEntry(entry);
+      clearDraft();
       track('entry_saved', { mood: entry.mood, emotions: entry.emotions.length, has_text: entry.text.length > 0 ? 1 : 0 });
       toast.success('Entrada guardada · escucharte cuenta.');
       router.push('/');
@@ -167,6 +217,10 @@ export default function DiarioPage() {
             <p className="seed-note" aria-live="polite">
               — Lo que escribiste en el artículo está abajo. Puedes editarlo, borrarlo
               o sumar a partir de ahí.
+            </p>
+          ) : draftRestored ? (
+            <p className="seed-note draft-note" aria-live="polite">
+              — Tenías un borrador guardado. Lo he recuperado.
             </p>
           ) : null}
           <label htmlFor="diary-text" className="sr-only">
@@ -418,6 +472,12 @@ export default function DiarioPage() {
           min-height: 88px;
           outline: none;
           transition: border-color 0.15s ease, background 0.15s ease;
+        }
+        .draft-note {
+          background: rgba(13, 15, 61, 0.04);
+          border-left-color: rgba(13, 15, 61, 0.3);
+          color: var(--ink);
+          opacity: 0.65;
         }
         .diary-text.seeded {
           background: rgba(29, 43, 219, 0.04);
