@@ -6,6 +6,36 @@ import Screen from '@/components/Screen';
 import TabBar from '@/components/TabBar';
 import InstallPrompt from '@/components/InstallPrompt';
 import { entriesThisWeek, loadEntries, streakDays } from '@/lib/storage';
+import { useToast } from '@/components/toast/ToastProvider';
+
+const STREAK_MILESTONE_KEY = 'egoera-streak-celebrated';
+const MILESTONES = [3, 7, 14, 30, 60, 100];
+
+function getNextMilestone(streak: number): number | null {
+  return MILESTONES.find((m) => m <= streak) ?? null;
+}
+
+function celebrateMilestone(streak: number, toast: { success: (msg: string) => void }): void {
+  if (typeof window === 'undefined' || streak <= 0) return;
+  try {
+    const raw = window.localStorage.getItem(STREAK_MILESTONE_KEY);
+    const celebrated = raw ? (JSON.parse(raw) as number) : 0;
+    const milestone = getNextMilestone(streak);
+    if (!milestone || celebrated >= milestone) return;
+    window.localStorage.setItem(STREAK_MILESTONE_KEY, JSON.stringify(milestone));
+    const messages: Record<number, string> = {
+      3: '3 días seguidos. El hábito empieza aquí.',
+      7: 'Una semana entera. Gracias por no saltarte ningún día.',
+      14: 'Dos semanas. Estás construyendo algo real.',
+      30: '30 días. Un mes escuchándote. Eso no es pequeño.',
+      60: 'Dos meses. La constancia es su propio regalo.',
+      100: '100 días. Un logro genuino. Sigues.',
+    };
+    toast.success(messages[milestone] ?? `${milestone} días seguidos.`);
+  } catch {
+    // silencioso
+  }
+}
 
 const WEEKDAYS = [
   'Domingo',
@@ -56,6 +86,7 @@ function formatDateLine(d: Date): string {
 
 export default function HomePage() {
   const router = useRouter();
+  const toast = useToast();
   const [now, setNow] = useState<Date | null>(null);
   const [name, setName] = useState<string>('Ander');
   const [streak, setStreak] = useState<number>(0);
@@ -77,7 +108,10 @@ export default function HomePage() {
     const stored = window.localStorage.getItem(NAME_KEY);
     if (stored && stored.trim().length > 0) setName(stored.trim());
 
-    setStreak(streakDays());
+    const currentStreak = streakDays();
+    setStreak(currentStreak);
+    // Celebrar hitos de racha (solo la primera vez que se alcanzan)
+    celebrateMilestone(currentStreak, toast);
 
     const todayKey = new Date();
     todayKey.setHours(0, 0, 0, 0);

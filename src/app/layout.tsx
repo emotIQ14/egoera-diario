@@ -11,7 +11,6 @@ export const metadata: Metadata = {
   title: 'Egoera Diario · Diario emocional despacio',
   description: 'Un diario emocional terapéutico. Sin gamificación, sin métricas raras. Cobalto + crema, despacio.',
   manifest: '/manifest.json',
-  themeColor: '#1d2bdb',
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',
