@@ -613,6 +613,13 @@ export default function HistorialPage() {
                             ))}
                           </div>
                         )}
+                        {entry.context && entry.context.length > 0 && (
+                          <div className="ctx-tags">
+                            {entry.context.map((c) => (
+                              <span key={c} className="ctx-tag">{c}</span>
+                            ))}
+                          </div>
+                        )}
                         {hasText ? (
                           <p className="full-text">{entry.text}</p>
                         ) : (
@@ -1067,6 +1074,24 @@ export default function HistorialPage() {
           letter-spacing: 0.1em;
           opacity: 0.4;
           margin: 0;
+        }
+        .ctx-tags {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 5px;
+          margin-top: 4px;
+        }
+        .ctx-tag {
+          font-family: var(--font-mono);
+          font-size: 9px;
+          letter-spacing: 0.16em;
+          text-transform: uppercase;
+          font-weight: 600;
+          padding: 3px 8px;
+          border-radius: var(--r-pill);
+          background: rgba(13, 15, 61, 0.07);
+          color: var(--ink);
+          opacity: 0.6;
         }
         .card-actions {
           display: flex;

@@ -1,13 +1,24 @@
 /**
  * Tipos compartidos entre pantallas.
  */
-export type { DiaryEntry, Emotion, Mood } from './storage';
+export type { DiaryEntry, Emotion, Mood, ContextTag } from './storage';
 
 export type EmotionMeta = {
   id: string;
   label: string;
   color: 'cobalto' | 'accent' | 'cream' | 'ink';
 };
+
+export type ContextMeta = { id: string; label: string };
+
+export const CONTEXTS: ContextMeta[] = [
+  { id: 'trabajo',  label: 'Trabajo' },
+  { id: 'familia',  label: 'Familia' },
+  { id: 'pareja',   label: 'Pareja' },
+  { id: 'salud',    label: 'Salud' },
+  { id: 'social',   label: 'Social' },
+  { id: 'personal', label: 'Personal' },
+];
 
 export const EMOTIONS: EmotionMeta[] = [
   { id: 'cansancio', label: 'Cansancio', color: 'cream' },

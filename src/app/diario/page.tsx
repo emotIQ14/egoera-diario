@@ -6,8 +6,8 @@ import Screen from '@/components/Screen';
 import TabBar from '@/components/TabBar';
 import SafetyBar from '@/components/SafetyBar';
 import { loadEntries, saveEntry, makeId, streakDays } from '@/lib/storage';
-import type { DiaryEntry, Emotion } from '@/lib/storage';
-import { EMOTIONS } from '@/lib/types';
+import type { DiaryEntry, Emotion, ContextTag } from '@/lib/storage';
+import { CONTEXTS, EMOTIONS } from '@/lib/types';
 import { useToast } from '@/components/toast/ToastProvider';
 import { track } from '@/lib/track';
 
@@ -162,6 +162,7 @@ export default function DiarioPage() {
   const [mood, setMood] = useState<number>(DEFAULT_MOOD);
   const [moodTouched, setMoodTouched] = useState<boolean>(false);
   const [emotions, setEmotions] = useState<Emotion[]>([]);
+  const [context, setContext] = useState<ContextTag[]>([]);
   const [text, setText] = useState<string>('');
   const [saving, setSaving] = useState<boolean>(false);
   const [seededFromPeep, setSeededFromPeep] = useState<boolean>(false);
@@ -291,6 +292,13 @@ export default function DiarioPage() {
     );
   }
 
+  function toggleContext(id: ContextTag) {
+    navigator.vibrate?.(6);
+    setContext((prev) =>
+      prev.includes(id) ? prev.filter((c) => c !== id) : [...prev, id]
+    );
+  }
+
   function handleMoodChange(value: number) {
     setMood(value);
     setMoodTouched(true);
@@ -308,6 +316,7 @@ export default function DiarioPage() {
       mood,
       emotions,
       text: text.trim(),
+      ...(context.length > 0 ? { context } : {}),
     };
     try {
       saveEntry(entry);
@@ -532,6 +541,29 @@ export default function DiarioPage() {
           ) : null}
         </section>
 
+        <section className="ctx-section" aria-labelledby="ctx-eyebrow">
+          <span id="ctx-eyebrow" className="eyebrow ctx-eyebrow">
+            — ¿En qué contexto? —
+          </span>
+          <div className="ctx-chips" role="group" aria-label="Contexto de la entrada">
+            {CONTEXTS.map((ctx) => {
+              const active = context.includes(ctx.id as ContextTag);
+              return (
+                <button
+                  key={ctx.id}
+                  type="button"
+                  role="checkbox"
+                  aria-checked={active}
+                  className={`ctx-chip ${active ? 'ctx-chip-on' : ''}`}
+                  onClick={() => toggleContext(ctx.id as ContextTag)}
+                >
+                  {ctx.label}
+                </button>
+              );
+            })}
+          </div>
+        </section>
+
         <section className="text-section">
           {seededFromPeep ? (
             <p className="seed-note" aria-live="polite">
@@ -549,6 +581,7 @@ export default function DiarioPage() {
                   setMood(DEFAULT_MOOD);
                   setMoodTouched(false);
                   setEmotions([]);
+                  setContext([]);
                   setText('');
                   setDraftRestored(false);
                 }}
@@ -933,6 +966,42 @@ export default function DiarioPage() {
           background: var(--cobalto);
           color: var(--crema);
           border-color: var(--cobalto);
+        }
+
+        /* === Context tags === */
+        .ctx-section {
+          margin: 0 0 20px;
+        }
+        .ctx-eyebrow {
+          display: block;
+          margin-bottom: 10px;
+        }
+        .ctx-chips {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 7px;
+        }
+        .ctx-chip {
+          font-family: var(--font-mono);
+          font-size: 10px;
+          letter-spacing: 0.14em;
+          text-transform: uppercase;
+          font-weight: 600;
+          padding: 5px 11px;
+          border-radius: var(--r-pill);
+          border: 1px solid rgba(13, 15, 61, 0.15);
+          background: transparent;
+          color: var(--ink);
+          opacity: 0.65;
+          cursor: pointer;
+          transition: background 0.15s ease, color 0.15s ease, opacity 0.15s ease, transform 0.1s ease;
+        }
+        .ctx-chip:active { transform: scale(0.97); }
+        .ctx-chip-on {
+          background: rgba(13, 15, 61, 0.1);
+          color: var(--ink);
+          opacity: 1;
+          border-color: rgba(13, 15, 61, 0.35);
         }
 
         /* === Breathing cue === */

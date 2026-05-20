@@ -17,6 +17,14 @@ export type Emotion =
   | 'verguenza'
   | 'culpa';
 
+export type ContextTag =
+  | 'trabajo'
+  | 'familia'
+  | 'pareja'
+  | 'salud'
+  | 'social'
+  | 'personal';
+
 export type DiaryEntry = {
   id: string;
   createdAt: string; // ISO
@@ -24,6 +32,7 @@ export type DiaryEntry = {
   emotions: Emotion[];
   text: string;
   voiceTranscript?: string;
+  context?: ContextTag[]; // áreas de vida — campo opcional, backward-compatible
 };
 
 const KEY = 'egoera-diario-entries-v1';
