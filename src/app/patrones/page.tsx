@@ -430,6 +430,29 @@ function corrBarColor(avgMood: number): string {
   return 'rgba(217,119,87,0.78)';
 }
 
+const WEEKDAY_SHORTS = ['L', 'M', 'X', 'J', 'V', 'S', 'D'] as const;
+
+type WeekdayStat = {
+  short: typeof WEEKDAY_SHORTS[number];
+  avgMood: number | null;
+  count: number;
+};
+
+function moodByWeekday(entries: DiaryEntry[]): WeekdayStat[] {
+  const sums = [0, 0, 0, 0, 0, 0, 0];
+  const counts = [0, 0, 0, 0, 0, 0, 0];
+  for (const e of entries) {
+    const idx = (new Date(e.createdAt).getDay() || 7) - 1; // 0=lun..6=dom
+    sums[idx] += e.mood;
+    counts[idx] += 1;
+  }
+  return WEEKDAY_SHORTS.map((short, i) => ({
+    short,
+    avgMood: counts[i] >= 2 ? Math.round((sums[i] / counts[i]) * 10) / 10 : null,
+    count: counts[i],
+  }));
+}
+
 type State = {
   entries: DiaryEntry[];
   prev: DiaryEntry[];
@@ -582,6 +605,11 @@ export default function PatronesPage() {
   const moodDist = useMemo<MoodBucket[] | null>(() => {
     if (!state) return null;
     return moodDistribution(state.allEntries);
+  }, [state]);
+
+  const weekdayStats = useMemo<WeekdayStat[]>(() => {
+    if (!state) return [];
+    return moodByWeekday(state.allEntries);
   }, [state]);
 
   // Estado inicial (pre-hidratación) → render mínimo para evitar mismatch.
@@ -915,6 +943,47 @@ export default function PatronesPage() {
           <p className="corr-hint">Basado en tus últimas {state.allEntries.length} entradas</p>
         </section>
       ) : null}
+
+      {(() => {
+        const validDays = weekdayStats.filter((d) => d.avgMood !== null);
+        if (validDays.length < 3) return null;
+        const bestIdx = validDays.reduce((b, d, i, arr) =>
+          d.avgMood! > arr[b].avgMood! ? i : b, 0);
+        const worstIdx = validDays.reduce((b, d, i, arr) =>
+          d.avgMood! < arr[b].avgMood! ? i : b, 0);
+        const bestShort = validDays[bestIdx].short;
+        const worstShort = worstIdx !== bestIdx ? validDays[worstIdx].short : null;
+        return (
+          <section className="weekday-section" aria-label="Tu mejor día de la semana">
+            <p className="eyebrow eyebrow-section">— MEJOR DÍA —</p>
+            <h2 className="sec-big sec-big-sm">
+              Los <em>{
+                { L: 'lunes', M: 'martes', X: 'miércoles', J: 'jueves', V: 'viernes', S: 'sábados', D: 'domingos' }[bestShort]
+              }</em> te van mejor.
+            </h2>
+            <div className="weekday-bubbles" role="list">
+              {weekdayStats.map((d) => {
+                const isBest = d.short === bestShort;
+                const isWorst = d.short === worstShort;
+                return (
+                  <div
+                    key={d.short}
+                    role="listitem"
+                    className={`weekday-item${isBest ? ' best-item' : ''}`}
+                    aria-label={`${d.short}: ${d.avgMood !== null ? `ánimo ${d.avgMood}` : 'sin datos'}`}
+                  >
+                    <div className={`weekday-bubble${d.avgMood !== null ? ' has-data' : ''}${isBest ? ' best' : ''}${isWorst ? ' worst' : ''}`}>
+                      {d.avgMood !== null ? d.avgMood.toFixed(1) : '—'}
+                    </div>
+                    <span className="weekday-lbl">{d.short}</span>
+                  </div>
+                );
+              })}
+            </div>
+            <p className="weekday-hint">Basado en {state.allEntries.length} entradas históricas</p>
+          </section>
+        );
+      })()}
 
       <section className="insights" aria-label="Insights de la semana">
         <article className="insight insight-cobalto">
@@ -1436,6 +1505,78 @@ export default function PatronesPage() {
           opacity: 0.45;
           width: 28px;
           flex-shrink: 0;
+        }
+
+        /* ── Best weekday ── */
+        .weekday-section {
+          margin-top: 26px;
+          background: var(--crema);
+          border: 1px solid rgba(13, 15, 61, 0.1);
+          border-radius: var(--r-md);
+          padding: 18px 16px 14px;
+        }
+        .weekday-bubbles {
+          display: flex;
+          justify-content: space-between;
+          gap: 4px;
+          margin-top: 14px;
+        }
+        .weekday-item {
+          flex: 1;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 5px;
+        }
+        .weekday-bubble {
+          width: 36px;
+          height: 36px;
+          border-radius: 50%;
+          background: rgba(13, 15, 61, 0.06);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-family: var(--font-display);
+          font-style: italic;
+          font-weight: 700;
+          font-size: 11px;
+          color: var(--ink);
+          opacity: 0.4;
+          letter-spacing: -0.01em;
+          transition: background 0.2s, color 0.2s;
+        }
+        .weekday-bubble.has-data { opacity: 0.82; }
+        .weekday-bubble.best {
+          background: var(--cobalto);
+          color: var(--crema);
+          opacity: 1;
+          box-shadow: 0 4px 12px rgba(29, 43, 219, 0.3);
+        }
+        .weekday-bubble.worst {
+          background: rgba(217, 119, 87, 0.2);
+          color: var(--accent-deep);
+          opacity: 1;
+        }
+        .weekday-lbl {
+          font-family: var(--font-mono);
+          font-size: 9px;
+          letter-spacing: 0.1em;
+          text-transform: uppercase;
+          color: var(--ink);
+          opacity: 0.4;
+        }
+        .weekday-item.best-item .weekday-lbl {
+          color: var(--cobalto);
+          opacity: 0.75;
+        }
+        .weekday-hint {
+          margin-top: 10px;
+          font-family: var(--font-mono);
+          font-size: 10px;
+          letter-spacing: 0.14em;
+          text-transform: uppercase;
+          opacity: 0.4;
+          color: var(--ink);
         }
 
         .science {
