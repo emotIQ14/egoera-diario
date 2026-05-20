@@ -71,6 +71,20 @@ function emotionLabelDiary(id: string): string {
   return EMOTIONS.find((e) => e.id === id)?.label ?? id;
 }
 
+function getMoodLabel(m: number): string {
+  if (m >= 9) return 'Muy bien';
+  if (m >= 7) return 'Bien';
+  if (m >= 5) return 'Regular';
+  if (m >= 3) return 'Bajo';
+  return 'Muy bajo';
+}
+
+function getMoodNumColor(m: number): string {
+  if (m >= 7) return 'var(--cobalto)';
+  if (m >= 5) return '#b8860b'; // ocre oscuro, buen contraste sobre crema
+  return '#c25a3a'; // coral oscuro
+}
+
 // ─── Prompts de escritura ────────────────────────────────────────────────────
 
 const WRITING_PROMPTS = [
@@ -370,10 +384,21 @@ export default function DiarioPage() {
         ) : null}
 
         <section className="mood-hero" aria-labelledby="mood-label">
-          <div className="mood-num" aria-hidden="true">
+          <div
+            className="mood-num"
+            aria-hidden="true"
+            style={{ color: getMoodNumColor(mood), transition: 'color 0.25s ease' }}
+          >
             {mood}
           </div>
-          <div className="mood-of">— de 10 —</div>
+          <div
+            className="mood-label-dyn"
+            aria-live="polite"
+            aria-atomic="true"
+            style={{ color: getMoodNumColor(mood) }}
+          >
+            {getMoodLabel(mood)}
+          </div>
 
           <label htmlFor="mood-range" id="mood-label" className="sr-only">
             Estado de ánimo (0 a 10)
@@ -388,11 +413,6 @@ export default function DiarioPage() {
             onChange={(e) => handleMoodChange(Number(e.target.value))}
             className="slider"
           />
-          <div className="slider-legend">
-            <span>Mal</span>
-            <span>Regular</span>
-            <span>Bien</span>
-          </div>
         </section>
 
         <section className="emo-section" aria-labelledby="emo-eyebrow">
@@ -662,7 +682,18 @@ export default function DiarioPage() {
           text-transform: uppercase;
           opacity: 0.55;
           margin-top: 2px;
-          margin-bottom: 24px;
+          margin-bottom: 8px;
+        }
+        .mood-label-dyn {
+          font-family: var(--font-display);
+          font-style: italic;
+          font-weight: 600;
+          font-size: 18px;
+          line-height: 1;
+          letter-spacing: -0.01em;
+          margin-bottom: 20px;
+          transition: color 0.25s ease;
+          user-select: none;
         }
 
         /* === Slider === */
@@ -699,17 +730,6 @@ export default function DiarioPage() {
         .slider:focus-visible::-webkit-slider-thumb {
           outline: 2px solid var(--accent);
           outline-offset: 2px;
-        }
-        .slider-legend {
-          display: flex;
-          justify-content: space-between;
-          width: 100%;
-          margin-top: 12px;
-          font-family: var(--font-mono);
-          font-size: 10px;
-          letter-spacing: 0.2em;
-          text-transform: uppercase;
-          opacity: 0.55;
         }
 
         /* === Emociones === */
