@@ -14,7 +14,8 @@ type EventName =
   | 'historial_opened'
   | 'historial_search_used'
   | 'historial_filter_used'
-  | 'conversa_to_diary_clicked';
+  | 'conversa_to_diary_clicked'
+  | 'historial_to_conversa';
 
 export function track(name: EventName, props?: Record<string, string | number>): void {
   if (typeof window === 'undefined') return;

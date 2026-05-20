@@ -95,6 +95,24 @@ const STORAGE_KEY = 'egoera-diario-conversation-current';
 const SESSIONS_KEY = 'egoera-diario-conversations';
 const NAME_KEY = 'egoera-diario-name';
 const CONV_HISTORY_KEY = 'egoera-conv-history';
+const CONV_ENTRY_SEED_KEY = 'egoera-conv-entry-seed';
+
+type EntrySeed = {
+  mood: number;
+  emotions: string[];
+  daysAgo: number;
+  preview: string | null;
+};
+
+function consumeEntrySeed(): EntrySeed | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    const raw = window.localStorage.getItem(CONV_ENTRY_SEED_KEY);
+    if (!raw) return null;
+    window.localStorage.removeItem(CONV_ENTRY_SEED_KEY);
+    return JSON.parse(raw) as EntrySeed;
+  } catch { return null; }
+}
 
 type ConvSnippet = { startedAt: string; preview: string; msgCount: number };
 
@@ -152,8 +170,29 @@ function pickSubtitle(): Subtitle {
   return pool[Math.floor(Math.random() * pool.length)];
 }
 
-function buildInitialMessage(name?: string, weekCtx?: WeekCtx | null): Message {
+function buildInitialMessage(
+  name?: string,
+  weekCtx?: WeekCtx | null,
+  entrySeed?: EntrySeed | null,
+): Message {
   const greeting = name && name.trim() ? `Hola, ${name.trim()}` : 'Hola';
+
+  // Viene de una entrada del historial → contextualizar con esa entrada
+  if (entrySeed) {
+    const emotionList = entrySeed.emotions.length > 0
+      ? entrySeed.emotions.join(', ')
+      : null;
+    const when = entrySeed.daysAgo === 0
+      ? 'hoy'
+      : entrySeed.daysAgo === 1
+      ? 'ayer'
+      : `hace ${entrySeed.daysAgo} días`;
+    const emoText = emotionList ? ` y sentiste ${emotionList}` : '';
+    return {
+      role: 'assistant',
+      content: `${greeting}. Viniste desde una entrada de ${when}: anotaste un ${entrySeed.mood}/10${emoText}. ¿Qué quieres explorar de eso?`,
+    };
+  }
 
   if (weekCtx?.today) {
     const emoText = weekCtx.today.topEmotion
@@ -262,7 +301,8 @@ export default function ConversaPage() {
       ? (window.localStorage.getItem(NAME_KEY) ?? undefined)
       : undefined;
     const weekCtx = getWeekContext();
-    const personalised = buildInitialMessage(storedName ?? undefined, weekCtx);
+    const entrySeed = consumeEntrySeed();
+    const personalised = buildInitialMessage(storedName ?? undefined, weekCtx, entrySeed);
     if (
       loaded.length === 1 &&
       loaded[0].role === 'assistant' &&
@@ -355,7 +395,7 @@ export default function ConversaPage() {
       ? (window.localStorage.getItem(NAME_KEY) ?? undefined)
       : undefined;
     const weekCtx = getWeekContext();
-    setMessages([buildInitialMessage(storedName ?? undefined, weekCtx)]);
+    setMessages([buildInitialMessage(storedName ?? undefined, weekCtx, null)]);
     bumpSessionCount();
     setSessionN(loadSessionCount());
   }

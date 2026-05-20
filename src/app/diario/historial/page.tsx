@@ -204,6 +204,30 @@ function MoodSparkline({ entries }: { entries: DiaryEntry[] }): React.ReactEleme
   );
 }
 
+// ─── conversa seed ───────────────────────────────────────────────────────────
+
+const CONV_ENTRY_SEED_KEY = 'egoera-conv-entry-seed';
+
+function seedConversa(entry: DiaryEntry): void {
+  if (typeof window === 'undefined') return;
+  try {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const entryDay = new Date(entry.createdAt);
+    entryDay.setHours(0, 0, 0, 0);
+    const daysAgo = Math.round((today.getTime() - entryDay.getTime()) / 86_400_000);
+    window.localStorage.setItem(
+      CONV_ENTRY_SEED_KEY,
+      JSON.stringify({
+        mood: entry.mood,
+        emotions: entry.emotions,
+        daysAgo,
+        preview: entry.text.trim().slice(0, 120) || null,
+      })
+    );
+  } catch { /* silencioso */ }
+}
+
 // ─── edit form state ─────────────────────────────────────────────────────────
 
 type EditDraft = { mood: number; emotions: Emotion[]; text: string };
@@ -612,6 +636,18 @@ export default function HistorialPage() {
                               Copiar
                             </button>
                           )}
+                          <button
+                            type="button"
+                            className="explore-btn"
+                            onClick={() => {
+                              seedConversa(entry);
+                              track('historial_to_conversa', { days_ago: Math.round((new Date().getTime() - new Date(entry.createdAt).getTime()) / 86_400_000) });
+                              router.push('/conversa');
+                            }}
+                            aria-label="Explorar esta entrada en Conversa"
+                          >
+                            Explorar →
+                          </button>
                         </div>
                       </div>
                     )}
@@ -1038,7 +1074,7 @@ export default function HistorialPage() {
           gap: 8px;
           flex-wrap: wrap;
         }
-        .edit-btn, .copy-btn {
+        .edit-btn, .copy-btn, .explore-btn {
           background: none;
           border: 1px solid rgba(13, 15, 61, 0.18);
           padding: 6px 14px;
@@ -1061,7 +1097,12 @@ export default function HistorialPage() {
           opacity: 1;
           border-color: rgba(13, 15, 61, 0.35);
         }
-        .edit-btn:focus-visible, .copy-btn:focus-visible {
+        .explore-btn:hover {
+          opacity: 1;
+          border-color: var(--accent);
+          color: var(--accent-deep);
+        }
+        .edit-btn:focus-visible, .copy-btn:focus-visible, .explore-btn:focus-visible {
           outline: 2px solid var(--cobalto);
           outline-offset: 2px;
         }
