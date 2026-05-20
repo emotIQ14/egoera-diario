@@ -384,6 +384,22 @@ function heatColor(avgMood: number | null, isFuture: boolean): string {
   return 'rgba(217,119,87,0.85)';
 }
 
+type MoodBucket = { label: string; count: number; pct: number; color: string };
+
+function moodDistribution(entries: DiaryEntry[]): MoodBucket[] | null {
+  if (entries.length === 0) return null;
+  const defs: { label: string; min: number; max: number; color: string }[] = [
+    { label: 'Bajo',  min: 0,  max: 4,  color: 'rgba(217,119,87,0.82)' },
+    { label: 'Medio', min: 5,  max: 7,  color: 'rgba(244,200,66,0.9)' },
+    { label: 'Alto',  min: 8,  max: 10, color: 'rgba(29,43,219,0.72)' },
+  ];
+  const total = entries.length;
+  return defs.map(({ label, min, max, color }) => {
+    const count = entries.filter((e) => e.mood >= min && e.mood <= max).length;
+    return { label, count, pct: Math.round((count / total) * 100), color };
+  });
+}
+
 type EmoCorr = { id: Emotion; label: string; avgMood: number; count: number };
 
 function emotionCorrelations(entries: DiaryEntry[]): EmoCorr[] {
@@ -562,6 +578,11 @@ export default function PatronesPage() {
     }
     return labels;
   }, [heatCells]);
+
+  const moodDist = useMemo<MoodBucket[] | null>(() => {
+    if (!state) return null;
+    return moodDistribution(state.allEntries);
+  }, [state]);
 
   // Estado inicial (pre-hidratación) → render mínimo para evitar mismatch.
   if (!state) {
@@ -839,6 +860,29 @@ export default function PatronesPage() {
                 <span className="heat-legend-lbl">alto</span>
               </div>
             </div>
+          </div>
+        </section>
+      ) : null}
+
+      {moodDist ? (
+        <section className="dist-section" aria-label="Distribución del estado de ánimo">
+          <p className="eyebrow eyebrow-section">— DISTRIBUCIÓN —</p>
+          <div className="dist-list">
+            {moodDist.map((b) => (
+              <div key={b.label} className="dist-row">
+                <span className="dist-label">{b.label}</span>
+                <div className="dist-bar-track" aria-label={`${b.label}: ${b.pct}%`}>
+                  <div
+                    className="dist-bar"
+                    style={{ width: `${b.pct || 0}%`, background: b.color }}
+                  />
+                </div>
+                <span className="dist-pct">
+                  {b.pct}<span className="dist-pct-sym">%</span>
+                </span>
+                <span className="dist-count">({b.count})</span>
+              </div>
+            ))}
           </div>
         </section>
       ) : null}
@@ -1328,6 +1372,70 @@ export default function PatronesPage() {
           height: 12px;
           border-radius: 2px;
           display: inline-block;
+        }
+
+        /* ── Distribución de ánimo ── */
+        .dist-section {
+          margin-top: 26px;
+          background: var(--crema);
+          border: 1px solid rgba(13, 15, 61, 0.1);
+          border-radius: var(--r-md);
+          padding: 18px 16px 14px;
+        }
+        .dist-list {
+          display: flex;
+          flex-direction: column;
+          gap: 10px;
+        }
+        .dist-row {
+          display: flex;
+          align-items: center;
+          gap: 9px;
+        }
+        .dist-label {
+          font-family: var(--font-mono);
+          font-size: 10px;
+          letter-spacing: 0.12em;
+          text-transform: uppercase;
+          color: var(--ink);
+          opacity: 0.7;
+          width: 40px;
+          flex-shrink: 0;
+        }
+        .dist-bar-track {
+          flex: 1;
+          height: 10px;
+          background: rgba(13, 15, 61, 0.07);
+          border-radius: 99px;
+          overflow: hidden;
+        }
+        .dist-bar {
+          height: 100%;
+          border-radius: 99px;
+          min-width: 4px;
+          transition: width 0.5s ease;
+        }
+        .dist-pct {
+          font-family: var(--font-mono);
+          font-size: 13px;
+          font-weight: 600;
+          color: var(--ink);
+          width: 34px;
+          text-align: right;
+          flex-shrink: 0;
+        }
+        .dist-pct-sym {
+          font-size: 10px;
+          opacity: 0.6;
+        }
+        .dist-count {
+          font-family: var(--font-mono);
+          font-size: 10px;
+          letter-spacing: 0.06em;
+          color: var(--ink);
+          opacity: 0.45;
+          width: 28px;
+          flex-shrink: 0;
         }
 
         .science {
