@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Screen from '@/components/Screen';
 import TabBar from '@/components/TabBar';
 import SafetyBar from '@/components/SafetyBar';
@@ -239,6 +240,7 @@ function bumpSessionCount(): void {
 }
 
 export default function ConversaPage() {
+  const router = useRouter();
   const [messages, setMessages] = useState<Message[]>([INITIAL_MESSAGE]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -370,18 +372,37 @@ export default function ConversaPage() {
       <header className="head">
         <div className="head-row">
           <span className="eyebrow head-eyebrow">— 03 · Conversa —</span>
-          <button
-            type="button"
-            onClick={resetConversation}
-            className="reset"
-            aria-label="Nueva conversación"
-            title="Nueva conversación"
-          >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M21 12a9 9 0 1 1-3.5-7.1" />
-              <path d="M21 4v5h-5" />
-            </svg>
-          </button>
+          <div className="head-actions">
+            {messages.filter((m) => m.role === 'user').length >= 1 ? (
+              <button
+                type="button"
+                className="to-diary-btn"
+                onClick={() => {
+                  track('conversa_to_diary_clicked', { msgs: messages.length });
+                  router.push('/diario');
+                }}
+                aria-label="Llevar al diario"
+                title="Llevar al diario"
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M12 20h9" />
+                  <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
+                </svg>
+              </button>
+            ) : null}
+            <button
+              type="button"
+              onClick={resetConversation}
+              className="reset"
+              aria-label="Nueva conversación"
+              title="Nueva conversación"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21 12a9 9 0 1 1-3.5-7.1" />
+                <path d="M21 4v5h-5" />
+              </svg>
+            </button>
+          </div>
         </div>
         <h1 className="title">
           {subtitle.pre}
@@ -496,6 +517,28 @@ export default function ConversaPage() {
           margin-bottom: 14px;
         }
         .head-eyebrow { opacity: 0.45; }
+        .head-actions {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+        .to-diary-btn {
+          width: 32px;
+          height: 32px;
+          border-radius: 999px;
+          background: rgba(241, 234, 216, 0.08);
+          border: 1px solid rgba(241, 234, 216, 0.16);
+          color: var(--crema);
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          padding: 0;
+          transition: background 0.15s ease, transform 0.15s ease;
+        }
+        .to-diary-btn:active { transform: scale(0.94); }
+        .to-diary-btn:hover { background: rgba(241, 234, 216, 0.14); }
+        .to-diary-btn svg { width: 15px; height: 15px; }
         .reset {
           width: 32px;
           height: 32px;
