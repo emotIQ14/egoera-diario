@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import Screen from '@/components/Screen';
 import TabBar from '@/components/TabBar';
 import SafetyBar from '@/components/SafetyBar';
-import { loadEntries, saveEntry, makeId } from '@/lib/storage';
+import { loadEntries, saveEntry, makeId, streakDays } from '@/lib/storage';
 import type { DiaryEntry, Emotion } from '@/lib/storage';
 import { EMOTIONS } from '@/lib/types';
 import { useToast } from '@/components/toast/ToastProvider';
@@ -292,7 +292,18 @@ export default function DiarioPage() {
       if (milestone) {
         toast.success(milestone);
       } else {
-        toast.success('Entrada guardada · escucharte cuenta.');
+        // Mensaje contextual según racha y longitud del texto
+        const currentStreak = streakDays();
+        const wc = entry.text.trim() ? entry.text.trim().split(/\s+/).filter(Boolean).length : 0;
+        let msg = 'Entrada guardada · escucharte cuenta.';
+        if (currentStreak >= 7) {
+          msg = `Guardado · ${currentStreak} días seguidos. Sigue.`;
+        } else if (currentStreak >= 2) {
+          msg = `Guardado · Día ${currentStreak} de racha.`;
+        } else if (wc > 100) {
+          msg = `Guardado · ${wc} palabras. Bien dicho.`;
+        }
+        toast.success(msg);
       }
       router.push('/');
     } catch (err) {
