@@ -219,9 +219,23 @@ export default function DiarioPage() {
               o sumar a partir de ahí.
             </p>
           ) : draftRestored ? (
-            <p className="seed-note draft-note" aria-live="polite">
-              — Tenías un borrador guardado. Lo he recuperado.
-            </p>
+            <div className="seed-note draft-note" role="status" aria-live="polite">
+              <span>— Tenías un borrador guardado. Lo he recuperado.</span>
+              <button
+                type="button"
+                className="draft-discard"
+                onClick={() => {
+                  clearDraft();
+                  setMood(DEFAULT_MOOD);
+                  setMoodTouched(false);
+                  setEmotions([]);
+                  setText('');
+                  setDraftRestored(false);
+                }}
+              >
+                Descartar ×
+              </button>
+            </div>
           ) : null}
           <label htmlFor="diary-text" className="sr-only">
             Cuéntalo si quieres
@@ -478,7 +492,27 @@ export default function DiarioPage() {
           border-left-color: rgba(13, 15, 61, 0.3);
           color: var(--ink);
           opacity: 0.65;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 10px;
         }
+        .draft-discard {
+          background: none;
+          border: none;
+          padding: 0;
+          font-family: var(--font-mono);
+          font-size: 10px;
+          letter-spacing: 0.12em;
+          text-transform: uppercase;
+          color: var(--ink);
+          cursor: pointer;
+          opacity: 0.55;
+          white-space: nowrap;
+          flex-shrink: 0;
+          transition: opacity 0.15s;
+        }
+        .draft-discard:hover { opacity: 1; }
         .diary-text.seeded {
           background: rgba(29, 43, 219, 0.04);
           border-color: rgba(29, 43, 219, 0.32);

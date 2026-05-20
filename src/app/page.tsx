@@ -282,7 +282,12 @@ export default function HomePage() {
 
       {/* ── week activity dots ── */}
       {now ? (
-        <div className="week-dots" aria-label="Actividad de esta semana">
+        <button
+          type="button"
+          className="week-dots"
+          onClick={() => router.push('/diario/historial')}
+          aria-label="Ver historial de entradas de esta semana"
+        >
           {WEEK_LABELS.map((label, i) => {
             const dayIdx = (now.getDay() || 7) - 1; // 0=lun
             const isToday = i === dayIdx;
@@ -297,7 +302,7 @@ export default function HomePage() {
               </div>
             );
           })}
-        </div>
+        </button>
       ) : null}
 
       {todayCount > 0 ? (
@@ -439,6 +444,19 @@ export default function HomePage() {
           background: rgba(255, 255, 255, 0.45);
           border: 1px solid rgba(13, 15, 61, 0.08);
           border-radius: var(--r-md);
+          width: 100%;
+          cursor: pointer;
+          font: inherit;
+          -webkit-tap-highlight-color: transparent;
+          transition: background 0.15s, border-color 0.15s;
+        }
+        .week-dots:hover {
+          background: rgba(255, 255, 255, 0.7);
+          border-color: rgba(13, 15, 61, 0.16);
+        }
+        .week-dots:focus-visible {
+          outline: 2px solid var(--cobalto);
+          outline-offset: 2px;
         }
         .week-day {
           display: flex;
