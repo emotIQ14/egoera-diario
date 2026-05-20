@@ -155,6 +155,32 @@ function wordOfWeek(
   return { word: bestWord, count: bestCount, total };
 }
 
+type TimeSlot = { label: string; short: string; avgMood: number; count: number };
+
+function bestTimeToWrite(entries: DiaryEntry[]): TimeSlot | null {
+  const slots: Record<string, { sum: number; count: number; label: string; short: string }> = {
+    morning:   { sum: 0, count: 0, label: 'por la mañana (6–12h)',   short: 'mañana' },
+    afternoon: { sum: 0, count: 0, label: 'por la tarde (12–18h)',   short: 'tarde' },
+    evening:   { sum: 0, count: 0, label: 'por la tarde-noche (18–22h)', short: 'tarde-noche' },
+    night:     { sum: 0, count: 0, label: 'de noche (22–6h)',         short: 'noche' },
+  };
+  for (const e of entries) {
+    const h = new Date(e.createdAt).getHours();
+    const key = h >= 6 && h < 12 ? 'morning' : h >= 12 && h < 18 ? 'afternoon' : h >= 18 && h < 22 ? 'evening' : 'night';
+    slots[key].sum += e.mood;
+    slots[key].count += 1;
+  }
+  let best: (TimeSlot & { key: string }) | null = null;
+  for (const [key, s] of Object.entries(slots)) {
+    if (s.count < 2) continue;
+    const avg = Math.round((s.sum / s.count) * 10) / 10;
+    if (!best || avg > best.avgMood) {
+      best = { key, label: s.label, short: s.short, avgMood: avg, count: s.count };
+    }
+  }
+  return best;
+}
+
 function avgMood(entries: DiaryEntry[]): number {
   if (entries.length === 0) return 0;
   return entries.reduce((s, e) => s + e.mood, 0) / entries.length;
@@ -462,6 +488,11 @@ export default function PatronesPage() {
   const sleepInsight = useMemo(() => {
     if (!state) return { early: 0, total: 0 };
     return nightEntriesCount(state.entries);
+  }, [state]);
+
+  const bestTime = useMemo<TimeSlot | null>(() => {
+    if (!state) return null;
+    return bestTimeToWrite(state.allEntries);
   }, [state]);
 
   const dateLine = useMemo(() => {
@@ -880,6 +911,25 @@ export default function PatronesPage() {
         ) : null}
       </section>
 
+      {bestTime ? (
+        <article className="insight insight-time" aria-label="Mejor momento para escribir">
+          <span className="ico" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="9" />
+              <polyline points="12 7 12 12 15.5 12" />
+            </svg>
+          </span>
+          <div className="ins-body">
+            <h3 className="ins-title">
+              Escribes mejor <em>{bestTime.short}</em>.
+            </h3>
+            <p className="ins-sub">
+              Tu ánimo medio {bestTime.label} es {bestTime.avgMood.toFixed(1)}/10 (en {bestTime.count} entradas).
+            </p>
+          </div>
+        </article>
+      ) : null}
+
       <section className="science" aria-label="Respaldo científico">
         <span className="pill-mono">— RESPALDADO POR —</span>
         <h2 className="science-title">
@@ -979,6 +1029,14 @@ export default function PatronesPage() {
           background: var(--cobalto);
           color: var(--crema);
           border-color: rgba(13, 15, 61, 0.18);
+        }
+        .insight-time {
+          background: rgba(244, 200, 66, 0.12);
+          color: var(--ink);
+          border-color: rgba(200, 160, 0, 0.25);
+        }
+        .insight-time .ins-title :global(em) {
+          color: #7a6000;
         }
         .insight-accent {
           background: rgba(230, 100, 58, 0.12);

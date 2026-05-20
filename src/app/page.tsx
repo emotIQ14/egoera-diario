@@ -234,6 +234,11 @@ export default function HomePage() {
     return { next, daysLeft: next - streak };
   }, [streak]);
 
+  const streakAtRisk = useMemo(() => {
+    if (!now) return false;
+    return streak >= 3 && todayCount === 0 && now.getHours() >= 17;
+  }, [now, streak, todayCount]);
+
   const weekday = useMemo(() => {
     if (!now) return '';
     return WEEKDAYS[now.getDay()];
@@ -350,6 +355,19 @@ export default function HomePage() {
             />
           </div>
         </div>
+      ) : null}
+
+      {streakAtRisk ? (
+        <button
+          type="button"
+          className="streak-risk"
+          onClick={() => router.push('/diario')}
+          aria-label="Sin entrada hoy, racha en riesgo — anotar ahora"
+        >
+          <span className="risk-dot" aria-hidden="true" />
+          <span className="risk-text">Sin entrada hoy · racha en riesgo</span>
+          <span className="risk-arrow">→</span>
+        </button>
       ) : null}
 
       {todayCount > 0 && todayStat ? (
@@ -475,6 +493,51 @@ export default function HomePage() {
           background: var(--cobalto);
           border-radius: 999px;
           transition: width 0.4s ease;
+        }
+
+        /* ── streak at-risk warning ── */
+        .streak-risk {
+          margin-top: 10px;
+          display: flex;
+          align-items: center;
+          gap: 9px;
+          width: 100%;
+          background: rgba(244, 200, 66, 0.12);
+          border: 1px solid rgba(200, 160, 0, 0.28);
+          border-radius: var(--r-md);
+          padding: 10px 14px;
+          cursor: pointer;
+          font: inherit;
+          text-align: left;
+          -webkit-tap-highlight-color: transparent;
+          transition: background 0.15s;
+        }
+        .streak-risk:hover { background: rgba(244, 200, 66, 0.2); }
+        .risk-dot {
+          width: 7px;
+          height: 7px;
+          border-radius: 50%;
+          background: #c8960a;
+          flex-shrink: 0;
+          animation: pulse-risk 2s ease-in-out infinite;
+        }
+        @keyframes pulse-risk {
+          0%, 100% { opacity: 1; transform: scale(1); }
+          50% { opacity: 0.45; transform: scale(0.8); }
+        }
+        .risk-text {
+          flex: 1;
+          font-family: var(--font-mono);
+          font-size: 10px;
+          letter-spacing: 0.12em;
+          text-transform: uppercase;
+          color: #7a6000;
+        }
+        .risk-arrow {
+          font-size: 11px;
+          color: #7a6000;
+          opacity: 0.65;
+          font-family: var(--font-mono);
         }
 
         /* ── today recap card ── */
