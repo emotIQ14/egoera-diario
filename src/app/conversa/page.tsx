@@ -10,10 +10,17 @@ type Message = { role: 'user' | 'assistant'; content: string };
 
 const STORAGE_KEY = 'egoera-diario-conversation-current';
 const SESSIONS_KEY = 'egoera-diario-conversations';
-const INITIAL_MESSAGE: Message = {
-  role: 'assistant',
-  content: 'Hola Ander. ¿Cómo estás llegando aquí hoy?',
-};
+const NAME_KEY = 'egoera-diario-name';
+
+function buildInitialMessage(name?: string): Message {
+  const greeting = name && name.trim() ? `Hola, ${name.trim()}` : 'Hola';
+  return {
+    role: 'assistant',
+    content: `${greeting}. ¿Cómo estás llegando aquí hoy?`,
+  };
+}
+
+const INITIAL_MESSAGE: Message = buildInitialMessage();
 
 function loadConversation(): Message[] {
   if (typeof window === 'undefined') return [INITIAL_MESSAGE];
@@ -74,7 +81,22 @@ export default function ConversaPage() {
   // Hydrate from localStorage on mount.
   useEffect(() => {
     const loaded = loadConversation();
-    setMessages(loaded);
+    // If the conversation only has the placeholder initial message, replace it
+    // with one that uses the real stored name.
+    const storedName = typeof window !== 'undefined'
+      ? (window.localStorage.getItem(NAME_KEY) ?? undefined)
+      : undefined;
+    const personalised = buildInitialMessage(storedName ?? undefined);
+    if (
+      loaded.length === 1 &&
+      loaded[0].role === 'assistant' &&
+      loaded[0].content.startsWith('Hola')
+    ) {
+      setMessages([personalised]);
+    } else {
+      setMessages(loaded);
+    }
+
     let n = loadSessionCount();
     // First time ever -> register first session.
     if (typeof window !== 'undefined' && !window.localStorage.getItem(SESSIONS_KEY)) {
@@ -143,7 +165,10 @@ export default function ConversaPage() {
   }
 
   function resetConversation(): void {
-    setMessages([INITIAL_MESSAGE]);
+    const storedName = typeof window !== 'undefined'
+      ? (window.localStorage.getItem(NAME_KEY) ?? undefined)
+      : undefined;
+    setMessages([buildInitialMessage(storedName ?? undefined)]);
     bumpSessionCount();
     setSessionN(loadSessionCount());
   }
