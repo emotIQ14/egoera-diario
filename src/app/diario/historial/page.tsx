@@ -192,6 +192,20 @@ export default function HistorialPage() {
     setPendingDelete(null);
   }
 
+  async function copyEntryText(entry: DiaryEntry) {
+    const lines: string[] = [];
+    if (entry.emotions.length > 0) lines.push(entry.emotions.map(emotionLabel).join(' · '));
+    if (entry.text.trim()) lines.push(entry.text.trim());
+    const content = lines.join('\n');
+    if (!content) { toast.info('Esta entrada no tiene texto para copiar.'); return; }
+    try {
+      await navigator.clipboard.writeText(content);
+      toast.success('Texto copiado al portapapeles.');
+    } catch {
+      toast.error('No se pudo copiar. Comprueba los permisos del navegador.');
+    }
+  }
+
   function startEdit(entry: DiaryEntry) {
     setEditingId(entry.id);
     setDraft({ mood: entry.mood, emotions: [...entry.emotions], text: entry.text });
@@ -473,13 +487,25 @@ export default function HistorialPage() {
                         ) : (
                           <p className="no-text">Solo ánimo y emociones. Sin texto.</p>
                         )}
-                        <button
-                          type="button"
-                          className="edit-btn"
-                          onClick={() => startEdit(entry)}
-                        >
-                          Editar entrada
-                        </button>
+                        <div className="card-actions">
+                          <button
+                            type="button"
+                            className="edit-btn"
+                            onClick={() => startEdit(entry)}
+                          >
+                            Editar entrada
+                          </button>
+                          {(hasText || entry.emotions.length > 0) && (
+                            <button
+                              type="button"
+                              className="copy-btn"
+                              onClick={() => { void copyEntryText(entry); }}
+                              aria-label="Copiar texto de la entrada"
+                            >
+                              Copiar
+                            </button>
+                          )}
+                        </div>
                       </div>
                     )}
 
@@ -835,8 +861,13 @@ export default function HistorialPage() {
           opacity: 0.4;
           margin: 0;
         }
-        .edit-btn {
-          align-self: flex-start;
+        .card-actions {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          flex-wrap: wrap;
+        }
+        .edit-btn, .copy-btn {
           background: none;
           border: 1px solid rgba(13, 15, 61, 0.18);
           padding: 6px 14px;
@@ -848,14 +879,18 @@ export default function HistorialPage() {
           color: var(--ink);
           cursor: pointer;
           opacity: 0.65;
-          transition: opacity 0.15s, border-color 0.15s;
+          transition: opacity 0.15s, border-color 0.15s, color 0.15s;
         }
         .edit-btn:hover {
           opacity: 1;
           border-color: var(--cobalto);
           color: var(--cobalto);
         }
-        .edit-btn:focus-visible {
+        .copy-btn:hover {
+          opacity: 1;
+          border-color: rgba(13, 15, 61, 0.35);
+        }
+        .edit-btn:focus-visible, .copy-btn:focus-visible {
           outline: 2px solid var(--cobalto);
           outline-offset: 2px;
         }
