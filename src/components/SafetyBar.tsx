@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { track } from '@/lib/track';
 
 const CRISIS_PATTERN =
-  /\b(suicid|matarme|acabar con|no quiero seguir|no aguanto m[aá]s|hacerme da[ñn]o)\b/i;
+  /\b(suicid|matarme|quitarme la vida|acabar con (mi vida|todo)|no quiero seguir (viviendo|vivo)|no aguanto m[aá]s|hacerme da[ñn]o|ya no quiero vivir|no vale la pena vivir|quiero desaparecer|no quiero estar aqu[ií]|mejor sin m[ií])\b/i;
 
 export default function SafetyBar({
   text,
