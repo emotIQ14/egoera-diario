@@ -51,6 +51,12 @@ export function deleteEntry(id: string): void {
   window.localStorage.setItem(KEY, JSON.stringify(all));
 }
 
+export function updateEntry(updated: DiaryEntry): void {
+  if (typeof window === 'undefined') return;
+  const all = loadEntries().map((e) => (e.id === updated.id ? updated : e));
+  window.localStorage.setItem(KEY, JSON.stringify(all));
+}
+
 export function makeId(): string {
   return `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 }

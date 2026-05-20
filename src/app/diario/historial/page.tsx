@@ -4,8 +4,8 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Screen from '@/components/Screen';
 import TabBar from '@/components/TabBar';
-import { deleteEntry, loadEntries } from '@/lib/storage';
-import type { DiaryEntry } from '@/lib/storage';
+import { deleteEntry, loadEntries, updateEntry } from '@/lib/storage';
+import type { DiaryEntry, Emotion } from '@/lib/storage';
 import { EMOTIONS } from '@/lib/types';
 import { useToast } from '@/components/toast/ToastProvider';
 
@@ -75,6 +75,10 @@ function groupByMonth(entries: DiaryEntry[]): Group[] {
     }));
 }
 
+// ─── edit form state ─────────────────────────────────────────────────────────
+
+type EditDraft = { mood: number; emotions: Emotion[]; text: string };
+
 // ─── component ───────────────────────────────────────────────────────────────
 
 export default function HistorialPage() {
@@ -84,12 +88,19 @@ export default function HistorialPage() {
   const [entries, setEntries] = useState<DiaryEntry[]>([]);
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
   const [pendingDelete, setPendingDelete] = useState<string | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [draft, setDraft] = useState<EditDraft | null>(null);
 
   useEffect(() => {
     setEntries(loadEntries());
   }, []);
 
   function toggleExpand(id: string) {
+    // cancel edit if switching card
+    if (editingId && editingId !== id) {
+      setEditingId(null);
+      setDraft(null);
+    }
     setExpanded((prev) => {
       const next = new Set(prev);
       if (next.has(id)) next.delete(id);
@@ -99,6 +110,8 @@ export default function HistorialPage() {
   }
 
   function confirmDelete(id: string) {
+    setEditingId(null);
+    setDraft(null);
     setPendingDelete(id);
   }
 
@@ -112,6 +125,44 @@ export default function HistorialPage() {
 
   function cancelDelete() {
     setPendingDelete(null);
+  }
+
+  function startEdit(entry: DiaryEntry) {
+    setEditingId(entry.id);
+    setDraft({ mood: entry.mood, emotions: [...entry.emotions], text: entry.text });
+    setPendingDelete(null);
+  }
+
+  function cancelEdit() {
+    setEditingId(null);
+    setDraft(null);
+  }
+
+  function toggleDraftEmotion(id: Emotion) {
+    if (!draft) return;
+    setDraft((prev) => {
+      if (!prev) return prev;
+      const has = prev.emotions.includes(id);
+      return {
+        ...prev,
+        emotions: has ? prev.emotions.filter((e) => e !== id) : [...prev.emotions, id],
+      };
+    });
+  }
+
+  function commitEdit(entry: DiaryEntry) {
+    if (!draft) return;
+    const updated: DiaryEntry = {
+      ...entry,
+      mood: draft.mood,
+      emotions: draft.emotions,
+      text: draft.text.trim(),
+    };
+    updateEntry(updated);
+    setEntries((prev) => prev.map((e) => (e.id === entry.id ? updated : e)));
+    setEditingId(null);
+    setDraft(null);
+    toast.success('Entrada actualizada.');
   }
 
   const groups = groupByMonth(entries);
@@ -168,10 +219,11 @@ export default function HistorialPage() {
               {group.entries.map((entry) => {
                 const isOpen = expanded.has(entry.id);
                 const isPending = pendingDelete === entry.id;
+                const isEditing = editingId === entry.id;
                 const hasText = entry.text.trim().length > 0;
 
                 return (
-                  <li key={entry.id} className={`entry-card ${isOpen ? 'open' : ''}`}>
+                  <li key={entry.id} className={`entry-card ${isOpen ? 'open' : ''} ${isEditing ? 'editing' : ''}`}>
                     {/* ── card top row ── */}
                     <div className="card-top">
                       <button
@@ -220,8 +272,8 @@ export default function HistorialPage() {
                       </button>
                     </div>
 
-                    {/* ── expanded content ── */}
-                    {isOpen && (
+                    {/* ── expanded — READ view ── */}
+                    {isOpen && !isEditing && (
                       <div className="card-body">
                         <p className="full-date">{formatFull(entry.createdAt)}</p>
                         {entry.emotions.length > 0 && (
@@ -236,6 +288,79 @@ export default function HistorialPage() {
                         ) : (
                           <p className="no-text">Solo ánimo y emociones. Sin texto.</p>
                         )}
+                        <button
+                          type="button"
+                          className="edit-btn"
+                          onClick={() => startEdit(entry)}
+                        >
+                          Editar entrada
+                        </button>
+                      </div>
+                    )}
+
+                    {/* ── expanded — EDIT view ── */}
+                    {isOpen && isEditing && draft && (
+                      <div className="card-body edit-body">
+                        <p className="full-date">{formatFull(entry.createdAt)}</p>
+
+                        {/* mood */}
+                        <div className="edit-field">
+                          <label className="edit-label" htmlFor={`mood-${entry.id}`}>
+                            Ánimo <strong>{draft.mood}</strong> / 10
+                          </label>
+                          <input
+                            id={`mood-${entry.id}`}
+                            type="range"
+                            min={0} max={10} step={1}
+                            value={draft.mood}
+                            onChange={(e) => setDraft((p) => p ? { ...p, mood: Number(e.target.value) } : p)}
+                            className="slider"
+                          />
+                        </div>
+
+                        {/* emotions */}
+                        <div className="edit-field">
+                          <span className="edit-label">Emociones</span>
+                          <div className="chips-edit" role="group" aria-label="Emociones">
+                            {EMOTIONS.map((emo) => {
+                              const active = draft.emotions.includes(emo.id as Emotion);
+                              return (
+                                <button
+                                  key={emo.id}
+                                  type="button"
+                                  role="checkbox"
+                                  aria-checked={active}
+                                  className={`chip-edit ${active ? 'chip-edit-on' : ''}`}
+                                  onClick={() => toggleDraftEmotion(emo.id as Emotion)}
+                                >
+                                  {emo.label}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+
+                        {/* text */}
+                        <div className="edit-field">
+                          <label className="edit-label" htmlFor={`text-${entry.id}`}>Texto</label>
+                          <textarea
+                            id={`text-${entry.id}`}
+                            className="edit-textarea"
+                            rows={4}
+                            value={draft.text}
+                            onChange={(e) => setDraft((p) => p ? { ...p, text: e.target.value } : p)}
+                            placeholder="Cuéntalo si quieres…"
+                          />
+                        </div>
+
+                        <div className="edit-actions">
+                          <button type="button" className="btn-save" onClick={() => commitEdit(entry)}>
+                            Guardar cambios
+                          </button>
+                          <button type="button" className="btn-cancel-edit" onClick={cancelEdit}>
+                            Cancelar
+                          </button>
+                        </div>
                       </div>
                     )}
 
@@ -260,7 +385,6 @@ export default function HistorialPage() {
           </section>
         ))}
 
-        {/* ── bottom spacer for tab bar ── */}
         <div style={{ height: 96 }} />
       </Screen>
 
@@ -268,9 +392,7 @@ export default function HistorialPage() {
 
       <style jsx>{`
         /* ── layout ── */
-        .hdr {
-          margin-bottom: 28px;
-        }
+        .hdr { margin-bottom: 28px; }
         .back-btn {
           background: none;
           border: none;
@@ -314,9 +436,7 @@ export default function HistorialPage() {
         }
 
         /* ── month group ── */
-        .month-group {
-          margin-bottom: 32px;
-        }
+        .month-group { margin-bottom: 32px; }
         .month-label {
           font-family: var(--font-mono);
           font-size: 11px;
@@ -343,14 +463,10 @@ export default function HistorialPage() {
           overflow: hidden;
           transition: border-color 0.15s;
         }
-        .entry-card.open {
-          border-color: rgba(13, 15, 61, 0.2);
-        }
+        .entry-card.open { border-color: rgba(13, 15, 61, 0.2); }
+        .entry-card.editing { border-color: var(--cobalto); }
 
-        .card-top {
-          display: flex;
-          align-items: stretch;
-        }
+        .card-top { display: flex; align-items: stretch; }
         .card-main {
           flex: 1;
           display: flex;
@@ -397,11 +513,7 @@ export default function HistorialPage() {
           text-transform: uppercase;
           opacity: 0.6;
         }
-        .chips-mini {
-          display: flex;
-          flex-wrap: wrap;
-          gap: 4px;
-        }
+        .chips-mini { display: flex; flex-wrap: wrap; gap: 4px; }
         .chip-mini {
           font-family: var(--font-body);
           font-size: 10px;
@@ -458,19 +570,18 @@ export default function HistorialPage() {
           outline: 2px solid var(--accent);
           outline-offset: -2px;
         }
-        .delete-btn svg {
-          width: 16px;
-          height: 16px;
-        }
+        .delete-btn svg { width: 16px; height: 16px; }
 
         /* expanded body */
         .card-body {
           padding: 0 14px 14px 64px;
           display: flex;
           flex-direction: column;
-          gap: 8px;
+          gap: 10px;
           border-top: 1px solid rgba(13, 15, 61, 0.07);
         }
+        .edit-body { padding: 0 14px 16px 14px; }
+
         .full-date {
           font-family: var(--font-mono);
           font-size: 10px;
@@ -479,11 +590,7 @@ export default function HistorialPage() {
           opacity: 0.45;
           margin: 8px 0 0;
         }
-        .chips-full {
-          display: flex;
-          flex-wrap: wrap;
-          gap: 5px;
-        }
+        .chips-full { display: flex; flex-wrap: wrap; gap: 5px; }
         .chip-full {
           font-family: var(--font-body);
           font-size: 11px;
@@ -508,6 +615,166 @@ export default function HistorialPage() {
           opacity: 0.4;
           margin: 0;
         }
+        .edit-btn {
+          align-self: flex-start;
+          background: none;
+          border: 1px solid rgba(13, 15, 61, 0.18);
+          padding: 6px 14px;
+          border-radius: 99px;
+          font-family: var(--font-mono);
+          font-size: 11px;
+          letter-spacing: 0.14em;
+          text-transform: uppercase;
+          color: var(--ink);
+          cursor: pointer;
+          opacity: 0.65;
+          transition: opacity 0.15s, border-color 0.15s;
+        }
+        .edit-btn:hover {
+          opacity: 1;
+          border-color: var(--cobalto);
+          color: var(--cobalto);
+        }
+        .edit-btn:focus-visible {
+          outline: 2px solid var(--cobalto);
+          outline-offset: 2px;
+        }
+
+        /* ── edit form ── */
+        .edit-field {
+          display: flex;
+          flex-direction: column;
+          gap: 6px;
+          margin-top: 10px;
+        }
+        .edit-label {
+          font-family: var(--font-mono);
+          font-size: 11px;
+          letter-spacing: 0.16em;
+          text-transform: uppercase;
+          opacity: 0.55;
+        }
+        .edit-label strong {
+          color: var(--cobalto);
+          font-style: italic;
+          font-family: var(--font-display);
+          font-size: 14px;
+          letter-spacing: 0;
+          text-transform: none;
+          opacity: 1;
+        }
+
+        /* slider (same style as /diario) */
+        .slider {
+          -webkit-appearance: none;
+          appearance: none;
+          width: 100%;
+          height: 4px;
+          background: rgba(13, 15, 61, 0.14);
+          border-radius: 999px;
+          outline: none;
+          margin: 0;
+        }
+        .slider::-webkit-slider-thumb {
+          -webkit-appearance: none;
+          appearance: none;
+          width: 20px;
+          height: 20px;
+          border-radius: 50%;
+          background: var(--cobalto);
+          box-shadow: 0 4px 10px rgba(29, 43, 219, 0.38);
+          cursor: pointer;
+          border: none;
+        }
+        .slider::-moz-range-thumb {
+          width: 20px;
+          height: 20px;
+          border-radius: 50%;
+          background: var(--cobalto);
+          box-shadow: 0 4px 10px rgba(29, 43, 219, 0.38);
+          cursor: pointer;
+          border: none;
+        }
+
+        /* emotion chips in edit mode */
+        .chips-edit { display: flex; flex-wrap: wrap; gap: 7px; }
+        .chip-edit {
+          font-family: var(--font-body);
+          font-size: 12px;
+          font-weight: 500;
+          padding: 6px 12px;
+          border-radius: var(--r-pill);
+          border: 1.5px solid rgba(13, 15, 61, 0.18);
+          background: transparent;
+          color: var(--ink);
+          cursor: pointer;
+          transition: background 0.12s, color 0.12s, border-color 0.12s;
+        }
+        .chip-edit-on {
+          background: var(--cobalto);
+          color: var(--crema);
+          border-color: var(--cobalto);
+        }
+
+        /* textarea in edit */
+        .edit-textarea {
+          width: 100%;
+          font-family: var(--font-body);
+          font-size: 15px;
+          line-height: 1.55;
+          color: var(--ink);
+          background: rgba(255,255,255,0.8);
+          border: 1px solid rgba(13, 15, 61, 0.16);
+          border-radius: var(--r-md);
+          padding: 12px 14px;
+          resize: vertical;
+          min-height: 84px;
+          outline: none;
+          transition: border-color 0.15s;
+          box-sizing: border-box;
+        }
+        .edit-textarea:focus { border-color: var(--cobalto); }
+        .edit-textarea::placeholder {
+          font-family: var(--font-display);
+          font-style: italic;
+          color: rgba(13, 15, 61, 0.4);
+        }
+
+        /* edit actions */
+        .edit-actions {
+          display: flex;
+          gap: 8px;
+          margin-top: 4px;
+        }
+        .btn-save {
+          padding: 10px 20px;
+          border-radius: 99px;
+          background: var(--cobalto);
+          color: var(--crema);
+          border: none;
+          font-family: var(--font-mono);
+          font-size: 12px;
+          letter-spacing: 0.14em;
+          text-transform: uppercase;
+          cursor: pointer;
+          transition: opacity 0.15s;
+        }
+        .btn-save:hover { opacity: 0.85; }
+        .btn-cancel-edit {
+          padding: 10px 20px;
+          border-radius: 99px;
+          background: none;
+          border: 1px solid rgba(13, 15, 61, 0.18);
+          color: var(--ink);
+          font-family: var(--font-mono);
+          font-size: 12px;
+          letter-spacing: 0.14em;
+          text-transform: uppercase;
+          cursor: pointer;
+          opacity: 0.6;
+          transition: opacity 0.15s;
+        }
+        .btn-cancel-edit:hover { opacity: 1; }
 
         /* delete confirm bar */
         .confirm-bar {
@@ -525,10 +792,7 @@ export default function HistorialPage() {
           letter-spacing: 0.1em;
           color: var(--accent);
         }
-        .confirm-btns {
-          display: flex;
-          gap: 8px;
-        }
+        .confirm-btns { display: flex; gap: 8px; }
         .confirm-yes {
           font-family: var(--font-mono);
           font-size: 11px;
