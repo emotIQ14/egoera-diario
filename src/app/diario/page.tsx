@@ -117,6 +117,20 @@ function getDailyPromptIdx(): number {
   return Math.floor(Date.now() / 86_400_000) % WRITING_PROMPTS.length;
 }
 
+// Prompts contextuals según la emoción seleccionada
+const EMOTION_PROMPTS: Record<string, string> = {
+  ansiedad:  '¿Qué es lo más concreto que te genera ansiedad ahora mismo?',
+  miedo:     '¿Qué es exactamente lo que temes que ocurra?',
+  tristeza:  '¿Qué es lo que más echas de menos o lo que más pesa hoy?',
+  rabia:     '¿Qué límite se ha cruzado o qué no debería haber pasado?',
+  culpa:     '¿Qué harías diferente si pudieras? ¿Y qué no cambiarías?',
+  verguenza: '¿Qué parte de ti sientes que has expuesto de más?',
+  cansancio: '¿Qué es lo que más te ha desgastado últimamente?',
+  calma:     '¿Qué ha contribuido a que te sientas así hoy?',
+  esperanza: '¿Qué cosa pequeña te da esa sensación de posibilidad?',
+  alegria:   '¿Qué merece ser recordado de lo que ha pasado hoy?',
+};
+
 type LastCtx = { mood: number; topEmotion: string | null; daysAgo: number };
 
 type Draft = { mood: number; moodTouched: boolean; emotions: string[]; text: string };
@@ -163,6 +177,12 @@ export default function DiarioPage() {
   const showBreathingCue =
     (emotions.includes('ansiedad' as Emotion) || emotions.includes('miedo' as Emotion)) &&
     !breathingDismissed;
+
+  // Prompt contextual: usa la primera emoción seleccionada que tenga prompt propio
+  const emotionPrompt: string | null =
+    emotions.length > 0
+      ? (emotions.map((e) => EMOTION_PROMPTS[e]).find(Boolean) ?? null)
+      : null;
 
   /**
    * Si el usuario llegó vía peep-prompt y escribió algo en la mini-modal
@@ -564,6 +584,17 @@ export default function DiarioPage() {
               {wordCount} {wordCount === 1 ? 'palabra' : 'palabras'}
             </div>
           )}
+          {!text.trim() && emotionPrompt ? (
+            <button
+              type="button"
+              className="prompt-emotion"
+              onClick={() => setText(emotionPrompt)}
+              aria-label="Usar prompt de la emoción seleccionada"
+            >
+              <span className="prompt-emotion-icon" aria-hidden="true">↳</span>
+              <span className="prompt-emotion-text">{emotionPrompt}</span>
+            </button>
+          ) : null}
           {!text.trim() && (
             <div className="prompt-row">
               <button
@@ -958,6 +989,10 @@ export default function DiarioPage() {
           from { opacity: 0; transform: translateY(-6px); }
           to   { opacity: 1; transform: translateY(0); }
         }
+        @keyframes fadeUp {
+          from { opacity: 0; transform: translateY(6px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
 
         /* === Textarea === */
         .text-section {
@@ -1033,6 +1068,38 @@ export default function DiarioPage() {
         }
 
         /* === Prompt sugerido === */
+        /* prompt contextual por emoción */
+        .prompt-emotion {
+          display: flex;
+          align-items: flex-start;
+          gap: 8px;
+          width: 100%;
+          padding: 10px 14px;
+          margin: 0 0 6px;
+          background: rgba(29, 43, 219, 0.07);
+          border: 1px solid rgba(29, 43, 219, 0.14);
+          border-radius: 10px;
+          text-align: left;
+          cursor: pointer;
+          transition: background 0.15s ease;
+          animation: fadeUp 0.22s ease both;
+        }
+        .prompt-emotion:hover { background: rgba(29, 43, 219, 0.12); }
+        .prompt-emotion-icon {
+          font-size: 13px;
+          color: var(--cobalto);
+          opacity: 0.7;
+          flex-shrink: 0;
+          margin-top: 1px;
+        }
+        .prompt-emotion-text {
+          font-family: var(--font-body);
+          font-size: 13px;
+          line-height: 1.45;
+          color: var(--cobalto);
+          font-weight: 500;
+        }
+
         .prompt-row {
           display: flex;
           align-items: stretch;
