@@ -84,6 +84,32 @@ function formatDateLine(d: Date): string {
   return `${day} · ${month} · ${year} · ${time}`;
 }
 
+const WEEK_LABELS = ['L', 'M', 'X', 'J', 'V', 'S', 'D'] as const;
+
+/** Devuelve un array[7] donde true = hay al menos 1 entrada ese día de la semana actual (Lun=0). */
+function weekActivityDots(now: Date): boolean[] {
+  if (typeof window === 'undefined') return Array(7).fill(false) as boolean[];
+  const monday = new Date(now);
+  const day = monday.getDay() || 7;
+  monday.setDate(now.getDate() - (day - 1));
+  monday.setHours(0, 0, 0, 0);
+
+  const seen = new Set<number>();
+  try {
+    const entries = JSON.parse(
+      window.localStorage.getItem('egoera-diario-entries-v1') ?? '[]'
+    ) as Array<{ createdAt: string }>;
+    for (const e of entries) {
+      const d = new Date(e.createdAt);
+      d.setHours(0, 0, 0, 0);
+      const diff = Math.round((d.getTime() - monday.getTime()) / 86_400_000);
+      if (diff >= 0 && diff < 7) seen.add(diff);
+    }
+  } catch { /* silencioso */ }
+
+  return Array.from({ length: 7 }, (_, i) => seen.has(i));
+}
+
 export default function HomePage() {
   const router = useRouter();
   const toast = useToast();
@@ -91,6 +117,7 @@ export default function HomePage() {
   const [name, setName] = useState<string>('Ander');
   const [streak, setStreak] = useState<number>(0);
   const [todayCount, setTodayCount] = useState<number>(0);
+  const [weekDots, setWeekDots] = useState<boolean[]>(Array(7).fill(false) as boolean[]);
 
   // Redirige a /bienvenida si el usuario aún no ha hecho onboarding.
   useEffect(() => {
@@ -104,6 +131,7 @@ export default function HomePage() {
   useEffect(() => {
     const current = new Date();
     setNow(current);
+    setWeekDots(weekActivityDots(current));
 
     const stored = window.localStorage.getItem(NAME_KEY);
     if (stored && stored.trim().length > 0) setName(stored.trim());
@@ -215,6 +243,26 @@ export default function HomePage() {
           <p className="card-sub">Tus emociones, sin interpretarlas por ti.</p>
         </button>
       </section>
+
+      {/* ── week activity dots ── */}
+      {now ? (
+        <div className="week-dots" aria-label="Actividad de esta semana">
+          {WEEK_LABELS.map((label, i) => {
+            const dayIdx = (now.getDay() || 7) - 1; // 0=lun
+            const isToday = i === dayIdx;
+            const filled = weekDots[i];
+            return (
+              <div key={label} className={`week-day ${isToday ? 'today' : ''}`}>
+                <span
+                  className={`dot ${filled ? 'dot-on' : ''} ${isToday ? 'dot-today' : ''}`}
+                  aria-label={filled ? `${label}: entrada` : `${label}: sin entrada`}
+                />
+                <span className="day-lbl">{label}</span>
+              </div>
+            );
+          })}
+        </div>
+      ) : null}
 
       {todayCount > 0 ? (
         <p className="teaser">
@@ -343,6 +391,50 @@ export default function HomePage() {
         }
         .discover-link-pro:hover {
           border-color: var(--accent);
+        }
+
+        /* ── week dots ── */
+        .week-dots {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin: 20px 0 4px;
+          padding: 14px 16px;
+          background: rgba(255, 255, 255, 0.45);
+          border: 1px solid rgba(13, 15, 61, 0.08);
+          border-radius: var(--r-md);
+        }
+        .week-day {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 5px;
+        }
+        .dot {
+          width: 10px;
+          height: 10px;
+          border-radius: 50%;
+          background: rgba(13, 15, 61, 0.1);
+          transition: background 0.15s;
+        }
+        .dot-on { background: var(--cobalto); }
+        .dot-today {
+          box-shadow: 0 0 0 2px rgba(29, 43, 219, 0.25);
+        }
+        .dot-on.dot-today {
+          background: var(--cobalto);
+          box-shadow: 0 0 0 2px rgba(29, 43, 219, 0.4);
+        }
+        .day-lbl {
+          font-family: var(--font-mono);
+          font-size: 9px;
+          letter-spacing: 0.12em;
+          text-transform: uppercase;
+          opacity: 0.4;
+        }
+        .today .day-lbl {
+          opacity: 0.75;
+          color: var(--cobalto);
         }
       `}</style>
     </Screen>
