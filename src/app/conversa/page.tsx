@@ -93,6 +93,36 @@ type Message = { role: 'user' | 'assistant'; content: string };
 const STORAGE_KEY = 'egoera-diario-conversation-current';
 const SESSIONS_KEY = 'egoera-diario-conversations';
 const NAME_KEY = 'egoera-diario-name';
+const CONV_HISTORY_KEY = 'egoera-conv-history';
+
+type ConvSnippet = { startedAt: string; preview: string; msgCount: number };
+
+function loadConvHistory(): ConvSnippet[] {
+  if (typeof window === 'undefined') return [];
+  try {
+    const raw = window.localStorage.getItem(CONV_HISTORY_KEY);
+    if (!raw) return [];
+    return (JSON.parse(raw) as ConvSnippet[]).slice(0, 3);
+  } catch { return []; }
+}
+
+function saveConvToHistory(msgs: Message[]): void {
+  if (typeof window === 'undefined') return;
+  // Solo guarda si hay al menos 1 mensaje del usuario
+  const userMsgs = msgs.filter((m) => m.role === 'user');
+  if (userMsgs.length === 0) return;
+  try {
+    const preview = userMsgs[0].content.slice(0, 60).trim();
+    const snippet: ConvSnippet = {
+      startedAt: new Date().toISOString(),
+      preview: preview.length < userMsgs[0].content.length ? `${preview}…` : preview,
+      msgCount: msgs.length,
+    };
+    const existing = loadConvHistory();
+    const updated = [snippet, ...existing].slice(0, 3);
+    window.localStorage.setItem(CONV_HISTORY_KEY, JSON.stringify(updated));
+  } catch { /* ignore */ }
+}
 
 type Subtitle = { pre: string; em: string };
 
@@ -208,6 +238,8 @@ export default function ConversaPage() {
   const [sessionN, setSessionN] = useState(1);
   const [subtitle] = useState<Subtitle>(() => pickSubtitle());
   const [hydrated, setHydrated] = useState(false);
+  const [convHistory, setConvHistory] = useState<ConvSnippet[]>([]);
+  const [showHistory, setShowHistory] = useState(false);
 
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
@@ -239,6 +271,7 @@ export default function ConversaPage() {
       n = 1;
     }
     setSessionN(n);
+    setConvHistory(loadConvHistory());
     setHydrated(true);
   }, []);
 
@@ -304,6 +337,11 @@ export default function ConversaPage() {
   }
 
   function resetConversation(): void {
+    // Guardar la conversación actual al historial antes de limpiar
+    saveConvToHistory(messages);
+    setConvHistory(loadConvHistory());
+    setShowHistory(false);
+
     const storedName = typeof window !== 'undefined'
       ? (window.localStorage.getItem(NAME_KEY) ?? undefined)
       : undefined;
@@ -343,7 +381,37 @@ export default function ConversaPage() {
           <br />
           <em>{subtitle.em}</em>.
         </h1>
-        <span className="eyebrow session">— Sesión {sessionN} —</span>
+        <div className="session-row">
+          <span className="eyebrow session">— Sesión {sessionN} —</span>
+          {convHistory.length > 0 ? (
+            <button
+              type="button"
+              className="history-toggle"
+              onClick={() => setShowHistory((v) => !v)}
+              aria-expanded={showHistory}
+              aria-label={showHistory ? 'Ocultar sesiones anteriores' : 'Ver sesiones anteriores'}
+            >
+              {showHistory ? '▲' : '▼'} Anteriores
+            </button>
+          ) : null}
+        </div>
+        {showHistory && convHistory.length > 0 ? (
+          <div className="history-list" aria-label="Sesiones anteriores">
+            {convHistory.map((s, i) => {
+              const d = new Date(s.startedAt);
+              const rel = new Date();
+              const daysDiff = Math.floor((rel.getTime() - d.getTime()) / 86_400_000);
+              const when = daysDiff === 0 ? 'Hoy' : daysDiff === 1 ? 'Ayer' : `Hace ${daysDiff} días`;
+              return (
+                <div key={i} className="history-item">
+                  <span className="history-when">{when}</span>
+                  <span className="history-preview">«{s.preview}»</span>
+                  <span className="history-count">{s.msgCount} msg</span>
+                </div>
+              );
+            })}
+          </div>
+        ) : null}
       </header>
 
       <div ref={scrollRef} className="chat">
@@ -437,10 +505,74 @@ export default function ConversaPage() {
           color: var(--accent);
           font-style: italic;
         }
-        .session {
-          display: block;
+        .session-row {
+          display: flex;
+          align-items: center;
+          gap: 12px;
           margin-top: 14px;
+        }
+        .session {
           opacity: 0.55;
+        }
+        .history-toggle {
+          background: none;
+          border: none;
+          padding: 0;
+          font-family: var(--font-mono);
+          font-size: 9px;
+          letter-spacing: 0.18em;
+          text-transform: uppercase;
+          font-weight: 600;
+          color: var(--crema);
+          opacity: 0.4;
+          cursor: pointer;
+          -webkit-tap-highlight-color: transparent;
+          transition: opacity 0.15s;
+        }
+        .history-toggle:hover { opacity: 0.7; }
+
+        .history-list {
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+          margin-top: 10px;
+          padding: 12px;
+          background: rgba(241, 234, 216, 0.06);
+          border: 1px solid rgba(241, 234, 216, 0.1);
+          border-radius: 12px;
+        }
+        .history-item {
+          display: flex;
+          align-items: baseline;
+          gap: 8px;
+          min-width: 0;
+        }
+        .history-when {
+          font-family: var(--font-mono);
+          font-size: 9px;
+          letter-spacing: 0.18em;
+          text-transform: uppercase;
+          color: var(--accent-soft);
+          flex-shrink: 0;
+        }
+        .history-preview {
+          font-family: var(--font-display);
+          font-style: italic;
+          font-size: 12px;
+          color: var(--crema);
+          opacity: 0.55;
+          flex: 1;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+        .history-count {
+          font-family: var(--font-mono);
+          font-size: 9px;
+          letter-spacing: 0.1em;
+          color: var(--crema);
+          opacity: 0.3;
+          flex-shrink: 0;
         }
 
         .chat {
