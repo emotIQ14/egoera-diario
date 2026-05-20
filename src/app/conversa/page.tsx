@@ -185,6 +185,13 @@ function buildInitialMessage(name?: string, weekCtx?: WeekCtx | null): Message {
 
 const INITIAL_MESSAGE: Message = buildInitialMessage();
 
+const QUICK_PROMPTS = [
+  'Algo me está pesando',
+  'No sé bien cómo empezar',
+  'Me siento…',
+  'Hay algo que me da vueltas',
+] as const;
+
 function loadConversation(): Message[] {
   if (typeof window === 'undefined') return [INITIAL_MESSAGE];
   try {
@@ -458,6 +465,21 @@ export default function ConversaPage() {
         </button>
       </div>
 
+      {messages.length === 1 && !loading && !input.trim() ? (
+        <div className="quick-prompts" role="group" aria-label="Sugerencias para empezar">
+          {QUICK_PROMPTS.map((p) => (
+            <button
+              key={p}
+              type="button"
+              className="quick-chip"
+              onClick={() => { setInput(p); inputRef.current?.focus(); }}
+            >
+              {p}
+            </button>
+          ))}
+        </div>
+      ) : null}
+
       <SafetyBar text={input} offsetBottom={156} />
 
       <TabBar />
@@ -692,6 +714,50 @@ export default function ConversaPage() {
         }
         .composer-send:not(:disabled):active { transform: scale(0.94); }
         .composer-send svg { width: 16px; height: 16px; }
+
+        /* ── quick start prompts ── */
+        .quick-prompts {
+          position: fixed;
+          left: 14px;
+          right: 14px;
+          bottom: 144px;
+          max-width: 520px;
+          margin: 0 auto;
+          display: flex;
+          gap: 7px;
+          overflow-x: auto;
+          overflow-y: hidden;
+          -webkit-overflow-scrolling: touch;
+          scrollbar-width: none;
+          z-index: 28;
+          padding: 2px 0 4px;
+          animation: fadeUp 0.24s ease both;
+        }
+        .quick-prompts::-webkit-scrollbar { display: none; }
+        .quick-chip {
+          white-space: nowrap;
+          flex-shrink: 0;
+          background: rgba(241, 234, 216, 0.09);
+          border: 1px solid rgba(241, 234, 216, 0.18);
+          border-radius: 999px;
+          color: var(--crema);
+          font-family: var(--font-display);
+          font-style: italic;
+          font-size: 13px;
+          padding: 7px 15px;
+          cursor: pointer;
+          transition: background 0.15s, border-color 0.15s;
+          -webkit-tap-highlight-color: transparent;
+        }
+        .quick-chip:hover {
+          background: rgba(241, 234, 216, 0.16);
+          border-color: rgba(241, 234, 216, 0.3);
+        }
+        .quick-chip:active { transform: scale(0.96); }
+        @keyframes fadeUp {
+          from { opacity: 0; transform: translateY(8px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
       `}</style>
     </Screen>
   );
