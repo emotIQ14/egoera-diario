@@ -13,6 +13,33 @@ const STORAGE_KEY = 'egoera-diario-conversation-current';
 const SESSIONS_KEY = 'egoera-diario-conversations';
 const NAME_KEY = 'egoera-diario-name';
 
+type Subtitle = { pre: string; em: string };
+
+const SUBTITLES_MORNING: Subtitle[] = [
+  { pre: 'Cómo empiezas', em: 'el día' },
+  { pre: 'Lo que traes', em: 'esta mañana' },
+  { pre: 'Con lo que', em: 'llegas hoy' },
+];
+const SUBTITLES_AFTERNOON: Subtitle[] = [
+  { pre: 'Cómo va', em: 'el día' },
+  { pre: 'Lo que', em: 'está pasando' },
+  { pre: 'Un momento', em: 'para parar' },
+];
+const SUBTITLES_NIGHT: Subtitle[] = [
+  { pre: 'Cómo termina', em: 'el día' },
+  { pre: 'Lo que se queda', em: 'esta noche' },
+  { pre: 'Antes de', em: 'descansar' },
+];
+
+function pickSubtitle(): Subtitle {
+  const h = new Date().getHours();
+  const pool =
+    h >= 6 && h < 13 ? SUBTITLES_MORNING
+    : h >= 13 && h < 21 ? SUBTITLES_AFTERNOON
+    : SUBTITLES_NIGHT;
+  return pool[Math.floor(Math.random() * pool.length)];
+}
+
 function buildInitialMessage(name?: string): Message {
   const greeting = name && name.trim() ? `Hola, ${name.trim()}` : 'Hola';
   return {
@@ -74,6 +101,7 @@ export default function ConversaPage() {
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [sessionN, setSessionN] = useState(1);
+  const [subtitle] = useState<Subtitle>(() => pickSubtitle());
   const [hydrated, setHydrated] = useState(false);
 
   const scrollRef = useRef<HTMLDivElement | null>(null);
@@ -201,9 +229,9 @@ export default function ConversaPage() {
           </button>
         </div>
         <h1 className="title">
-          Hoy hablamos
+          {subtitle.pre}
           <br />
-          de <em>la calma</em>.
+          <em>{subtitle.em}</em>.
         </h1>
         <span className="eyebrow session">— Sesión {sessionN} —</span>
       </header>
