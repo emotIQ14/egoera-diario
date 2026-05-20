@@ -173,6 +173,7 @@ export default function HomePage() {
   const [todayCount, setTodayCount] = useState<number>(0);
   const [weekDots, setWeekDots] = useState<boolean[]>(Array(7).fill(false) as boolean[]);
   const [todayStat, setTodayStat] = useState<{ avgMood: number; topEmotion: string | null } | null>(null);
+  const [flashback, setFlashback] = useState<{ daysAgo: number; avgMood: number; topEmotion: string | null } | null>(null);
 
   // Redirige a /bienvenida si el usuario aún no ha hecho onboarding.
   useEffect(() => {
@@ -201,6 +202,29 @@ export default function HomePage() {
     const count = todayEntries.length;
     setTodayCount(count);
     setTodayStat(todayStats(todayEntries));
+
+    // Flashback: look for entries from 7, 14, or 30 days ago (in that order)
+    const allEntries = loadEntries();
+    for (const daysAgo of [7, 14, 30]) {
+      const target = new Date();
+      target.setDate(target.getDate() - daysAgo);
+      target.setHours(0, 0, 0, 0);
+      const match = allEntries.filter((e) => {
+        const d = new Date(e.createdAt);
+        d.setHours(0, 0, 0, 0);
+        return d.getTime() === target.getTime();
+      });
+      if (match.length > 0) {
+        const avg = Math.round((match.reduce((s, e) => s + e.mood, 0) / match.length) * 10) / 10;
+        const freq = new Map<string, number>();
+        for (const e of match) for (const emo of e.emotions) freq.set(emo, (freq.get(emo) ?? 0) + 1);
+        const topEmo = freq.size > 0
+          ? (emotionLabelHome(Array.from(freq.entries()).sort((a, b) => b[1] - a[1])[0][0]))
+          : null;
+        setFlashback({ daysAgo, avgMood: avg, topEmotion: topEmo });
+        break;
+      }
+    }
 
     const currentStreak = streakDays();
     setStreak(currentStreak);
@@ -390,6 +414,26 @@ export default function HomePage() {
             )}
           </div>
           <span className="recap-arrow">→</span>
+        </button>
+      ) : null}
+
+      {flashback ? (
+        <button
+          type="button"
+          className="flashback-card"
+          onClick={() => router.push('/diario/historial')}
+          aria-label={`Ver entradas de hace ${flashback.daysAgo} días`}
+        >
+          <span className="flashback-when">Hace {flashback.daysAgo} días</span>
+          <span className="flashback-dot" aria-hidden="true">·</span>
+          <span className="flashback-mood">{flashback.avgMood.toFixed(1)}</span>
+          {flashback.topEmotion && (
+            <>
+              <span className="flashback-dot" aria-hidden="true">·</span>
+              <span className="flashback-emo">{flashback.topEmotion}</span>
+            </>
+          )}
+          <span className="flashback-arrow">→</span>
         </button>
       ) : null}
 
@@ -619,6 +663,64 @@ export default function HomePage() {
           opacity: 0.5;
           flex-shrink: 0;
         }
+        /* ── flashback card ── */
+        .flashback-card {
+          margin-top: 12px;
+          display: flex;
+          align-items: center;
+          gap: 7px;
+          width: 100%;
+          padding: 10px 14px;
+          background: rgba(13, 15, 61, 0.04);
+          border: 1px solid rgba(13, 15, 61, 0.1);
+          border-radius: var(--r-md);
+          cursor: pointer;
+          font: inherit;
+          text-align: left;
+          -webkit-tap-highlight-color: transparent;
+          transition: background 0.15s;
+        }
+        .flashback-card:hover { background: rgba(13, 15, 61, 0.07); }
+        .flashback-when {
+          font-family: var(--font-mono);
+          font-size: 10px;
+          letter-spacing: 0.12em;
+          text-transform: uppercase;
+          color: var(--ink);
+          opacity: 0.45;
+          flex-shrink: 0;
+        }
+        .flashback-dot {
+          font-family: var(--font-mono);
+          font-size: 10px;
+          color: var(--ink);
+          opacity: 0.3;
+        }
+        .flashback-mood {
+          font-family: var(--font-display);
+          font-style: italic;
+          font-weight: 700;
+          font-size: 16px;
+          color: var(--cobalto);
+          opacity: 0.8;
+        }
+        .flashback-emo {
+          font-family: var(--font-display);
+          font-style: italic;
+          font-size: 13px;
+          color: var(--ink);
+          opacity: 0.55;
+          flex: 1;
+        }
+        .flashback-arrow {
+          font-family: var(--font-mono);
+          font-size: 11px;
+          color: var(--ink);
+          opacity: 0.3;
+          margin-left: auto;
+          flex-shrink: 0;
+        }
+
         .discover {
           margin-top: 32px;
           display: flex;
