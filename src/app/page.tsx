@@ -176,6 +176,7 @@ export default function HomePage() {
   const [flashback, setFlashback] = useState<{ daysAgo: number; avgMood: number; topEmotion: string | null } | null>(null);
   const [diaryExcerpt, setDiaryExcerpt] = useState<{ date: string; text: string; mood: number } | null>(null);
   const [weekSummary, setWeekSummary] = useState<{ count: number; avgMood: number; topEmotion: string | null } | null>(null);
+  const [totalEntries, setTotalEntries] = useState<number>(0);
 
   // Redirige a /bienvenida si el usuario aún no ha hecho onboarding.
   useEffect(() => {
@@ -207,6 +208,7 @@ export default function HomePage() {
 
     // Flashback: look for entries from 7, 14, or 30 days ago (in that order)
     const allEntries = loadEntries();
+    setTotalEntries(allEntries.length);
     for (const daysAgo of [7, 14, 30]) {
       const target = new Date();
       target.setDate(target.getDate() - daysAgo);
@@ -343,6 +345,8 @@ export default function HomePage() {
               <span className="pill-yellow">
                 +{streak}{weekActive > 0 ? ` · ${weekActive} sem` : ''}
               </span>
+            ) : totalEntries >= 3 ? (
+              <span className="pill-return">Vuelves cuando quieras</span>
             ) : null}
           </div>
           <h2 className="card-title">
