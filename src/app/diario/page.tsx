@@ -157,7 +157,12 @@ export default function DiarioPage() {
   const [voiceInterim, setVoiceInterim] = useState<string>('');
   const [todayCtx, setTodayCtx] = useState<{ count: number; lastTime: string } | null>(null);
   const [promptIdx, setPromptIdx] = useState<number>(0);
+  const [breathingDismissed, setBreathingDismissed] = useState<boolean>(false);
   const recognitionRef = useRef<SpeechRecognitionLike | null>(null);
+
+  const showBreathingCue =
+    (emotions.includes('ansiedad' as Emotion) || emotions.includes('miedo' as Emotion)) &&
+    !breathingDismissed;
 
   /**
    * Si el usuario llegó vía peep-prompt y escribió algo en la mini-modal
@@ -490,6 +495,21 @@ export default function DiarioPage() {
               );
             })}
           </div>
+
+          {showBreathingCue ? (
+            <div className="breathing-cue" role="complementary" aria-label="Ejercicio de respiración">
+              <button
+                type="button"
+                className="breathing-dismiss"
+                aria-label="Cerrar"
+                onClick={() => setBreathingDismissed(true)}
+              >
+                ×
+              </button>
+              <div className="breathing-bubble" aria-hidden="true" />
+              <p className="breathing-hint">Respira con el círculo · 4 · 4</p>
+            </div>
+          ) : null}
         </section>
 
         <section className="text-section">
@@ -882,6 +902,61 @@ export default function DiarioPage() {
           background: var(--cobalto);
           color: var(--crema);
           border-color: var(--cobalto);
+        }
+
+        /* === Breathing cue === */
+        .breathing-cue {
+          position: relative;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 12px;
+          margin: 16px 0 0;
+          padding: 20px 16px 18px;
+          background: rgba(29, 43, 219, 0.07);
+          border: 1px solid rgba(29, 43, 219, 0.14);
+          border-radius: var(--r-md);
+          animation: fadeSlideDown 0.3s ease both;
+        }
+        .breathing-dismiss {
+          position: absolute;
+          top: 8px;
+          right: 10px;
+          font-size: 18px;
+          line-height: 1;
+          color: var(--ink);
+          opacity: 0.4;
+          padding: 2px 6px;
+          border-radius: 6px;
+          transition: opacity 0.15s ease;
+        }
+        .breathing-dismiss:hover { opacity: 0.8; }
+        .breathing-bubble {
+          width: 44px;
+          height: 44px;
+          border-radius: 50%;
+          background: var(--cobalto);
+          opacity: 0.22;
+          animation: breathe 8s ease-in-out infinite;
+        }
+        .breathing-hint {
+          font-family: var(--font-mono);
+          font-size: 11px;
+          letter-spacing: 0.14em;
+          text-transform: uppercase;
+          color: var(--cobalto);
+          opacity: 0.72;
+        }
+        @keyframes breathe {
+          0%   { transform: scale(1);    opacity: 0.22; }
+          40%  { transform: scale(1.55); opacity: 0.38; }
+          50%  { transform: scale(1.55); opacity: 0.38; }
+          90%  { transform: scale(1);    opacity: 0.22; }
+          100% { transform: scale(1);    opacity: 0.22; }
+        }
+        @keyframes fadeSlideDown {
+          from { opacity: 0; transform: translateY(-6px); }
+          to   { opacity: 1; transform: translateY(0); }
         }
 
         /* === Textarea === */
