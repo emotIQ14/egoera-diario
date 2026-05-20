@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import OnboardingStep from '@/components/onboarding/OnboardingStep';
 import Peep from '@/components/peeps/Peep';
 import { useToast } from '@/components/toast/ToastProvider';
@@ -107,10 +107,12 @@ const ATTRIBUTION_OPTIONS: AttributionOption[] = [
 
 export default function BienvenidaPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const toast = useToast();
   const [currentStep, setCurrentStep] = useState<number>(0);
   const [name, setName] = useState<string>('');
   const [attribution, setAttribution] = useState<string | null>(null);
+  const fromPeepPrompt = searchParams?.get('from') === 'peep-prompt';
 
   const goNext = useCallback(() => {
     setCurrentStep((s) => Math.min(s + 1, TOTAL_STEPS - 1));
@@ -224,6 +226,11 @@ export default function BienvenidaPage() {
               Esto va a tu ritmo.
             </p>
           </div>
+          {fromPeepPrompt ? (
+            <p className="from-peep-prompt" aria-live="polite">
+              ¿Vienes desde un artículo? Empieza por anotar la frase que te resonó.
+            </p>
+          ) : null}
         </div>
       </OnboardingStep>
 
@@ -602,6 +609,20 @@ export default function BienvenidaPage() {
         .peep-caption em {
           color: var(--cobalto);
           font-style: italic;
+        }
+        .from-peep-prompt {
+          margin-top: 14px;
+          padding: 12px 14px;
+          background: rgba(29, 43, 219, 0.08);
+          border-left: 3px solid var(--cobalto);
+          border-radius: var(--r-md);
+          font-family: var(--font-body);
+          font-size: 14px;
+          line-height: 1.5;
+          color: var(--ink);
+          opacity: 0.88;
+          max-width: 360px;
+          text-align: left;
         }
 
         /* Authority */
