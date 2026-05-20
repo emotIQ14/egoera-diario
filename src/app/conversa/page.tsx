@@ -12,29 +12,79 @@ function emotionLabelC(id: string): string {
   return EMOTIONS.find((e) => e.id === id)?.label ?? id;
 }
 
-type TodayCtx = { mood: number; topEmotion: string | null };
+type WeekCtx = {
+  today: { mood: number; topEmotion: string | null } | null;
+  weekAvg: number | null;
+  trend: 'rising' | 'falling' | 'stable' | null;
+  entryCount: number;
+};
 
-function getTodayEntry(): TodayCtx | null {
-  if (typeof window === 'undefined') return null;
+function getWeekContext(): WeekCtx {
+  if (typeof window === 'undefined') {
+    return { today: null, weekAvg: null, trend: null, entryCount: 0 };
+  }
   try {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    const todayMidnight = new Date();
+    todayMidnight.setHours(0, 0, 0, 0);
+    const weekAgo = new Date(todayMidnight);
+    weekAgo.setDate(weekAgo.getDate() - 7);
+
     const all = loadEntries();
+
+    // Entrada de hoy
     const todayEntries = all
       .filter((e) => {
         const d = new Date(e.createdAt);
         d.setHours(0, 0, 0, 0);
-        return d.getTime() === today.getTime();
+        return d.getTime() === todayMidnight.getTime();
       })
       .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-    if (todayEntries.length === 0) return null;
-    const latest = todayEntries[0];
-    const topEmotion = latest.emotions.length > 0
-      ? emotionLabelC(latest.emotions[0])
-      : null;
-    return { mood: latest.mood, topEmotion };
+
+    const today =
+      todayEntries.length > 0
+        ? {
+            mood: todayEntries[0].mood,
+            topEmotion:
+              todayEntries[0].emotions.length > 0
+                ? emotionLabelC(todayEntries[0].emotions[0])
+                : null,
+          }
+        : null;
+
+    // Últimos 7 días (excluyendo hoy)
+    const weekEntries = all.filter((e) => {
+      const d = new Date(e.createdAt);
+      d.setHours(0, 0, 0, 0);
+      return d.getTime() >= weekAgo.getTime() && d.getTime() < todayMidnight.getTime();
+    });
+
+    if (weekEntries.length < 2) {
+      return { today, weekAvg: null, trend: null, entryCount: weekEntries.length };
+    }
+
+    const weekAvg = weekEntries.reduce((s, e) => s + e.mood, 0) / weekEntries.length;
+
+    // Tendencia: primera mitad vs segunda mitad de la semana
+    const sorted = [...weekEntries].sort(
+      (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+    );
+    const mid = Math.floor(sorted.length / 2);
+    const firstAvg =
+      sorted.slice(0, mid).reduce((s, e) => s + e.mood, 0) / mid;
+    const secondAvg =
+      sorted.slice(mid).reduce((s, e) => s + e.mood, 0) / (sorted.length - mid);
+    const diff = secondAvg - firstAvg;
+    const trend: WeekCtx['trend'] =
+      diff > 0.8 ? 'rising' : diff < -0.8 ? 'falling' : 'stable';
+
+    return {
+      today,
+      weekAvg: Math.round(weekAvg * 10) / 10,
+      trend,
+      entryCount: weekEntries.length,
+    };
   } catch {
-    return null;
+    return { today: null, weekAvg: null, trend: null, entryCount: 0 };
   }
 }
 
@@ -71,14 +121,29 @@ function pickSubtitle(): Subtitle {
   return pool[Math.floor(Math.random() * pool.length)];
 }
 
-function buildInitialMessage(name?: string, todayCtx?: TodayCtx | null): Message {
+function buildInitialMessage(name?: string, weekCtx?: WeekCtx | null): Message {
   const greeting = name && name.trim() ? `Hola, ${name.trim()}` : 'Hola';
 
-  if (todayCtx) {
-    const emoText = todayCtx.topEmotion ? ` y sientes ${todayCtx.topEmotion}` : '';
+  if (weekCtx?.today) {
+    const emoText = weekCtx.today.topEmotion
+      ? ` y sientes ${weekCtx.today.topEmotion}`
+      : '';
     return {
       role: 'assistant',
-      content: `${greeting}. Hoy anotaste un ${todayCtx.mood}/10${emoText}. ¿Qué hay detrás?`,
+      content: `${greeting}. Hoy anotaste un ${weekCtx.today.mood}/10${emoText}. ¿Qué hay detrás?`,
+    };
+  }
+
+  if (weekCtx != null && weekCtx.weekAvg !== null && weekCtx.entryCount >= 2) {
+    const trendLine =
+      weekCtx.trend === 'rising'
+        ? ', y ha ido subiendo.'
+        : weekCtx.trend === 'falling'
+        ? ', aunque ha bajado hacia el final.'
+        : '.';
+    return {
+      role: 'assistant',
+      content: `${greeting}. Esta semana tu estado medio ha sido un ${weekCtx.weekAvg}/10${trendLine} ¿Cómo llegas hoy?`,
     };
   }
 
@@ -151,12 +216,12 @@ export default function ConversaPage() {
   useEffect(() => {
     const loaded = loadConversation();
     // If the conversation only has the placeholder initial message, replace it
-    // with one that uses the real stored name.
+    // with one that uses the real stored name + week context.
     const storedName = typeof window !== 'undefined'
       ? (window.localStorage.getItem(NAME_KEY) ?? undefined)
       : undefined;
-    const todayCtx = getTodayEntry();
-    const personalised = buildInitialMessage(storedName ?? undefined, todayCtx);
+    const weekCtx = getWeekContext();
+    const personalised = buildInitialMessage(storedName ?? undefined, weekCtx);
     if (
       loaded.length === 1 &&
       loaded[0].role === 'assistant' &&
@@ -200,8 +265,9 @@ export default function ConversaPage() {
     track('conversa_message_sent', { session: sessionN, turn: next.filter((m) => m.role === 'user').length });
 
     try {
-      const recentEntries = loadEntries().slice(0, 5);
+      const recentEntries = loadEntries().slice(0, 7);
       const last = recentEntries[0];
+      const wCtx = getWeekContext();
       const res = await fetch('/api/conversa', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -211,6 +277,8 @@ export default function ConversaPage() {
             recentEntries,
             mood: last?.mood,
             emotions: last?.emotions,
+            weekAvg: wCtx.weekAvg ?? undefined,
+            trend: wCtx.trend ?? undefined,
           },
         }),
       });
@@ -239,8 +307,8 @@ export default function ConversaPage() {
     const storedName = typeof window !== 'undefined'
       ? (window.localStorage.getItem(NAME_KEY) ?? undefined)
       : undefined;
-    const todayCtx = getTodayEntry();
-    setMessages([buildInitialMessage(storedName ?? undefined, todayCtx)]);
+    const weekCtx = getWeekContext();
+    setMessages([buildInitialMessage(storedName ?? undefined, weekCtx)]);
     bumpSessionCount();
     setSessionN(loadSessionCount());
   }

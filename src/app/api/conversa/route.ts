@@ -10,6 +10,8 @@ type ConversaRequest = {
     recentEntries?: DiaryEntry[];
     mood?: number;
     emotions?: string[];
+    weekAvg?: number;
+    trend?: 'rising' | 'falling' | 'stable';
   };
 };
 
@@ -47,11 +49,21 @@ function buildSystemPrompt(userContext?: ConversaRequest['userContext']): string
     userContext.emotions && userContext.emotions.length > 0
       ? `\nEmociones marcadas hoy: ${userContext.emotions.join(', ')}.`
       : '';
+  const weekLine =
+    typeof userContext.weekAvg === 'number'
+      ? `\nMedia semanal (últimos 7 días): ${userContext.weekAvg}/10${
+          userContext.trend === 'rising'
+            ? ' — tendencia ascendente'
+            : userContext.trend === 'falling'
+            ? ' — tendencia descendente'
+            : ' — estable'
+        }.`
+      : '';
 
   return `${SYSTEM_BASE}
 
 Contexto reciente del diario de la persona (úsalo solo para tener memoria, no lo cites literal salvo que aporte):
-${summary}${moodLine}${emotionsLine}`;
+${summary}${moodLine}${emotionsLine}${weekLine}`;
 }
 
 /**
