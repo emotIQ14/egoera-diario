@@ -13,6 +13,7 @@ import { track } from '@/lib/track';
 const NAME_KEY = 'egoera-diario-name';
 const LANG_KEY = 'egoera-lang';
 const ENTRIES_KEY = 'egoera-diario-entries-v1';
+const REMINDER_KEY = 'egoera-reminder-time'; // "HH:MM" o null
 const APP_VERSION = '0.1.0';
 
 type Lang = 'ES' | 'EU';
@@ -156,6 +157,7 @@ export default function TuPage() {
   const [totalEntries, setTotalEntries] = useState<number>(0);
   const [streak, setStreak] = useState<number>(0);
   const [daysSinceFirst, setDaysSinceFirst] = useState<number>(0);
+  const [reminderTime, setReminderTime] = useState<string | null>(null);
   const [hydrated, setHydrated] = useState<boolean>(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const nameInputRef = useRef<HTMLInputElement | null>(null);
@@ -185,6 +187,9 @@ export default function TuPage() {
       );
       setDaysSinceFirst(diff);
     }
+
+    const storedReminder = window.localStorage.getItem(REMINDER_KEY);
+    if (storedReminder) setReminderTime(storedReminder);
 
     setHydrated(true);
   }, []);
@@ -226,8 +231,24 @@ export default function TuPage() {
     window.localStorage.setItem(NAME_KEY, trimmed);
   }
 
-  function handleReminder() {
-    toast.info('Los recordatorios llegan pronto. Te avisamos cuando estén.');
+  function handleReminderToggle() {
+    if (reminderTime) {
+      // desactivar
+      setReminderTime(null);
+      window.localStorage.removeItem(REMINDER_KEY);
+      toast.success('Recordatorio desactivado.');
+    } else {
+      // activar con hora por defecto 20:00
+      const defaultTime = '20:00';
+      setReminderTime(defaultTime);
+      window.localStorage.setItem(REMINDER_KEY, defaultTime);
+      toast.success('Recordatorio activado para las 20:00. Cámbialo abajo si quieres.');
+    }
+  }
+
+  function handleReminderTimeChange(value: string) {
+    setReminderTime(value);
+    window.localStorage.setItem(REMINDER_KEY, value);
   }
 
   function toggleLang() {
@@ -374,15 +395,36 @@ export default function TuPage() {
               <span className="link-value">{name}</span>
             </button>
           </li>
-          <li>
+          <li className="reminder-row">
             <button
               type="button"
-              className="link-card"
-              onClick={handleReminder}
+              className="link-card reminder-toggle"
+              onClick={handleReminderToggle}
+              aria-pressed={!!reminderTime}
             >
-              <span className="link-label">Hora del recordatorio</span>
-              <span className="link-value">— Próximamente —</span>
+              <span className="link-label">Recordatorio diario</span>
+              <span className={`reminder-badge ${reminderTime ? 'on' : ''}`}>
+                {reminderTime ? 'ON' : 'OFF'}
+              </span>
             </button>
+            {reminderTime ? (
+              <div className="reminder-time-row">
+                <label htmlFor="reminder-time" className="reminder-time-label">
+                  Hora
+                </label>
+                <input
+                  id="reminder-time"
+                  type="time"
+                  className="reminder-time-input"
+                  value={reminderTime}
+                  onChange={(e) => handleReminderTimeChange(e.target.value)}
+                  aria-label="Hora del recordatorio"
+                />
+                <p className="reminder-note">
+                  Cuando abras la app después de esta hora sin haber escrito, te lo recordamos.
+                </p>
+              </div>
+            ) : null}
           </li>
           <li>
             <button type="button" className="link-card" onClick={toggleLang}>
@@ -832,6 +874,61 @@ export default function TuPage() {
           color: var(--ink);
           opacity: 0.5;
           text-align: center;
+        }
+
+        /* ── reminder ── */
+        .reminder-row { list-style: none; }
+        .reminder-toggle { width: 100%; }
+        .reminder-badge {
+          font-family: var(--font-mono);
+          font-size: 11px;
+          letter-spacing: 0.16em;
+          padding: 3px 9px;
+          border-radius: 99px;
+          background: rgba(13, 15, 61, 0.08);
+          color: rgba(13, 15, 61, 0.45);
+          transition: background 0.15s, color 0.15s;
+        }
+        .reminder-badge.on {
+          background: var(--cobalto);
+          color: var(--crema);
+        }
+        .reminder-time-row {
+          padding: 10px 14px 12px;
+          display: flex;
+          flex-wrap: wrap;
+          align-items: center;
+          gap: 10px;
+          border-top: 1px solid rgba(13, 15, 61, 0.08);
+          background: rgba(29, 43, 219, 0.03);
+        }
+        .reminder-time-label {
+          font-family: var(--font-mono);
+          font-size: 11px;
+          letter-spacing: 0.14em;
+          text-transform: uppercase;
+          opacity: 0.55;
+        }
+        .reminder-time-input {
+          font-family: var(--font-mono);
+          font-size: 14px;
+          padding: 6px 10px;
+          border: 1.5px solid rgba(13, 15, 61, 0.18);
+          border-radius: 8px;
+          background: rgba(255, 255, 255, 0.7);
+          color: var(--ink);
+          outline: none;
+          transition: border-color 0.15s;
+        }
+        .reminder-time-input:focus { border-color: var(--cobalto); }
+        .reminder-note {
+          width: 100%;
+          font-family: var(--font-mono);
+          font-size: 10px;
+          letter-spacing: 0.06em;
+          line-height: 1.45;
+          opacity: 0.5;
+          margin: 0;
         }
       `}</style>
     </Screen>

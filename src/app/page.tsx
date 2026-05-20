@@ -10,9 +10,43 @@ import { useToast } from '@/components/toast/ToastProvider';
 
 const STREAK_MILESTONE_KEY = 'egoera-streak-celebrated';
 const MILESTONES = [3, 7, 14, 30, 60, 100];
+const REMINDER_KEY = 'egoera-reminder-time';
+const REMINDER_SHOWN_KEY = 'egoera-reminder-shown-date'; // YYYY-MM-DD
 
 function getNextMilestone(streak: number): number | null {
   return MILESTONES.find((m) => m <= streak) ?? null;
+}
+
+function checkReminder(
+  now: Date,
+  todayCount: number,
+  toast: { info: (msg: string) => void }
+): void {
+  if (typeof window === 'undefined') return;
+  try {
+    const reminderTime = window.localStorage.getItem(REMINDER_KEY);
+    if (!reminderTime) return;
+    const [rh, rm] = reminderTime.split(':').map(Number);
+    if (isNaN(rh) || isNaN(rm)) return;
+
+    // Solo si ya pasó la hora del recordatorio hoy
+    const nowH = now.getHours();
+    const nowM = now.getMinutes();
+    if (nowH < rh || (nowH === rh && nowM < rm)) return;
+
+    // Solo si no ha escrito hoy
+    if (todayCount > 0) return;
+
+    // Solo una vez por día
+    const todayIso = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    const lastShown = window.localStorage.getItem(REMINDER_SHOWN_KEY);
+    if (lastShown === todayIso) return;
+
+    window.localStorage.setItem(REMINDER_SHOWN_KEY, todayIso);
+    toast.info('Todavía no has escrito hoy. Cuando quieras, aquí estamos.');
+  } catch {
+    // silencioso
+  }
 }
 
 function celebrateMilestone(streak: number, toast: { success: (msg: string) => void }): void {
@@ -136,11 +170,6 @@ export default function HomePage() {
     const stored = window.localStorage.getItem(NAME_KEY);
     if (stored && stored.trim().length > 0) setName(stored.trim());
 
-    const currentStreak = streakDays();
-    setStreak(currentStreak);
-    // Celebrar hitos de racha (solo la primera vez que se alcanzan)
-    celebrateMilestone(currentStreak, toast);
-
     const todayKey = new Date();
     todayKey.setHours(0, 0, 0, 0);
     const count = loadEntries().filter((e) => {
@@ -149,6 +178,13 @@ export default function HomePage() {
       return d.getTime() === todayKey.getTime();
     }).length;
     setTodayCount(count);
+
+    const currentStreak = streakDays();
+    setStreak(currentStreak);
+    // Celebrar hitos de racha (solo la primera vez que se alcanzan)
+    celebrateMilestone(currentStreak, toast);
+    // Recordatorio si el usuario lo activó y aún no ha escrito hoy
+    checkReminder(current, count, toast);
 
     // Mantener fresca la línea de fecha cada minuto.
     const tick = window.setInterval(() => setNow(new Date()), 60_000);
