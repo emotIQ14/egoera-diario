@@ -5,8 +5,9 @@ import { useRouter } from 'next/navigation';
 import Screen from '@/components/Screen';
 import TabBar from '@/components/TabBar';
 import { deleteEntry, loadEntries, saveEntry, updateEntry } from '@/lib/storage';
-import type { DiaryEntry, Emotion } from '@/lib/storage';
-import { EMOTIONS } from '@/lib/types';
+import type { ContextTag, DiaryEntry, Emotion } from '@/lib/storage';
+import { CONTEXTS, EMOTIONS } from '@/lib/types';
+import { EmptyHistorial } from '@/components/illustrations/EmptyStates';
 import { useToast } from '@/components/toast/ToastProvider';
 import { track } from '@/lib/track';
 
@@ -97,6 +98,12 @@ function matchesSearch(entry: DiaryEntry, needle: string): boolean {
 function matchesEmotionFilter(entry: DiaryEntry, filter: Set<Emotion>): boolean {
   if (filter.size === 0) return true;
   return entry.emotions.some((e) => filter.has(e));
+}
+
+function matchesContextFilter(entry: DiaryEntry, filter: Set<ContextTag>): boolean {
+  if (filter.size === 0) return true;
+  if (!entry.context || entry.context.length === 0) return false;
+  return entry.context.some((c) => filter.has(c));
 }
 
 // ─── day sub-grouping ────────────────────────────────────────────────────────
@@ -246,6 +253,7 @@ export default function HistorialPage() {
   // ── filter state ──
   const [search, setSearch] = useState<string>('');
   const [emotionFilter, setEmotionFilter] = useState<Set<Emotion>>(new Set());
+  const [contextFilter, setContextFilter] = useState<Set<ContextTag>>(new Set());
   const searchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
@@ -378,13 +386,14 @@ export default function HistorialPage() {
     }, 80);
   }
 
-  const hasFilter = search.trim().length > 0 || emotionFilter.size > 0;
+  const hasFilter = search.trim().length > 0 || emotionFilter.size > 0 || contextFilter.size > 0;
 
   const filteredEntries = hasFilter
     ? entries.filter(
         (e) =>
           matchesSearch(e, search.trim()) &&
-          matchesEmotionFilter(e, emotionFilter)
+          matchesEmotionFilter(e, emotionFilter) &&
+          matchesContextFilter(e, contextFilter)
       )
     : entries;
 
@@ -505,6 +514,7 @@ export default function HistorialPage() {
         {/* ── empty state ── */}
         {entries.length === 0 ? (
           <div className="empty">
+            <EmptyHistorial size={160} className="empty-illu" />
             <p className="empty-text">
               Aún no hay nada aquí. Cuando anotes tu primer momento, aparecerá.
             </p>

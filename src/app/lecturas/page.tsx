@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import Screen from '@/components/Screen';
 import TabBar from '@/components/TabBar';
+import { EmptyLecturas } from '@/components/illustrations/EmptyStates';
 
 type LecturaPost = {
   id: number;
@@ -349,6 +350,7 @@ function SkeletonList() {
 function ErrorBlock({ onRetry }: { onRetry: () => void }) {
   return (
     <div className="err">
+      <EmptyLecturas size={140} className="err-illu" />
       <p className="err-text">No se pudieron cargar las lecturas.</p>
       <button type="button" className="err-retry" onClick={onRetry}>
         Reintentar
