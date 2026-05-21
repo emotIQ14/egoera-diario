@@ -8,6 +8,7 @@ import InstallPrompt from '@/components/InstallPrompt';
 import { entriesThisWeek, loadEntries, streakDays, type DiaryEntry } from '@/lib/storage';
 import { EMOTIONS } from '@/lib/types';
 import { useToast } from '@/components/toast/ToastProvider';
+import { EvaCuidadoraCharacter } from '@/components/illustrations/EgoeraCharacters';
 
 function emotionLabelHome(id: string): string {
   return EMOTIONS.find((e) => e.id === id)?.label ?? id;
@@ -550,15 +551,22 @@ export default function HomePage() {
           >
             ×
           </button>
-          <p className="low-mood-title">Ha habido días difíciles esta semana.</p>
-          <p className="low-mood-sub">Está bien que así sea. La conversa está aquí cuando quieras ponerlo en palabras.</p>
-          <button
-            type="button"
-            className="low-mood-cta"
-            onClick={() => router.push('/conversa')}
-          >
-            Hablar →
-          </button>
+          <div className="low-mood-body">
+            <div className="low-mood-illu" aria-hidden="true">
+              <EvaCuidadoraCharacter size={88} />
+            </div>
+            <div className="low-mood-content">
+              <p className="low-mood-title">Ha habido días difíciles esta semana.</p>
+              <p className="low-mood-sub">Está bien que así sea. La conversa está aquí cuando quieras ponerlo en palabras.</p>
+              <button
+                type="button"
+                className="low-mood-cta"
+                onClick={() => router.push('/conversa')}
+              >
+                Hablar →
+              </button>
+            </div>
+          </div>
         </div>
       ) : null}
 
@@ -1080,6 +1088,30 @@ export default function HomePage() {
           padding: 18px 20px 16px;
           margin: 0 0 12px;
           animation: fadeSlideUp 0.3s ease both;
+        }
+        .low-mood-body {
+          display: flex;
+          align-items: flex-start;
+          gap: 14px;
+        }
+        .low-mood-illu {
+          flex-shrink: 0;
+          background: var(--crema);
+          border-radius: 50%;
+          width: 88px;
+          height: 88px;
+          overflow: hidden;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+        }
+        .low-mood-illu :global(svg) {
+          width: 100%;
+          height: 100%;
+        }
+        .low-mood-content {
+          flex: 1;
+          min-width: 0;
         }
         .low-mood-dismiss {
           position: absolute;

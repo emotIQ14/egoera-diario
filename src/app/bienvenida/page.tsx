@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import OnboardingStep from '@/components/onboarding/OnboardingStep';
 import Peep from '@/components/peeps/Peep';
+import { SquattingIntroCharacter } from '@/components/illustrations/EgoeraCharacters';
 import { useToast } from '@/components/toast/ToastProvider';
 import { track } from '@/lib/track';
 
@@ -258,9 +259,9 @@ export default function BienvenidaPage() {
             Sin atajos. Solo tú escuchándote.
           </p>
           <div className="peep-stage peep-stage-solo">
-            <Peep name="nora" size={180} alt="" />
+            <SquattingIntroCharacter size={200} className="intro-character" />
             <p className="peep-caption">
-              <em>Hola.</em> Soy Nora.
+              <em>Hola.</em>
               <br />
               Esto va a tu ritmo.
             </p>

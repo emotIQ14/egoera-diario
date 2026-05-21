@@ -8,6 +8,7 @@ import SafetyBar from '@/components/SafetyBar';
 import { loadEntries } from '@/lib/storage';
 import { EMOTIONS } from '@/lib/types';
 import { track } from '@/lib/track';
+import { EmptyConversa } from '@/components/illustrations/EmptyStates';
 
 function emotionLabelC(id: string): string {
   return EMOTIONS.find((e) => e.id === id)?.label ?? id;
@@ -489,6 +490,11 @@ export default function ConversaPage() {
             <div className={`bubble ${m.role}`}>{m.content}</div>
           </div>
         ))}
+        {messages.length === 1 && !loading ? (
+          <div className="conv-empty-illu" aria-hidden="true">
+            <EmptyConversa size={150} />
+          </div>
+        ) : null}
         {loading && (
           <div className="row assistant">
             <span className="who">EGOERA</span>
@@ -686,6 +692,12 @@ export default function ConversaPage() {
           gap: 22px;
           padding: 8px 0 140px;
           overflow-y: auto;
+        }
+
+        .conv-empty-illu {
+          align-self: center;
+          margin-top: 8px;
+          opacity: 0.92;
         }
 
         .row { display: flex; flex-direction: column; gap: 6px; }
