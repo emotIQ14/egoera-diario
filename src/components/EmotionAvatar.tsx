@@ -3,30 +3,49 @@
 /**
  * EmotionAvatar · mini-retrato por emoción.
  *
- * Mapea cada Emotion del catálogo a una ilustración facial expresiva.
- * 9 de 10 son PNG (estilo Velorah, paleta cobalto + crema + coral).
- * 1 (cansancio) es SVG line-art coherente con el resto.
+ * Mapea cada Emotion del catálogo a una ilustración SVG de Egoera Characters
+ * (estilo Velorah · piel verde-menta, pelo cobalto, camiseta coral).
+ *
+ * 9 emociones renderizan SVG inline (ligeros, escalables, color heredado).
+ * 1 emoción (alegría) usa el PNG porque ningún Character expresa alegría
+ * pura — `alegria-f.png` queda mejor para ese caso.
  *
  * Uso:
  *   <EmotionAvatar id="tristeza" size={36} />
- *   <EmotionAvatar id="cansancio" size={48} className="chip-avatar" />
  */
 
 import Image from 'next/image';
 import type { Emotion } from '@/lib/storage';
+import {
+  ZenCalmCharacter,
+  ReflectiveCharacter,
+  DeterminedCharacter,
+  AnxiousCharacter,
+  IrisInsomneCharacter,
+  MiraSilenciosaCharacter,
+  LolaAnsiosaCharacter,
+  ZuriSensibleCharacter,
+  OliComplacienteCharacter,
+} from './illustrations/EgoeraCharacters';
 
-/** Mapeo emoción → archivo (sin extensión). */
-const AVATAR_MAP: Record<Emotion, { file: string; ext: 'png' | 'svg' }> = {
-  tristeza:   { file: 'tristeza-f',  ext: 'png' },
-  rabia:      { file: 'rabia-f',     ext: 'png' },
-  alegria:    { file: 'alegria-f',   ext: 'png' },
-  miedo:      { file: 'miedo-m',     ext: 'png' },
-  calma:      { file: 'calma-m',     ext: 'png' },
-  ansiedad:   { file: 'sorpresa-f',  ext: 'png' }, // ojos abiertos + tensión
-  esperanza:  { file: 'alegria-m',   ext: 'png' }, // sonrisa suave (no exuberante)
-  verguenza:  { file: 'duda-f',      ext: 'png' }, // mirada baja, retraída
-  culpa:      { file: 'tristeza-m',  ext: 'png' }, // melancolía masculina
-  cansancio:  { file: 'cansancio',   ext: 'svg' }, // SVG line-art (único faltante)
+type SvgCharacter = React.FC<{ size?: number; className?: string }>;
+
+/** Mapeo emoción → personaje SVG. */
+const SVG_MAP: Partial<Record<Emotion, SvgCharacter>> = {
+  tristeza:  ZuriSensibleCharacter,
+  rabia:     DeterminedCharacter,
+  ansiedad:  LolaAnsiosaCharacter,
+  miedo:     AnxiousCharacter,
+  calma:     ZenCalmCharacter,
+  esperanza: ReflectiveCharacter,
+  verguenza: MiraSilenciosaCharacter,
+  culpa:     OliComplacienteCharacter,
+  cansancio: IrisInsomneCharacter,
+};
+
+/** Emociones que aún usan PNG (porque no hay match SVG suficiente). */
+const PNG_MAP: Partial<Record<Emotion, string>> = {
+  alegria: '/peeps/emotion-avatars/alegria-f.png',
 };
 
 type EmotionAvatarProps = {
@@ -44,22 +63,29 @@ export default function EmotionAvatar({
   alt = '',
   priority = false,
 }: EmotionAvatarProps) {
-  const meta = AVATAR_MAP[id];
-  if (!meta) return null;
-  const src = `/peeps/emotion-avatars/${meta.file}.${meta.ext}`;
-
-  // El SVG no necesita next/image optimización
-  if (meta.ext === 'svg') {
+  const Svg = SVG_MAP[id];
+  if (Svg) {
     return (
-      <img
-        src={src}
-        alt={alt}
-        width={size}
-        height={size}
+      <Svg
+        size={size}
         className={className}
-        loading={priority ? 'eager' : 'lazy'}
-        decoding="async"
+      />
+    );
+  }
+
+  const png = PNG_MAP[id];
+  if (png) {
+    return (
+      <Image
+        src={png}
+        alt={alt}
+        width={size * 2}
+        height={size * 2}
+        className={className}
+        priority={priority}
         style={{
+          width: size,
+          height: size,
           objectFit: 'cover',
           borderRadius: '50%',
           display: 'block',
@@ -69,22 +95,5 @@ export default function EmotionAvatar({
     );
   }
 
-  return (
-    <Image
-      src={src}
-      alt={alt}
-      width={size * 2}
-      height={size * 2}
-      className={className}
-      priority={priority}
-      style={{
-        width: size,
-        height: size,
-        objectFit: 'cover',
-        borderRadius: '50%',
-        display: 'block',
-      }}
-      aria-hidden={!alt}
-    />
-  );
+  return null;
 }

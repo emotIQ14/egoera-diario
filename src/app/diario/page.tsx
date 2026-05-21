@@ -521,7 +521,7 @@ export default function DiarioPage() {
                   onClick={() => toggleEmotion(emo.id as Emotion)}
                 >
                   <span className="chip-avatar" aria-hidden="true">
-                    <EmotionAvatar id={emo.id as Emotion} size={28} />
+                    <EmotionAvatar id={emo.id as Emotion} size={32} />
                   </span>
                   <span className="chip-label">{emo.label}</span>
                 </button>
@@ -978,14 +978,18 @@ export default function DiarioPage() {
           padding: 4px 14px 4px 4px;
         }
         .chip-avatar {
-          width: 28px;
-          height: 28px;
+          width: 32px;
+          height: 32px;
           border-radius: 50%;
           overflow: hidden;
           flex-shrink: 0;
           background: var(--crema);
           border: 1px solid rgba(13, 15, 61, 0.08);
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
         }
+        .chip-with-avatar :global(svg),
         .chip-with-avatar :global(img) {
           width: 100%;
           height: 100%;
