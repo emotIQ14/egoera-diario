@@ -7,7 +7,7 @@ import { StructuredData } from '@/components/StructuredData';
 import { ToastProvider } from '@/components/toast/ToastProvider';
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL ?? 'https://egoera-diario.vercel.app'),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL ?? 'https://diario.egoera.es'),
   title: 'Egoera Diario · Diario emocional despacio',
   description: 'Un diario emocional terapéutico. Sin gamificación, sin métricas raras. Cobalto + crema, despacio.',
   manifest: '/manifest.json',
@@ -30,7 +30,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: 'website',
     locale: 'es_ES',
-    url: 'https://egoera-diario.vercel.app',
+    url: 'https://diario.egoera.es',
     siteName: 'Egoera Diario',
     title: 'Egoera Diario · Diario emocional despacio',
     description: 'Sin gamificación. Sin métricas raras. Solo tú escuchándote.',

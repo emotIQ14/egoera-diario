@@ -1,6 +1,6 @@
 import type { MetadataRoute } from 'next';
 
-const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://egoera-diario.vercel.app';
+const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://diario.egoera.es';
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const now = new Date();
