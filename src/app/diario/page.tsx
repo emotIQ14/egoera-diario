@@ -8,6 +8,7 @@ import SafetyBar from '@/components/SafetyBar';
 import { loadEntries, saveEntry, makeId, streakDays } from '@/lib/storage';
 import type { DiaryEntry, Emotion, ContextTag } from '@/lib/storage';
 import { CONTEXTS, EMOTIONS } from '@/lib/types';
+import EmotionAvatar from '@/components/EmotionAvatar';
 import { useToast } from '@/components/toast/ToastProvider';
 import { track } from '@/lib/track';
 
@@ -516,10 +517,13 @@ export default function DiarioPage() {
                   type="button"
                   role="checkbox"
                   aria-checked={active}
-                  className={`chip ${active ? 'chip-on' : ''}`}
+                  className={`chip chip-with-avatar ${active ? 'chip-on' : ''}`}
                   onClick={() => toggleEmotion(emo.id as Emotion)}
                 >
-                  {emo.label}
+                  <span className="chip-avatar" aria-hidden="true">
+                    <EmotionAvatar id={emo.id as Emotion} size={28} />
+                  </span>
+                  <span className="chip-label">{emo.label}</span>
                 </button>
               );
             })}
@@ -966,6 +970,34 @@ export default function DiarioPage() {
           background: var(--cobalto);
           color: var(--crema);
           border-color: var(--cobalto);
+        }
+        .chip-with-avatar {
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          padding: 4px 14px 4px 4px;
+        }
+        .chip-avatar {
+          width: 28px;
+          height: 28px;
+          border-radius: 50%;
+          overflow: hidden;
+          flex-shrink: 0;
+          background: var(--crema);
+          border: 1px solid rgba(13, 15, 61, 0.08);
+        }
+        .chip-with-avatar :global(img) {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+        }
+        .chip-label {
+          line-height: 1;
+        }
+        /* Estado activo: el chip pasa a cobalto, el avatar queda con leve outline crema */
+        .chip-on .chip-avatar {
+          border-color: var(--crema);
+          background: var(--crema);
         }
 
         /* === Context tags === */
