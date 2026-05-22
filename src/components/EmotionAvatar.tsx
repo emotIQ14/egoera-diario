@@ -87,6 +87,7 @@ export default function EmotionAvatar({
           width: size,
           height: size,
           objectFit: 'cover',
+          objectPosition: 'center 30%', // alinea la cara (no el torso) en el círculo
           borderRadius: '50%',
           display: 'block',
         }}

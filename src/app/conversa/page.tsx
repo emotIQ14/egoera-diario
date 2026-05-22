@@ -819,16 +819,13 @@ export default function ConversaPage() {
           max-width: 520px;
           margin: 0 auto;
           display: flex;
+          flex-wrap: wrap;
+          justify-content: center;
           gap: 7px;
-          overflow-x: auto;
-          overflow-y: hidden;
-          -webkit-overflow-scrolling: touch;
-          scrollbar-width: none;
           z-index: 28;
-          padding: 2px 0 4px;
+          padding: 2px 4px 4px;
           animation: fadeUp 0.24s ease both;
         }
-        .quick-prompts::-webkit-scrollbar { display: none; }
         .quick-chip {
           white-space: nowrap;
           flex-shrink: 0;

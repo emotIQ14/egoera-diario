@@ -94,7 +94,8 @@ export default function TabBar() {
           max-width: 520px;
           margin: 0 auto;
         }
-        .tab {
+        /* :global() porque Next.js Link no recibe la clase scoped del styled-jsx */
+        .tabbar :global(.tab) {
           flex: 1;
           display: flex;
           flex-direction: column;
@@ -102,7 +103,7 @@ export default function TabBar() {
           gap: 3px;
           padding: 6px 4px;
           text-decoration: none;
-          color: rgba(241, 234, 216, 0.55);
+          color: rgba(241, 234, 216, 0.65);
           font-family: var(--font-mono);
           font-size: 9px;
           letter-spacing: 0.18em;
@@ -110,15 +111,15 @@ export default function TabBar() {
           font-weight: 600;
           transition: color 0.15s ease;
         }
-        .tab.active { color: var(--accent); }
-        .ico {
+        .tabbar :global(.tab.active) { color: var(--accent); }
+        .tabbar :global(.tab .ico) {
           width: 22px;
           height: 22px;
           display: flex;
           align-items: center;
           justify-content: center;
         }
-        .ico :global(svg) { width: 20px; height: 20px; }
+        .tabbar :global(.tab .ico svg) { width: 20px; height: 20px; }
       `}</style>
     </nav>
   );

@@ -6,6 +6,7 @@ import Screen from '@/components/Screen';
 import TabBar from '@/components/TabBar';
 import { loadEntries, type DiaryEntry, type Emotion } from '@/lib/storage';
 import { EMOTIONS } from '@/lib/types';
+import { EmptyPatrones } from '@/components/illustrations/EmptyStates';
 
 const MONTHS_SHORT = [
   'ene',
@@ -683,6 +684,9 @@ export default function PatronesPage() {
           </h1>
           <p className="s-date">{dateLine}</p>
         </header>
+        <div className="empty-illu" aria-hidden="true">
+          <EmptyPatrones size={170} />
+        </div>
         <div className="empty-cta">
           <Link href="/diario" className="btn btn-cobalto">
             Escribir hoy →
