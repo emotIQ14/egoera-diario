@@ -932,7 +932,8 @@ export default function HomePage() {
         .discover-link {
           background: none;
           border: 1px dashed rgba(13, 15, 61, 0.18);
-          padding: 12px 16px;
+          padding: 16px 18px;
+          min-height: 48px;
           border-radius: 12px;
           font-family: var(--font-mono);
           font-size: 11px;
@@ -1115,17 +1116,26 @@ export default function HomePage() {
         }
         .low-mood-dismiss {
           position: absolute;
-          top: 10px;
-          right: 12px;
+          top: 6px;
+          right: 8px;
+          width: 32px;
+          height: 32px;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
           font-size: 18px;
           line-height: 1;
           color: var(--crema);
-          opacity: 0.4;
-          padding: 2px 6px;
-          border-radius: 6px;
+          opacity: 0.5;
+          border-radius: 8px;
           transition: opacity 0.15s ease;
         }
-        .low-mood-dismiss:hover { opacity: 0.75; }
+        .low-mood-dismiss:hover { opacity: 0.85; }
+        .low-mood-dismiss:focus-visible {
+          outline: 2px solid var(--crema);
+          outline-offset: 2px;
+          opacity: 1;
+        }
         .low-mood-title {
           font-family: var(--font-display);
           font-style: italic;
@@ -1148,6 +1158,7 @@ export default function HomePage() {
           display: inline-flex;
           align-items: center;
           gap: 4px;
+          min-height: 44px;
           background: rgba(241, 234, 216, 0.12);
           color: var(--crema);
           font-family: var(--font-mono);
@@ -1155,7 +1166,7 @@ export default function HomePage() {
           letter-spacing: 0.14em;
           text-transform: uppercase;
           font-weight: 600;
-          padding: 8px 14px;
+          padding: 12px 18px;
           border-radius: var(--r-pill);
           border: 1px solid rgba(241, 234, 216, 0.2);
           transition: background 0.15s ease;

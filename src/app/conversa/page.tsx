@@ -515,6 +515,7 @@ export default function ConversaPage() {
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={onKeyDown}
           placeholder="Escribe lo que sientes…"
+          aria-label="Escribe tu mensaje a Egoera"
           disabled={loading}
           className="composer-input"
         />

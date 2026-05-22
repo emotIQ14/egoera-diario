@@ -8,6 +8,7 @@ import { deleteEntry, loadEntries, saveEntry, updateEntry } from '@/lib/storage'
 import type { ContextTag, DiaryEntry, Emotion } from '@/lib/storage';
 import { CONTEXTS, EMOTIONS } from '@/lib/types';
 import { EmptyHistorial } from '@/components/illustrations/EmptyStates';
+import EmotionAvatar from '@/components/EmotionAvatar';
 import { useToast } from '@/components/toast/ToastProvider';
 import { track } from '@/lib/track';
 
@@ -432,7 +433,8 @@ export default function HistorialPage() {
                 type="button"
                 className="surprise-btn"
                 onClick={surpriseMe}
-                aria-label="Abrir una entrada aleatoria"
+                aria-label="Abrir una entrada aleatoria del historial"
+                title="Abre una entrada al azar"
               >
                 Sorpréndeme →
               </button>
@@ -488,7 +490,10 @@ export default function HistorialPage() {
                     className={`filter-chip ${active ? 'filter-chip-on' : ''}`}
                     onClick={() => toggleEmotionFilter(emo.id as Emotion)}
                   >
-                    {emo.label}
+                    <span className="filter-chip-avatar" aria-hidden="true">
+                      <EmotionAvatar id={emo.id as Emotion} size={20} />
+                    </span>
+                    <span className="filter-chip-label">{emo.label}</span>
                   </button>
                 );
               })}
@@ -1384,10 +1389,13 @@ export default function HistorialPage() {
           gap: 6px;
         }
         .filter-chip {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
           font-family: var(--font-body);
           font-size: 11px;
           font-weight: 500;
-          padding: 4px 11px;
+          padding: 4px 11px 4px 4px;
           border-radius: 99px;
           border: 1.5px solid rgba(13, 15, 61, 0.16);
           background: transparent;
@@ -1402,6 +1410,23 @@ export default function HistorialPage() {
           color: var(--crema);
           border-color: var(--cobalto);
           opacity: 1;
+        }
+        .filter-chip-avatar {
+          width: 22px;
+          height: 22px;
+          flex-shrink: 0;
+          background: var(--crema);
+          border-radius: 50%;
+          overflow: hidden;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+        }
+        .filter-chip-avatar :global(svg),
+        .filter-chip-avatar :global(img) {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
         }
 
         .filter-summary {

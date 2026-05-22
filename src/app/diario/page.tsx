@@ -759,14 +759,15 @@ export default function DiarioPage() {
         .historial-link {
           background: none;
           border: none;
-          padding: 0;
+          padding: 12px 14px;
+          margin: -8px -10px;
           font-family: var(--font-mono);
           font-size: 11px;
           letter-spacing: 0.18em;
           text-transform: uppercase;
           color: var(--cobalto);
           cursor: pointer;
-          opacity: 0.65;
+          opacity: 0.7;
           transition: opacity 0.15s;
         }
         .historial-link:hover { opacity: 1; }
@@ -955,7 +956,8 @@ export default function DiarioPage() {
           font-family: var(--font-body);
           font-size: 13px;
           font-weight: 500;
-          padding: 7px 14px;
+          padding: 9px 14px;
+          min-height: 44px;
           border-radius: var(--r-pill);
           border: 1.5px solid rgba(13, 15, 61, 0.18);
           background: transparent;
@@ -1347,11 +1349,10 @@ export default function DiarioPage() {
         /* === Voice FAB === */
         .voice-fab {
           position: fixed;
-          bottom: 104px;
-          left: 50%;
-          transform: translateX(-50%);
-          width: 74px;
-          height: 74px;
+          bottom: 110px;
+          right: 16px;
+          width: 64px;
+          height: 64px;
           border-radius: 50%;
           background: var(--cobalto);
           color: var(--crema);
@@ -1365,7 +1366,7 @@ export default function DiarioPage() {
           transition: transform 0.15s ease, background 0.2s ease, box-shadow 0.2s ease;
         }
         .voice-fab:active {
-          transform: translateX(-50%) scale(0.94);
+          transform: scale(0.94);
         }
         .voice-fab-active {
           background: var(--accent) !important;

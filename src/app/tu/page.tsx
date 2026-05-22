@@ -522,7 +522,7 @@ export default function TuPage() {
           </div>
           <div className="stat">
             <div className="stat-num">{hydrated ? daysSinceFirst : 0}</div>
-            <div className="eyebrow stat-eyebrow">— Desde ello —</div>
+            <div className="eyebrow stat-eyebrow">— Días contigo —</div>
           </div>
           <div className="stat">
             <div className="stat-num">
