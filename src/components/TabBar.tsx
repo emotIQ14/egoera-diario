@@ -76,51 +76,7 @@ export default function TabBar() {
           </Link>
         );
       })}
-      <style jsx>{`
-        .tabbar {
-          position: fixed;
-          bottom: 14px;
-          left: 14px;
-          right: 14px;
-          background: rgba(13, 15, 61, 0.92);
-          backdrop-filter: blur(14px);
-          -webkit-backdrop-filter: blur(14px);
-          border-radius: 28px;
-          padding: 10px 8px calc(10px + env(safe-area-inset-bottom, 0px));
-          display: flex;
-          justify-content: space-around;
-          align-items: center;
-          z-index: 40;
-          max-width: 520px;
-          margin: 0 auto;
-        }
-        /* :global() porque Next.js Link no recibe la clase scoped del styled-jsx */
-        .tabbar :global(.tab) {
-          flex: 1;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          gap: 3px;
-          padding: 6px 4px;
-          text-decoration: none;
-          color: rgba(241, 234, 216, 0.65);
-          font-family: var(--font-mono);
-          font-size: 9px;
-          letter-spacing: 0.18em;
-          text-transform: uppercase;
-          font-weight: 600;
-          transition: color 0.15s ease;
-        }
-        .tabbar :global(.tab.active) { color: var(--accent); }
-        .tabbar :global(.tab .ico) {
-          width: 22px;
-          height: 22px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-        }
-        .tabbar :global(.tab .ico svg) { width: 20px; height: 20px; }
-      `}</style>
+      {/* Estilos en globals.css — styled-jsx no puede aplicar al <Link> de Next */}
     </nav>
   );
 }
