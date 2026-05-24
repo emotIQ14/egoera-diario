@@ -299,3 +299,35 @@ body {
   justify-content: center;
 }
 .tabbar .tab .ico svg { width: 20px; height: 20px; }
+
+/* ===== Focus indicators globales (WCAG 2.4.7) ===== */
+/* Aplica a TODO elemento focusable. Override en componentes si necesario.
+   Solo aparece con teclado (no con mouse) gracias a :focus-visible. */
+button:focus-visible,
+a:focus-visible,
+[role="button"]:focus-visible,
+[role="checkbox"]:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: 2px solid var(--cobalto);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* En pantallas dark (cobalto/ink bg), usa crema para mejor contraste */
+.tabbar .tab:focus-visible,
+.m-card-cobalto :focus-visible,
+.m-card-dark :focus-visible {
+  outline-color: var(--crema);
+}
+
+/* Reduced motion — respetar preferencia del usuario (WCAG 2.3.3) */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
