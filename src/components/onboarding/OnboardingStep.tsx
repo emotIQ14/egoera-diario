@@ -100,6 +100,9 @@ export default function OnboardingStep({
           opacity: 0;
           pointer-events: none;
           transition: opacity 0.3s ease;
+          overflow-y: auto;
+          overscroll-behavior: contain;
+          -webkit-overflow-scrolling: touch;
         }
         .step[data-active='true'] {
           opacity: 1;
@@ -145,7 +148,7 @@ export default function OnboardingStep({
           .skip { font-size: 11.5px; }
         }
         .body {
-          flex: 1;
+          flex: 1 0 auto;
           display: flex;
           flex-direction: column;
           justify-content: center;
@@ -153,11 +156,14 @@ export default function OnboardingStep({
           width: 100%;
           margin: 0 auto;
           padding: 28px 0;
+          min-height: 0;
         }
         .cta-wrap {
           max-width: 520px;
           width: 100%;
           margin: 0 auto;
+          flex-shrink: 0;
+          padding-top: 16px;
         }
         .cta {
           display: block;
