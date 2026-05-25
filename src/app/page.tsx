@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Screen from '@/components/Screen';
 import TabBar from '@/components/TabBar';
 import InstallPrompt from '@/components/InstallPrompt';
+import GamSummary from '@/components/GamSummary';
 import { entriesThisWeek, loadEntries, streakDays, type DiaryEntry } from '@/lib/storage';
 import { EMOTIONS } from '@/lib/types';
 import { useToast } from '@/components/toast/ToastProvider';
@@ -411,6 +412,8 @@ export default function HomePage() {
         </h1>
         <p className="s-date">{dateLine}</p>
       </header>
+
+      <GamSummary />
 
       <section className="cards" aria-label="Acciones de hoy">
         <button
