@@ -306,9 +306,16 @@ body {
   justify-content: center;
 }
 .tabbar .tab .ico svg { width: 19px; height: 19px; }
-/* En mobile pequeño, esconder "Lecturas" para que entren las 6 esenciales */
-@media (max-width: 380px) {
+/* TabBar adaptativo: con 8 tabs, esconder progresivamente Lecturas, Cartas, Sueños en pantallas pequeñas */
+@media (max-width: 480px) {
   .tabbar .tab[href="/lecturas"] { display: none; }
+  .tabbar .tab { font-size: 8.5px; padding: 6px 1px; }
+}
+@media (max-width: 400px) {
+  .tabbar .tab[href="/cartas"],
+  .tabbar .tab[href="/suenos"] { display: none; }
+}
+@media (max-width: 380px) {
   .tabbar .tab { font-size: 8px; }
 }
 

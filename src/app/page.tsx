@@ -6,6 +6,7 @@ import Screen from '@/components/Screen';
 import TabBar from '@/components/TabBar';
 import InstallPrompt from '@/components/InstallPrompt';
 import GamSummary from '@/components/GamSummary';
+import { autoDeliverDue, readyLetters } from '@/lib/letters';
 import { entriesThisWeek, loadEntries, streakDays, type DiaryEntry } from '@/lib/storage';
 import { EMOTIONS } from '@/lib/types';
 import { useToast } from '@/components/toast/ToastProvider';
@@ -233,6 +234,13 @@ export default function HomePage() {
     const current = new Date();
     setNow(current);
     setWeekDots(weekActivityDots(current));
+
+    // Auto-mover cartas vencidas a inbox + notificar si hay
+    const due = readyLetters().length;
+    if (due > 0) {
+      autoDeliverDue();
+      toast.info(`Te llegó${due > 1 ? 'n ' + due : ''} carta${due > 1 ? 's' : ''} de tu yo pasado · /cartas`);
+    }
 
     const stored = window.localStorage.getItem(NAME_KEY);
     if (stored && stored.trim().length > 0) setName(stored.trim());
