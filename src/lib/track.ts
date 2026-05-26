@@ -10,6 +10,7 @@ type EventName =
   | 'onboarding_skipped'
   | 'export_markdown'
   | 'export_json'
+  | 'export_pdf'
   | 'safety_bar_shown'
   | 'historial_opened'
   | 'historial_search_used'

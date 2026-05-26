@@ -6,6 +6,7 @@ import Screen from '@/components/Screen';
 import TabBar from '@/components/TabBar';
 import InstallPrompt from '@/components/InstallPrompt';
 import GamSummary from '@/components/GamSummary';
+import WeeklyReflection from '@/components/WeeklyReflection';
 import { autoDeliverDue, readyLetters } from '@/lib/letters';
 import { entriesThisWeek, loadEntries, streakDays, type DiaryEntry } from '@/lib/storage';
 import { EMOTIONS } from '@/lib/types';
@@ -422,6 +423,8 @@ export default function HomePage() {
       </header>
 
       <GamSummary />
+
+      <WeeklyReflection />
 
       <section className="cards" aria-label="Acciones de hoy">
         <button

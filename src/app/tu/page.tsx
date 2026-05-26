@@ -9,6 +9,7 @@ import type { DiaryEntry } from '@/lib/storage';
 import { EMOTIONS } from '@/lib/types';
 import { useToast } from '@/components/toast/ToastProvider';
 import { track } from '@/lib/track';
+import { exportDiaryToPdf } from '@/lib/exportPdf';
 
 const NAME_KEY = 'egoera-diario-name';
 const LANG_KEY = 'egoera-lang';
@@ -399,6 +400,17 @@ export default function TuPage() {
     toast.success(`${entries.length} entradas exportadas a .md.`);
   }
 
+  async function handleExportPdf() {
+    try {
+      await exportDiaryToPdf({ userName: name });
+      track('export_pdf', { entries: totalEntries });
+      toast.success('Tu diario en PDF se está descargando.');
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : 'Error al generar el PDF.';
+      toast.info(msg);
+    }
+  }
+
   function handleExportJson() {
     const entries = loadEntries();
     if (entries.length === 0) {
@@ -679,6 +691,12 @@ export default function TuPage() {
 
         <ul className="link-list">
           <li>
+            <button type="button" className="link-card" onClick={handleExportPdf}>
+              <span className="link-label">Llevarme mi diario en PDF</span>
+              <span className="link-value">.pdf</span>
+            </button>
+          </li>
+          <li>
             <button type="button" className="link-card" onClick={handleExport}>
               <span className="link-label">Exportar a Markdown</span>
               <span className="link-value">.md</span>
@@ -686,7 +704,7 @@ export default function TuPage() {
           </li>
           <li>
             <button type="button" className="link-card" onClick={handleExportJson}>
-              <span className="link-label">Exportar a JSON</span>
+              <span className="link-label">Exportar a JSON (backup)</span>
               <span className="link-value">.json</span>
             </button>
           </li>
