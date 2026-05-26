@@ -465,6 +465,7 @@ export default function TuPage() {
   return (
     <Screen background="cream">
       <header className="hdr">
+        <h1 className="sr-only">Tú · perfil</h1>
         <p className="eyebrow">— Tú —</p>
 
         <div className="profile">

@@ -661,6 +661,7 @@ export default function PatronesPage() {
     return (
       <Screen background="cream">
         <header className="head">
+          <h1 className="sr-only">Patrones</h1>
           <p className="eyebrow">— 04 · Patrones —</p>
         </header>
         <TabBar />
