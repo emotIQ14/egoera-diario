@@ -546,25 +546,33 @@ export default function CuadernoViewer({ cuaderno }: Props) {
         }
         .cv-arrow {
           flex-shrink: 0;
-          width: 36px;
-          height: 36px;
+          width: 32px;
+          height: 32px;
           border-radius: 50%;
-          border: 1px solid rgba(241, 234, 216, 0.18);
-          background: rgba(241, 234, 216, 0.04);
+          border: 1px solid rgba(241, 234, 216, 0.22);
+          background: rgba(241, 234, 216, 0.08);
           color: var(--crema);
-          font-size: 22px;
+          font-size: 20px;
           line-height: 1;
           cursor: pointer;
           display: grid;
           place-items: center;
           transition: all 0.2s;
           font-family: var(--font-body);
+          backdrop-filter: blur(4px);
         }
         @media (min-width: 768px) {
           .cv-arrow {
             width: 48px;
             height: 48px;
             font-size: 28px;
+          }
+        }
+        @media (max-width: 360px) {
+          .cv-arrow {
+            width: 28px;
+            height: 28px;
+            font-size: 18px;
           }
         }
         .cv-arrow:hover:not(:disabled) {
