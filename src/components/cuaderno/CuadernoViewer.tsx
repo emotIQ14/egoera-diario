@@ -378,15 +378,16 @@ export default function CuadernoViewer({ cuaderno }: Props) {
           z-index: 1;
         }
         .cv-toolbar {
-          display: flex;
+          display: grid;
+          grid-template-columns: auto 1fr auto;
           align-items: center;
           gap: 8px;
-          flex-wrap: wrap;
           width: 100%;
           min-width: 0;
         }
         @media (max-width: 480px) {
           .cv-toolbar {
+            grid-template-columns: auto 1fr auto;
             gap: 6px;
           }
         }
@@ -872,22 +873,23 @@ export default function CuadernoViewer({ cuaderno }: Props) {
         }
         /* ─── ACTIONS ─── */
         .cv-actions {
-          display: flex;
+          display: grid;
+          grid-template-columns: 1fr;
           gap: 8px;
-          flex-wrap: wrap;
-          justify-content: center;
           padding-top: 4px;
           width: 100%;
+          max-width: 480px;
+          margin: 0 auto;
         }
-        @media (max-width: 480px) {
+        @media (min-width: 640px) {
           .cv-actions {
-            flex-direction: column;
-            align-items: stretch;
-            padding: 4px 8px 0;
-          }
-          .cv-actions .cv-action {
+            grid-template-columns: auto auto auto;
+            max-width: 720px;
             justify-content: center;
           }
+        }
+        .cv-actions .cv-action {
+          justify-content: center;
         }
         .cv-action {
           display: inline-flex;
