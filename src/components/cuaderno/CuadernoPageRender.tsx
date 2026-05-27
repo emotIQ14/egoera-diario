@@ -3,6 +3,27 @@
 import { CuadernoPage } from '@/lib/cuadernos-data';
 import { setAnswer } from '@/lib/cuadernos-storage';
 import { useState, useEffect } from 'react';
+import Peep from '@/components/peeps/Peep';
+import {
+  WavePattern,
+  DotsGrid,
+  ConcentricStamp,
+  CornerMark,
+  CompassRose,
+  MarginNote,
+} from '@/components/cuaderno/EgoeraPatterns';
+
+/**
+ * Mapeo slug → Peep para que la ilustración protagonista de cada cuaderno
+ * sea coherente entre hub y visor.
+ */
+const SLUG_PEEP: Record<string, { name: string; folder: 'amigas' | 'ifs' | 'arquetipos' }> = {
+  hipervigilancia: { name: 'nora', folder: 'amigas' },
+  'reparar-gottman': { name: 'eva', folder: 'amigas' },
+  'lenguajes-amor': { name: 'mira', folder: 'amigas' },
+  'mapa-emociones': { name: 'iris', folder: 'amigas' },
+  'fortalezas-linea-vida': { name: 'zuri', folder: 'amigas' },
+};
 
 type Props = {
   page: CuadernoPage;
@@ -122,7 +143,7 @@ function renderByType(
 ) {
   switch (page.type) {
     case 'cover':
-      return <CoverPage page={page} />;
+      return <CoverPage page={page} slug={slug} />;
     case 'editorial':
       return <EditorialPage page={page} />;
     case 'sumario':
@@ -152,17 +173,39 @@ function renderByType(
         />
       );
     case 'closing':
-      return <ClosingPage page={page} />;
+      return <ClosingPage page={page} slug={slug} />;
   }
 }
 
 // ─── Cover ──────────────────────────────────────────────────────────────────
 
-function CoverPage({ page }: { page: Extract<CuadernoPage, { type: 'cover' }> }) {
+function CoverPage({
+  page,
+  slug,
+}: {
+  page: Extract<CuadernoPage, { type: 'cover' }>;
+  slug: string;
+}) {
+  const peep = SLUG_PEEP[slug];
+  // Extraer "Nº" del eyebrow para sello
+  const nMatch = page.eyebrow?.match(/Nº\s*(\d+)/);
+  const stampLabel = nMatch ? nMatch[1].padStart(2, '0') : '01';
   return (
     <div className="cover">
       <div className="cover-band-top" />
+      <DotsGrid
+        color="rgba(29,43,219,0.10)"
+        size={16}
+        dot={1.0}
+        className="cover-dots"
+      />
+      <WavePattern color="rgba(29,43,219,0.10)" className="cover-wave" />
       <div className="cover-sticker" />
+      <div className="cover-stamp">
+        <ConcentricStamp label={stampLabel} size={64} fg="#1d2bdb" bg="#f4c842" />
+      </div>
+      <CornerMark position="tl" color="rgba(29,43,219,0.3)" className="cover-corner cover-corner-tl" size={26} />
+      <CornerMark position="br" color="rgba(29,43,219,0.3)" className="cover-corner cover-corner-br" size={26} />
       <div className="cover-inner">
         <span className="cover-eyebrow">{page.eyebrow ?? '— EGOERA · CUADERNO —'}</span>
         <h1 className="cover-title">{page.title}</h1>
@@ -183,22 +226,84 @@ function CoverPage({ page }: { page: Extract<CuadernoPage, { type: 'cover' }> })
           <span className="cover-meta">PSICÓLOGO · UPV-EHU · EXPERTO IEPP</span>
         </div>
       </div>
+      {peep && (
+        <div className="cover-peep">
+          <Peep name={peep.name} folder={peep.folder} size={120} alt="" />
+        </div>
+      )}
       <div className="cover-band-bot" />
 
       <style jsx>{`
         .cover {
           position: absolute;
           inset: 0;
-          background: #f1ead8;
+          background:
+            radial-gradient(ellipse at 80% 16%, rgba(244, 200, 66, 0.16), transparent 50%),
+            linear-gradient(180deg, #f7eecf 0%, #f1ead8 100%);
           display: flex;
           flex-direction: column;
+          overflow: hidden;
+        }
+        .cover-dots {
+          position: absolute;
+          inset: 18px 18px 18px 18px;
+          opacity: 0.5;
+          pointer-events: none;
+        }
+        .cover-wave {
+          position: absolute;
+          left: -10%;
+          right: -10%;
+          bottom: 20%;
+          width: 120%;
+          height: 20%;
+          opacity: 0.5;
+          pointer-events: none;
+        }
+        .cover-stamp {
+          position: absolute;
+          top: 28px;
+          left: 18px;
+          z-index: 2;
+          filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.12));
+        }
+        .cover-corner {
+          position: absolute;
+          z-index: 2;
+        }
+        .cover-corner-tl {
+          top: 18px;
+          right: 18px;
+          left: auto;
+        }
+        .cover-corner-br {
+          bottom: 22px;
+          left: 18px;
+          right: auto;
+        }
+        .cover-peep {
+          position: absolute;
+          bottom: 50px;
+          right: 14px;
+          z-index: 2;
+          filter: drop-shadow(0 8px 18px rgba(29, 43, 219, 0.22));
+        }
+        @media (max-width: 640px) {
+          .cover-peep {
+            bottom: 28px;
+            right: 8px;
+          }
+          .cover-peep :global(.peep-wrap) {
+            width: 90px !important;
+            height: 90px !important;
+          }
         }
         .cover-band-top {
-          height: 18px;
+          height: 14px;
           background: var(--cobalto);
         }
         .cover-band-bot {
-          height: 14px;
+          height: 10px;
           background: var(--cobalto);
         }
         .cover-sticker {
@@ -811,6 +916,10 @@ function QuoteBreakPage({ page }: { page: Extract<CuadernoPage, { type: 'quote_b
   return (
     <div className="qb">
       <div className="qb-rail" />
+      <DotsGrid color="rgba(29,43,219,0.10)" size={20} dot={1.2} className="qb-dots" />
+      <div className="qb-compass" aria-hidden>
+        <CompassRose size={56} color="#1d2bdb" />
+      </div>
       <blockquote>
         <span>«{page.quote}»</span>
         {page.src && <small>— {page.src} —</small>}
@@ -830,6 +939,18 @@ function QuoteBreakPage({ page }: { page: Extract<CuadernoPage, { type: 'quote_b
           bottom: 0;
           width: 8px;
           background: var(--coral, #d97757);
+        }
+        .qb-dots {
+          position: absolute;
+          inset: 0;
+          opacity: 0.6;
+          pointer-events: none;
+        }
+        .qb-compass {
+          position: absolute;
+          top: 8px;
+          right: 8px;
+          opacity: 0.7;
         }
         blockquote {
           max-width: 22em;
@@ -992,26 +1113,46 @@ function CellInput({ slug, k, initial }: { slug: string; k: string; initial: str
 
 // ─── Closing ────────────────────────────────────────────────────────────────
 
-function ClosingPage({ page }: { page: Extract<CuadernoPage, { type: 'closing' }> }) {
+function ClosingPage({
+  page,
+  slug,
+}: {
+  page: Extract<CuadernoPage, { type: 'closing' }>;
+  slug: string;
+}) {
+  const peep = SLUG_PEEP[slug];
   return (
     <div className="cl">
+      <div className="cl-mark" aria-hidden>
+        <ConcentricStamp label="✓" size={56} fg="#1d2bdb" bg="#f4c842" />
+      </div>
       <h2>{page.h}</h2>
       {page.body.map((p, i) => (
         <p key={i}>{p}</p>
       ))}
+      {peep && (
+        <div className="cl-peep">
+          <Peep name={peep.name} folder={peep.folder} size={70} alt="" />
+          <MarginNote text="hasta aquí, contigo." rotate={-2} style={{ marginTop: 6 }} />
+        </div>
+      )}
       <a className="cl-cta" href={page.cta_url} target="_blank" rel="noopener">
         <span className="cl-cta-eyebrow">— SI QUIERES SEGUIR —</span>
         <span className="cl-cta-text">{page.cta_text}</span>
         <span className="cl-cta-url">{page.cta_url}</span>
       </a>
       <style jsx>{`
+        .cl-mark {
+          margin-bottom: 14px;
+          filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.1));
+        }
         h2 {
           font-family: var(--font-display);
           font-style: italic;
           font-weight: 600;
           font-size: clamp(26px, 4vw, 36px);
           color: var(--cobalto);
-          margin: 8px 0 16px;
+          margin: 4px 0 16px;
           line-height: 1.05;
         }
         p {
@@ -1020,6 +1161,13 @@ function ClosingPage({ page }: { page: Extract<CuadernoPage, { type: 'closing' }
           line-height: 1.6;
           color: var(--ink-soft);
           margin: 0 0 12px;
+        }
+        .cl-peep {
+          display: flex;
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 2px;
+          margin: 14px 0 18px;
         }
         .cl-cta {
           display: flex;
