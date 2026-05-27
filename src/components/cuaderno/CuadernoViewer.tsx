@@ -405,6 +405,15 @@ export default function CuadernoViewer({ cuaderno }: Props) {
           border-radius: 10px;
           border: 1px solid rgba(241, 234, 216, 0.20);
           background: rgba(241, 234, 216, 0.04);
+          white-space: nowrap;
+          flex-shrink: 0;
+        }
+        @media (max-width: 480px) {
+          .cv-back {
+            padding: 8px 10px;
+            min-width: 38px;
+            justify-content: center;
+          }
         }
         .cv-back:hover {
           background: rgba(244, 200, 66, 0.14);

@@ -262,17 +262,29 @@ function CoverPage({ page }: { page: Extract<CuadernoPage, { type: 'cover' }> })
         }
         .cover-lede {
           font-family: var(--font-body);
-          font-size: 13px;
+          font-size: 12.5px;
           line-height: 1.55;
           color: var(--ink-soft, #1c1f4a);
-          max-width: 28em;
+          max-width: 100%;
           margin: 0 0 auto;
+        }
+        @media (min-width: 768px) {
+          .cover-lede {
+            font-size: 13px;
+            max-width: 28em;
+          }
         }
         .cover-cols {
           display: grid;
-          grid-template-columns: repeat(3, 1fr);
-          gap: 12px;
-          margin: 18px 0 14px;
+          grid-template-columns: 1fr;
+          gap: 8px;
+          margin: 16px 0 12px;
+        }
+        @media (min-width: 520px) {
+          .cover-cols {
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+          }
         }
         .cover-col {
           padding: 0 6px;
@@ -281,6 +293,17 @@ function CoverPage({ page }: { page: Extract<CuadernoPage, { type: 'cover' }> })
         .cover-col:first-child {
           border-left: none;
           padding-left: 0;
+        }
+        @media (max-width: 519px) {
+          .cover-col {
+            border-left: none;
+            border-top: 1px dashed rgba(29, 43, 219, 0.18);
+            padding: 8px 0 0;
+          }
+          .cover-col:first-child {
+            border-top: none;
+            padding-top: 0;
+          }
         }
         .cover-col-h {
           display: block;
