@@ -361,3 +361,39 @@ select:focus-visible {
     scroll-behavior: auto !important;
   }
 }
+
+/* ===== Mobile UI safety net (audit v3 · mayo 2026) =====
+   Previene overflow horizontal generado por:
+   - Títulos Fraunces grandes (h1.title, .hero h1) con palabras largas
+   - Acentos Caveat (em) que pueden sobrepasar el contenedor
+   - Imágenes/SVG sin max-width
+   - Tablas u objetos con width fijo
+*/
+html, body {
+  overflow-x: hidden;
+}
+@media (max-width: 480px) {
+  /* Cualquier h1 grande con font-family display: permitir wrap inteligente */
+  h1, h2 {
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+    word-break: normal;
+    max-width: 100%;
+  }
+  /* Caveat <em> dentro de títulos display: que no se salga */
+  h1 em, h2 em, .title em, .hero em {
+    word-break: normal;
+    overflow-wrap: break-word;
+    display: inline-block;
+    max-width: 100%;
+  }
+  /* Imágenes y media nunca exceden el contenedor */
+  img, svg, video, iframe {
+    max-width: 100%;
+    height: auto;
+  }
+  /* Inputs y textareas dentro de Screen */
+  input, textarea, select {
+    max-width: 100%;
+  }
+}
