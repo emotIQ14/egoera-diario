@@ -198,13 +198,21 @@ function CoverPage({ page }: { page: Extract<CuadernoPage, { type: 'cover' }> })
         }
         .cover-sticker {
           position: absolute;
-          top: 4px;
-          right: 8%;
-          width: 88px;
-          height: 88px;
+          top: 8px;
+          right: 14px;
+          width: 70px;
+          height: 70px;
           border-radius: 50%;
           background: radial-gradient(circle, #f4c842 55%, rgba(217, 119, 87, 0.22) 56%, rgba(217, 119, 87, 0) 75%);
           box-shadow: 0 6px 16px -6px rgba(29, 43, 219, 0.2);
+        }
+        @media (min-width: 768px) {
+          .cover-sticker {
+            top: 12px;
+            right: 22px;
+            width: 90px;
+            height: 90px;
+          }
         }
         .cover-sticker::after {
           content: '';
@@ -218,9 +226,14 @@ function CoverPage({ page }: { page: Extract<CuadernoPage, { type: 'cover' }> })
         }
         .cover-inner {
           flex: 1;
-          padding: 24px 28px 14px;
+          padding: 18px 18px 12px;
           display: flex;
           flex-direction: column;
+        }
+        @media (min-width: 768px) {
+          .cover-inner {
+            padding: 24px 28px 14px;
+          }
         }
         .cover-eyebrow {
           font-family: var(--font-mono);
@@ -233,18 +246,19 @@ function CoverPage({ page }: { page: Extract<CuadernoPage, { type: 'cover' }> })
           font-family: var(--font-display);
           font-style: italic;
           font-weight: 600;
-          font-size: clamp(34px, 5vw, 52px);
+          font-size: clamp(26px, 7vw, 52px);
           line-height: 1.02;
           letter-spacing: -0.01em;
           color: var(--ink);
           margin: 0;
+          word-break: break-word;
         }
         .cover-accent {
           font-family: var(--font-hand, 'Caveat'), cursive;
-          font-size: clamp(56px, 8vw, 96px);
+          font-size: clamp(44px, 12vw, 96px);
           line-height: 0.9;
           color: var(--coral, #d97757);
-          margin: 4px 0 26px;
+          margin: 4px 0 22px;
         }
         .cover-lede {
           font-family: var(--font-body);
