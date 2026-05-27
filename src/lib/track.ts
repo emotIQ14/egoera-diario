@@ -16,7 +16,12 @@ type EventName =
   | 'historial_search_used'
   | 'historial_filter_used'
   | 'conversa_to_diary_clicked'
-  | 'historial_to_conversa';
+  | 'historial_to_conversa'
+  | 'cuaderno_opened'
+  | 'cuaderno_page_turned'
+  | 'cuaderno_mode_changed'
+  | 'cuaderno_finished'
+  | 'cuaderno_pdf_downloaded';
 
 export function track(name: EventName, props?: Record<string, string | number>): void {
   if (typeof window === 'undefined') return;

@@ -13,6 +13,11 @@
   --accent-soft: #f3a07a;
   --accent-deep: #b84a26;
   --pill-yellow: #e8d45f;
+  /* Cuadernos · alias coherentes con motor PDF (egoera_workbook_engine.py) */
+  --coral: #d97757;
+  --mostaza: #f4c842;
+  --mostaza-soft: #faedc1;
+  --crema-card: #ede0bd;
 
   /* Espaciado */
   --space-1: 4px;
