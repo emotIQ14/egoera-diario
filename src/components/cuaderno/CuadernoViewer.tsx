@@ -40,8 +40,9 @@ import {
 import { track } from '@/lib/track';
 import CuadernoPageRender from './CuadernoPageRender';
 import CuadernoBridgeToast from './CuadernoBridgeToast';
+import CuadernoTreeView from './CuadernoTreeView';
 
-type Mode = 'read' | 'work';
+type Mode = 'read' | 'work' | 'tree';
 type Direction = 'forward' | 'backward';
 
 type Props = {
@@ -217,6 +218,7 @@ export default function CuadernoViewer({ cuaderno }: Props) {
             onClick={() => setMode('read')}
             role="tab"
             aria-selected={mode === 'read'}
+            title="Leer"
           >
             Leer
           </button>
@@ -228,8 +230,21 @@ export default function CuadernoViewer({ cuaderno }: Props) {
             }}
             role="tab"
             aria-selected={mode === 'work'}
+            title="Trabajar — escribe tus respuestas"
           >
             Trabajar
+          </button>
+          <button
+            className={mode === 'tree' ? 'cv-mode active' : 'cv-mode'}
+            onClick={() => {
+              setMode('tree');
+              track('cuaderno_mode_changed', { slug: meta.slug, mode: 'tree' });
+            }}
+            role="tab"
+            aria-selected={mode === 'tree'}
+            title="Árbol — vista del cuaderno completo"
+          >
+            Árbol
           </button>
         </div>
       </header>
@@ -248,7 +263,26 @@ export default function CuadernoViewer({ cuaderno }: Props) {
         </span>
       </div>
 
+      {/* Vista Árbol — diseño nuevo · click en hoja → modo lectura */}
+      {mode === 'tree' && (
+        <div className="cv-tree-stage">
+          <CuadernoTreeView
+            pages={pages}
+            pageIndex={pageIndex}
+            completedPages={state?.completedPages ?? []}
+            onSelectPage={(idx) => {
+              setPageIndex(idx);
+              setMode('read');
+              track('cuaderno_page_turned', { slug: meta.slug, to: idx, from: 'tree' });
+            }}
+            cuadernoTitle={meta.title}
+            cuadernoIssue={meta.issue}
+          />
+        </div>
+      )}
+
       {/* Libro */}
+      {mode !== 'tree' && (
       <div className="cv-stage" onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
         <button
           className="cv-arrow cv-arrow-left"
@@ -340,6 +374,7 @@ export default function CuadernoViewer({ cuaderno }: Props) {
           ›
         </button>
       </div>
+      )}
 
       {/* Footer acciones */}
       <footer className="cv-actions">
@@ -611,6 +646,21 @@ export default function CuadernoViewer({ cuaderno }: Props) {
           .cv-progress-section {
             max-width: 16ch;
             font-size: 12px;
+          }
+        }
+        /* ─── TREE STAGE ─── */
+        .cv-tree-stage {
+          flex: 1;
+          display: flex;
+          align-items: stretch;
+          justify-content: center;
+          padding: 6px 0;
+          min-height: 540px;
+        }
+        @media (min-width: 768px) {
+          .cv-tree-stage {
+            min-height: 640px;
+            padding: 10px 0;
           }
         }
         /* ─── STAGE ─── */

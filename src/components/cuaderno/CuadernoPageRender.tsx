@@ -3,6 +3,7 @@
 import { CuadernoPage } from '@/lib/cuadernos-data';
 import { setAnswer } from '@/lib/cuadernos-storage';
 import { useState, useEffect } from 'react';
+import { saveEntry, makeId } from '@/lib/storage';
 import Peep from '@/components/peeps/Peep';
 import {
   WavePattern,
@@ -743,6 +744,14 @@ function ExercisePage({
           <p>{page.reflection}</p>
         </aside>
       )}
+      {mode === 'work' && (
+        <ExerciseBridgeMini
+          slug={slug}
+          pageIndex={pageIndex}
+          answers={answers}
+          exerciseTitle={page.h}
+        />
+      )}
       <style jsx>{`
         .ex {
           position: relative;
@@ -1199,5 +1208,140 @@ function ClosingPage({
         }
       `}</style>
     </div>
+  );
+}
+
+// ─── Exercise Bridge Mini · audit §02·06 + bridges intermedios ─────────────
+function ExerciseBridgeMini({
+  slug,
+  pageIndex,
+  answers,
+  exerciseTitle,
+}: {
+  slug: string;
+  pageIndex: number;
+  answers: Record<string, string>;
+  exerciseTitle: string;
+}) {
+  const [saved, setSaved] = useState(false);
+  // Recolectar respuestas de esta página
+  const myAnswers = Object.entries(answers)
+    .filter(([k]) => k.startsWith(`${pageIndex}-`))
+    .map(([, v]) => v.trim())
+    .filter(Boolean);
+  const hasAnswers = myAnswers.length > 0;
+  if (!hasAnswers) return null;
+
+  const save = () => {
+    const summary = myAnswers.join(' · ');
+    const text = `Desde el cuaderno · ${exerciseTitle} → ${summary.slice(0, 360)}`;
+    saveEntry({
+      id: makeId(),
+      createdAt: new Date().toISOString(),
+      mood: 6,
+      emotions: [],
+      text,
+      context: ['personal'],
+    });
+    setSaved(true);
+    window.setTimeout(() => setSaved(false), 2400);
+  };
+
+  return (
+    <aside className="exbm" aria-live="polite">
+      {saved ? (
+        <div className="exbm-saved">
+          <span className="exbm-check" aria-hidden>
+            ✓
+          </span>
+          <span>Añadido al diario.</span>
+        </div>
+      ) : (
+        <>
+          <div className="exbm-text">
+            <span className="exbm-eyebrow">— +1 SELLO —</span>
+            <span className="exbm-prompt">
+              ¿Lo guardas en tu <em>diario emocional</em>?
+            </span>
+          </div>
+          <button className="exbm-btn" onClick={save}>
+            Guardar →
+          </button>
+        </>
+      )}
+      <style jsx>{`
+        .exbm {
+          margin-top: 14px;
+          padding: 12px 14px;
+          display: flex;
+          gap: 10px;
+          align-items: center;
+          background: linear-gradient(135deg, rgba(29, 43, 219, 0.06), rgba(244, 200, 66, 0.10));
+          border: 1px dashed rgba(29, 43, 219, 0.32);
+          border-radius: 12px;
+        }
+        .exbm-text {
+          flex: 1;
+          min-width: 0;
+          display: flex;
+          flex-direction: column;
+          gap: 2px;
+        }
+        .exbm-eyebrow {
+          font-family: var(--font-mono);
+          font-size: 9px;
+          letter-spacing: 0.22em;
+          color: var(--cobalto);
+        }
+        .exbm-prompt {
+          font-family: var(--font-display);
+          font-style: italic;
+          font-size: 14px;
+          color: var(--ink);
+          line-height: 1.3;
+        }
+        .exbm-prompt em {
+          color: var(--coral, #d97757);
+          font-weight: 600;
+        }
+        .exbm-btn {
+          flex-shrink: 0;
+          padding: 9px 14px;
+          background: var(--cobalto);
+          color: var(--crema);
+          border: none;
+          border-radius: 999px;
+          font-family: var(--font-mono);
+          font-size: 9.5px;
+          letter-spacing: 0.18em;
+          text-transform: uppercase;
+          font-weight: 600;
+          cursor: pointer;
+        }
+        .exbm-btn:hover {
+          background: var(--coral, #d97757);
+        }
+        .exbm-saved {
+          flex: 1;
+          display: flex;
+          gap: 10px;
+          align-items: center;
+          font-family: var(--font-display);
+          font-style: italic;
+          font-size: 14px;
+          color: var(--cobalto);
+        }
+        .exbm-check {
+          width: 24px;
+          height: 24px;
+          border-radius: 50%;
+          background: #f4c842;
+          color: var(--ink);
+          display: grid;
+          place-items: center;
+          font-weight: 700;
+        }
+      `}</style>
+    </aside>
   );
 }
