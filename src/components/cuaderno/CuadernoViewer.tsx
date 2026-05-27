@@ -466,10 +466,20 @@ export default function CuadernoViewer({ cuaderno }: Props) {
           width: 100%;
           min-width: 0;
         }
-        @media (max-width: 480px) {
+        @media (max-width: 540px) {
           .cv-toolbar {
-            grid-template-columns: auto 1fr auto;
-            gap: 6px;
+            grid-template-columns: auto 1fr;
+            grid-template-rows: auto auto;
+            gap: 8px 8px;
+            row-gap: 8px;
+          }
+          .cv-modes {
+            grid-column: 1 / -1;
+            grid-row: 2;
+            justify-self: stretch;
+            display: grid !important;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 4px;
           }
         }
         .cv-back {
