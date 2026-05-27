@@ -63,11 +63,16 @@ export default function CuadernoPageRender({
             radial-gradient(at 90% 8%, rgba(244, 200, 66, 0.18), transparent 40%),
             linear-gradient(180deg, #f7eecf 0%, #f1ead8 100%);
           color: var(--ink);
-          padding: 18px 22px 16px;
+          padding: 14px 16px 12px;
           display: flex;
           flex-direction: column;
           position: relative;
           overflow: hidden;
+        }
+        @media (min-width: 768px) {
+          .cpage {
+            padding: 18px 22px 16px;
+          }
         }
         .cpage-chrome {
           display: flex;
