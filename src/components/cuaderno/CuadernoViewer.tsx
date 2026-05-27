@@ -569,10 +569,10 @@ export default function CuadernoViewer({ cuaderno }: Props) {
           border: 1px solid rgba(241, 234, 216, 0.10);
         }
         .cv-mode {
-          padding: 7px 12px;
+          padding: 7px 10px;
           font-family: var(--font-mono);
-          font-size: 10.5px;
-          letter-spacing: 0.10em;
+          font-size: 10px;
+          letter-spacing: 0.08em;
           text-transform: uppercase;
           background: transparent;
           color: rgba(241, 234, 216, 0.65);
@@ -580,16 +580,31 @@ export default function CuadernoViewer({ cuaderno }: Props) {
           border-radius: 7px;
           cursor: pointer;
           min-height: 30px;
+          flex-shrink: 0;
         }
         .cv-mode.active {
           background: #f4c842;
           color: #0d0f3d;
           font-weight: 700;
         }
+        @media (min-width: 768px) {
+          .cv-mode {
+            padding: 7px 14px;
+            font-size: 10.5px;
+            letter-spacing: 0.10em;
+          }
+        }
+        @media (max-width: 480px) {
+          .cv-mode {
+            padding: 6px 8px;
+            font-size: 9px;
+            letter-spacing: 0.06em;
+          }
+        }
         @media (max-width: 380px) {
           .cv-mode {
-            padding: 6px 10px;
-            font-size: 9.5px;
+            padding: 6px 6px;
+            font-size: 8.5px;
           }
         }
         .cv-progress {
