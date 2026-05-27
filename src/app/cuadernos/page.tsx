@@ -270,22 +270,30 @@ export default function CuadernosHub() {
           max-width: 1180px;
           margin: 0 auto;
           width: 100%;
+          box-sizing: border-box;
+          overflow-x: clip;
         }
         @media (min-width: 768px) {
           .hub {
             padding: 36px 28px 110px;
           }
         }
+        .hub :global(*) {
+          box-sizing: border-box;
+        }
 
         /* ═══ HERO ═══ */
         .hub-hero {
           position: relative;
-          padding: 24px 18px 28px;
+          padding: 24px 22px 28px;
           margin-bottom: 28px;
           border-radius: 22px;
           background: linear-gradient(135deg, #f7eecf 0%, #f1ead8 60%, #ede0bd 100%);
           overflow: hidden;
           border: 1px solid rgba(29, 43, 219, 0.10);
+          width: 100%;
+          max-width: 100%;
+          box-sizing: border-box;
         }
         @media (min-width: 768px) {
           .hub-hero {
@@ -373,8 +381,10 @@ export default function CuadernosHub() {
           font-size: clamp(13.5px, 2.6vw, 16px);
           line-height: 1.6;
           color: var(--ink-soft);
-          max-width: 56ch;
+          max-width: min(56ch, 100%);
           margin: 0;
+          word-wrap: break-word;
+          overflow-wrap: break-word;
         }
         .hub-lede strong {
           color: var(--cobalto);
@@ -532,13 +542,14 @@ export default function CuadernosHub() {
           font-family: var(--font-display);
           font-style: italic;
           font-weight: 600;
-          font-size: clamp(20px, 2.4vw, 26px);
-          line-height: 1.02;
-          letter-spacing: -0.01em;
+          font-size: clamp(19px, 2.2vw, 24px);
+          line-height: 1.05;
+          letter-spacing: -0.015em;
           margin: 0;
           word-break: normal;
-          overflow-wrap: break-word;
-          hyphens: auto;
+          overflow-wrap: normal;
+          hyphens: none;
+          max-width: 100%;
         }
         .cb-accent {
           display: block;
