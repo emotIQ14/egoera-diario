@@ -107,7 +107,7 @@ export default function CuadernosHub() {
 
   return (
     <>
-      <Screen>
+      <Screen maxWidth="1180px" padding="0">
         <div className="hub">
           {/* ─── HERO ──────────────────────────────────────────────── */}
           <header className="hub-hero">
