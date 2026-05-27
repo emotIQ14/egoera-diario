@@ -95,17 +95,19 @@ export default function CuadernosHub() {
 
       <style jsx>{`
         .hub {
-          padding: 20px 16px 96px;
+          padding: 18px 14px 110px;
           max-width: 1100px;
           margin: 0 auto;
+          width: 100%;
+          overflow-x: hidden;
         }
         @media (min-width: 768px) {
           .hub {
-            padding: 32px 24px 96px;
+            padding: 32px 24px 110px;
           }
         }
         .hub-head {
-          margin-bottom: 28px;
+          margin-bottom: 24px;
         }
         .hub-eyebrow {
           font-family: var(--font-mono);
@@ -118,15 +120,18 @@ export default function CuadernosHub() {
           font-family: var(--font-display);
           font-style: italic;
           font-weight: 600;
-          font-size: clamp(30px, 5vw, 44px);
+          font-size: clamp(26px, 5vw, 44px);
           line-height: 1.05;
           color: var(--ink);
-          margin: 8px 0 14px;
+          margin: 6px 0 12px;
+          word-wrap: break-word;
+          overflow-wrap: break-word;
+          hyphens: auto;
         }
         .hub-lede {
           font-family: var(--font-body);
-          font-size: 15px;
-          line-height: 1.6;
+          font-size: clamp(14px, 2.6vw, 15px);
+          line-height: 1.55;
           color: var(--ink-soft);
           max-width: 38em;
           margin: 0;
@@ -134,8 +139,14 @@ export default function CuadernosHub() {
         .hub-grid {
           display: grid;
           gap: 18px;
-          grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+          grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
           margin-bottom: 32px;
+        }
+        @media (max-width: 480px) {
+          .hub-grid {
+            grid-template-columns: 1fr;
+            gap: 16px;
+          }
         }
         @media (min-width: 900px) {
           .hub-grid {

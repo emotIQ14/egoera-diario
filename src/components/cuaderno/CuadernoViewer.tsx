@@ -232,7 +232,7 @@ export default function CuadernoViewer({ cuaderno }: Props) {
             {/* Página izquierda (en doble) */}
             {isDesktop && (
               <div className="cv-leaf cv-leaf-left">
-                {leftIndex >= 0 && leftIndex < total && (
+                {leftIndex >= 0 && leftIndex < total ? (
                   <CuadernoPageRender
                     page={pages[leftIndex]}
                     pageIndex={leftIndex}
@@ -243,6 +243,26 @@ export default function CuadernoViewer({ cuaderno }: Props) {
                     mode={mode}
                     initialAnswers={answers}
                   />
+                ) : (
+                  /* Contraportada (cuando estás en pageIndex 0 y left no existe) */
+                  <div className="cv-inner-cover">
+                    <span className="cv-ic-eyebrow">EGOERA</span>
+                    <div className="cv-ic-mark" aria-hidden>
+                      <span className="cv-ic-dot" />
+                    </div>
+                    <h2 className="cv-ic-h">
+                      <em>psicología,</em>
+                      <br />
+                      despacio.
+                    </h2>
+                    <span className="cv-ic-issue">— {meta.issue.toUpperCase()} —</span>
+                    <div className="cv-ic-tags">
+                      <span>{meta.topic}</span>
+                      <span>·</span>
+                      <span>{meta.duration}</span>
+                    </div>
+                    <span className="cv-ic-foot">egoera.es</span>
+                  </div>
                 )}
               </div>
             )}
@@ -329,11 +349,14 @@ export default function CuadernoViewer({ cuaderno }: Props) {
             radial-gradient(ellipse at 70% 80%, rgba(217, 119, 87, 0.05) 0%, transparent 50%),
             linear-gradient(135deg, #0d0f3d 0%, #1c1f4a 100%);
           color: var(--crema);
-          padding: 14px 12px 110px;
+          padding: 10px 10px 110px;
           display: flex;
           flex-direction: column;
-          gap: 12px;
+          gap: 10px;
           position: relative;
+          overflow-x: hidden;
+          width: 100%;
+          max-width: 100vw;
         }
         @media (min-width: 768px) {
           .cv {
@@ -357,8 +380,15 @@ export default function CuadernoViewer({ cuaderno }: Props) {
         .cv-toolbar {
           display: flex;
           align-items: center;
-          gap: 10px;
+          gap: 8px;
           flex-wrap: wrap;
+          width: 100%;
+          min-width: 0;
+        }
+        @media (max-width: 480px) {
+          .cv-toolbar {
+            gap: 6px;
+          }
         }
         .cv-back {
           display: inline-flex;
@@ -389,8 +419,13 @@ export default function CuadernoViewer({ cuaderno }: Props) {
           }
         }
         .cv-meta {
-          flex: 1;
-          min-width: 140px;
+          flex: 1 1 0;
+          min-width: 0;
+          overflow: hidden;
+        }
+        .cv-title {
+          overflow: hidden;
+          text-overflow: ellipsis;
         }
         .cv-issue {
           display: block;
@@ -404,15 +439,16 @@ export default function CuadernoViewer({ cuaderno }: Props) {
         .cv-title {
           font-family: var(--font-display);
           font-weight: 300;
-          font-size: clamp(18px, 3vw, 24px);
+          font-size: clamp(16px, 2.6vw, 22px);
           color: var(--crema);
           margin: 0;
-          line-height: 1.1;
+          line-height: 1.15;
           letter-spacing: -0.01em;
           display: flex;
           flex-wrap: wrap;
           align-items: baseline;
           gap: 8px;
+          min-width: 0;
         }
         .cv-title em {
           font-style: italic;
@@ -424,6 +460,14 @@ export default function CuadernoViewer({ cuaderno }: Props) {
           font-style: italic;
           font-weight: 400;
           font-size: 12px;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+        @media (max-width: 480px) {
+          .cv-sub {
+            display: none;
+          }
         }
         .cv-modes {
           display: inline-flex;
@@ -536,7 +580,8 @@ export default function CuadernoViewer({ cuaderno }: Props) {
         .cv-book {
           position: relative;
           width: 100%;
-          max-width: 460px;
+          /* Restamos el ancho de las dos flechas + gaps + padding del cv */
+          max-width: min(460px, calc(100vw - 100px));
           aspect-ratio: 0.7 / 1;
           filter: drop-shadow(0 24px 60px rgba(0, 0, 0, 0.55));
           border-radius: 6px;
@@ -651,6 +696,118 @@ export default function CuadernoViewer({ cuaderno }: Props) {
           width: 100%;
           height: 100%;
         }
+        /* ─── INNER COVER (cuando left está vacío, mostramos esta carta de marca) ─── */
+        .cv-inner-cover {
+          position: absolute;
+          inset: 0;
+          padding: 48px 36px;
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          align-items: center;
+          text-align: center;
+          color: var(--ink);
+          gap: 16px;
+          background: linear-gradient(135deg, #1d2bdb 0%, #0f1a9c 100%);
+          color: var(--crema);
+        }
+        .cv-inner-cover::before {
+          /* sello mostaza decorativo en esquina */
+          content: '';
+          position: absolute;
+          top: 36px;
+          left: 36px;
+          width: 24px;
+          height: 24px;
+          border-radius: 50%;
+          background: #f4c842;
+          opacity: 0.85;
+        }
+        .cv-inner-cover::after {
+          /* sello coral en esquina opuesta */
+          content: '';
+          position: absolute;
+          bottom: 36px;
+          right: 36px;
+          width: 12px;
+          height: 12px;
+          border-radius: 50%;
+          background: #d97757;
+          opacity: 0.9;
+        }
+        .cv-ic-eyebrow {
+          font-family: var(--font-mono);
+          font-size: 11px;
+          letter-spacing: 0.32em;
+          color: rgba(241, 234, 216, 0.7);
+        }
+        .cv-ic-mark {
+          width: 110px;
+          height: 110px;
+          border: 2px solid #f4c842;
+          border-radius: 50%;
+          display: grid;
+          place-items: center;
+          position: relative;
+          margin: 8px 0;
+        }
+        .cv-ic-mark::before {
+          content: '';
+          position: absolute;
+          inset: -8px;
+          border: 1px solid rgba(244, 200, 66, 0.35);
+          border-radius: 50%;
+        }
+        .cv-ic-dot {
+          width: 18px;
+          height: 18px;
+          border-radius: 50%;
+          background: #f4c842;
+          box-shadow: 0 0 0 6px rgba(244, 200, 66, 0.18);
+        }
+        .cv-ic-h {
+          font-family: var(--font-display);
+          font-weight: 300;
+          font-size: clamp(28px, 3.4vw, 38px);
+          line-height: 1.05;
+          letter-spacing: -0.01em;
+          color: var(--crema);
+          margin: 8px 0 0;
+        }
+        .cv-ic-h em {
+          font-style: italic;
+          font-weight: 500;
+          color: #f4c842;
+        }
+        .cv-ic-issue {
+          font-family: var(--font-mono);
+          font-size: 10px;
+          letter-spacing: 0.24em;
+          color: rgba(241, 234, 216, 0.55);
+          margin-top: 4px;
+        }
+        .cv-ic-tags {
+          display: inline-flex;
+          gap: 8px;
+          font-family: var(--font-mono);
+          font-size: 10px;
+          letter-spacing: 0.16em;
+          text-transform: uppercase;
+          color: rgba(241, 234, 216, 0.7);
+        }
+        .cv-ic-tags span:nth-child(2) {
+          color: #f4c842;
+        }
+        .cv-ic-foot {
+          position: absolute;
+          bottom: 36px;
+          left: 50%;
+          transform: translateX(-50%);
+          font-family: var(--font-mono);
+          font-size: 10px;
+          letter-spacing: 0.22em;
+          color: rgba(241, 234, 216, 0.45);
+        }
         /* ─── MÓVIL: páginas apiladas verticalmente ─── */
         @media (max-width: 899px) {
           .cv-book {
@@ -712,6 +869,17 @@ export default function CuadernoViewer({ cuaderno }: Props) {
           flex-wrap: wrap;
           justify-content: center;
           padding-top: 4px;
+          width: 100%;
+        }
+        @media (max-width: 480px) {
+          .cv-actions {
+            flex-direction: column;
+            align-items: stretch;
+            padding: 4px 8px 0;
+          }
+          .cv-actions .cv-action {
+            justify-content: center;
+          }
         }
         .cv-action {
           display: inline-flex;
