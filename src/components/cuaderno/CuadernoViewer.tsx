@@ -2,7 +2,34 @@
 
 import { useEffect, useState, useCallback, useRef } from 'react';
 import Link from 'next/link';
-import { Cuaderno } from '@/lib/cuadernos-data';
+import { Cuaderno, CuadernoPage } from '@/lib/cuadernos-data';
+
+/**
+ * Devuelve una etiqueta legible para mostrar en el contador del libro
+ * según el tipo de página. Audit §02·02 — "03/14 · Sumario" en lugar de
+ * solo "03/14". Da contexto cognitivo al lector.
+ */
+function getPageLabel(page: CuadernoPage | undefined): string {
+  if (!page) return '';
+  switch (page.type) {
+    case 'cover':
+      return 'Portada';
+    case 'editorial':
+      return 'Editorial';
+    case 'sumario':
+      return 'Sumario';
+    case 'section':
+      return page.kicker ? page.kicker.replace(/·.*$/, '').trim() : 'Teoría';
+    case 'exercise':
+      return page.kicker ? page.kicker.replace(/·.*$/, '').trim() : 'Ejercicio';
+    case 'quote_break':
+      return 'Pausa';
+    case 'map_table':
+      return 'Mapa';
+    case 'closing':
+      return 'Cierre';
+  }
+}
 import {
   getState,
   setState,
@@ -12,6 +39,7 @@ import {
 } from '@/lib/cuadernos-storage';
 import { track } from '@/lib/track';
 import CuadernoPageRender from './CuadernoPageRender';
+import CuadernoBridgeToast from './CuadernoBridgeToast';
 
 type Mode = 'read' | 'work';
 type Direction = 'forward' | 'backward';
@@ -44,6 +72,7 @@ export default function CuadernoViewer({ cuaderno }: Props) {
   const [exiting, setExiting] = useState<Direction | null>(null);
   const [seal, setSeal] = useState<string | null>(null); // mostrar sello de completado
   const sealTimeout = useRef<number | null>(null);
+  const [bridgeOpen, setBridgeOpen] = useState(false); // toast puente a diario
 
   // Hidratación
   useEffect(() => {
@@ -97,6 +126,8 @@ export default function CuadernoViewer({ cuaderno }: Props) {
         }
         if (updated.finishedAt && next >= total - 1) {
           track('cuaderno_finished', { slug: meta.slug });
+          // Audit §02·06 — cerrar bucle: ofrecer guardar en diario
+          window.setTimeout(() => setBridgeOpen(true), 1800);
         }
       }, 280);
     },
@@ -203,13 +234,17 @@ export default function CuadernoViewer({ cuaderno }: Props) {
         </div>
       </header>
 
-      {/* Progress */}
+      {/* Progress · audit §02·02: incluir título de sección actual */}
       <div className="cv-progress">
         <div className="cv-progress-bar" aria-hidden>
           <div className="cv-progress-fill" style={{ width: `${progressPct}%` }} />
         </div>
         <span className="cv-progress-label">
-          {progressPct}% · {pageIndex + 1}/{total}
+          <span className="cv-progress-num">
+            {String(pageIndex + 1).padStart(2, '0')} / {String(total).padStart(2, '0')}
+          </span>
+          <span className="cv-progress-dot" aria-hidden>·</span>
+          <span className="cv-progress-section">{getPageLabel(pages[pageIndex])}</span>
         </span>
       </div>
 
@@ -339,6 +374,17 @@ export default function CuadernoViewer({ cuaderno }: Props) {
           </a>
         )}
       </footer>
+
+      {/* Bridge a diario emocional · audit §02·06 */}
+      <CuadernoBridgeToast
+        open={bridgeOpen}
+        cuadernoTitle={meta.title}
+        cuadernoSlug={meta.slug}
+        sealLabel={'Cuaderno completado'}
+        suggestedText={`Acabo de terminar el cuaderno "${meta.title}". Lo que me llevo es…`}
+        suggestedMood={6}
+        onClose={() => setBridgeOpen(false)}
+      />
 
       <style jsx>{`
         .cv {
@@ -536,6 +582,36 @@ export default function CuadernoViewer({ cuaderno }: Props) {
           letter-spacing: 0.14em;
           color: rgba(241, 234, 216, 0.6);
           white-space: nowrap;
+          display: inline-flex;
+          align-items: baseline;
+          gap: 6px;
+          min-width: 0;
+        }
+        .cv-progress-num {
+          color: #f4c842;
+          font-weight: 600;
+          font-variant-numeric: tabular-nums;
+        }
+        .cv-progress-dot {
+          opacity: 0.4;
+        }
+        .cv-progress-section {
+          font-family: var(--font-display);
+          font-style: italic;
+          font-size: 13px;
+          letter-spacing: 0;
+          text-transform: none;
+          color: var(--crema);
+          font-weight: 400;
+          max-width: 28ch;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+        @media (max-width: 480px) {
+          .cv-progress-section {
+            max-width: 16ch;
+            font-size: 12px;
+          }
         }
         /* ─── STAGE ─── */
         .cv-stage {
