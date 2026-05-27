@@ -454,12 +454,13 @@ export default function CuadernosHub() {
         /* ── Cover ── */
         .cb-cover {
           position: relative;
-          aspect-ratio: 5 / 4;
-          padding: 22px 22px 20px;
+          aspect-ratio: 4 / 5;
+          padding: 22px 22px 24px;
           display: flex;
           flex-direction: column;
           justify-content: flex-end;
           overflow: hidden;
+          min-height: 280px;
         }
         .cb-cover-bg {
           position: absolute;
@@ -481,31 +482,38 @@ export default function CuadernosHub() {
         }
         .cb-stamp {
           position: absolute;
-          top: 16px;
-          left: 16px;
+          top: 18px;
+          left: 18px;
           z-index: 2;
-          filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.18));
+          filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.22));
         }
         .cb-corner {
           position: absolute;
           z-index: 2;
         }
         .cb-corner-tl {
-          top: 10px;
-          left: 100px;
+          display: none; /* eliminado para limpieza visual */
         }
         .cb-corner-br {
-          bottom: 10px;
-          right: 10px;
-          transform: rotate(180deg);
+          display: none;
         }
         .cb-peep {
           position: absolute;
-          top: 12px;
-          right: 16px;
+          top: 14px;
+          right: 14px;
           z-index: 2;
-          opacity: 0.95;
-          filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.18));
+          opacity: 1;
+          filter: drop-shadow(0 10px 22px rgba(0, 0, 0, 0.32));
+        }
+        .cb-peep :global(.peep-wrap) {
+          width: 96px !important;
+          height: 96px !important;
+        }
+        @media (max-width: 559px) {
+          .cb-peep :global(.peep-wrap) {
+            width: 88px !important;
+            height: 88px !important;
+          }
         }
         .cb-text {
           position: relative;
@@ -524,18 +532,20 @@ export default function CuadernosHub() {
           font-family: var(--font-display);
           font-style: italic;
           font-weight: 600;
-          font-size: clamp(22px, 3vw, 30px);
+          font-size: clamp(20px, 2.4vw, 26px);
           line-height: 1.02;
           letter-spacing: -0.01em;
           margin: 0;
-          word-break: break-word;
+          word-break: normal;
+          overflow-wrap: break-word;
+          hyphens: auto;
         }
         .cb-accent {
           display: block;
           font-family: var(--font-hand, 'Caveat'), cursive;
           font-weight: 700;
-          font-size: clamp(38px, 5vw, 56px);
-          line-height: 0.82;
+          font-size: clamp(34px, 4vw, 48px);
+          line-height: 0.85;
           margin: 4px 0 0;
         }
 
