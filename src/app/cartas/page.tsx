@@ -292,12 +292,20 @@ export default function CartasPage() {
           font-family: var(--font-display);
           font-style: italic;
           font-weight: 600;
-          font-size: clamp(36px, 9vw, 52px);
-          line-height: 1.02;
+          font-size: clamp(28px, 7.2vw, 52px);
+          line-height: 1.04;
           margin: 8px 0 14px;
           color: var(--ink);
+          overflow-wrap: break-word;
+          word-break: normal;
+          max-width: 100%;
         }
-        .title em { color: var(--cobalto); }
+        .title em {
+          color: var(--cobalto);
+          display: inline-block;
+          max-width: 100%;
+          overflow-wrap: break-word;
+        }
         .lede {
           font-family: var(--font-body);
           font-size: 15px;
