@@ -406,7 +406,7 @@ export default function HomePage() {
   }, [now]);
 
   return (
-    <Screen background="cream">
+    <Screen background="cream" maxWidth="min(880px, 100%)">
       <header className="head">
         <p className="eyebrow">— Hoy {weekday ? `· ${weekday}` : ''} —</p>
         <h1 className="s-greet">
