@@ -90,6 +90,16 @@ const THEMES: Record<string, CardTheme> = {
     peep_name: 'zuri',
     peep_folder: 'amigas',
   },
+  'tu-mejor-yo': {
+    cover_bg: '#d97757',
+    cover_fg: '#f1ead8',
+    cover_accent: '#f4c842',
+    stamp_bg: '#1d2bdb',
+    stamp_fg: '#f1ead8',
+    pattern_color: 'rgba(241,234,216,0.18)',
+    peep_name: 'lola',
+    peep_folder: 'amigas',
+  },
 };
 
 const ACCENT_LABELS: Record<string, string> = {
@@ -98,6 +108,7 @@ const ACCENT_LABELS: Record<string, string> = {
   'lenguajes-amor': 'tuyos.',
   'mapa-emociones': 'sentir.',
   'fortalezas-linea-vida': 'tuyas.',
+  'tu-mejor-yo': 'mañana.',
 };
 
 export default function CuadernosHub() {
