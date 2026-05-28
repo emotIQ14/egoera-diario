@@ -4,6 +4,8 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { CUADERNOS } from '@/lib/cuadernos-data';
 import { progressPct, isStarted, isFinished } from '@/lib/cuadernos-storage';
+import { computeAchievements, AchievementsSummary } from '@/lib/achievements';
+import { EXERCISES_CATALOG } from '@/lib/exercises-catalog';
 import Screen from '@/components/Screen';
 import TabBar from '@/components/TabBar';
 import Peep from '@/components/peeps/Peep';
@@ -100,9 +102,11 @@ const ACCENT_LABELS: Record<string, string> = {
 
 export default function CuadernosHub() {
   const [hydrated, setHydrated] = useState(false);
+  const [ach, setAch] = useState<AchievementsSummary | null>(null);
 
   useEffect(() => {
     setHydrated(true);
+    setAch(computeAchievements());
   }, []);
 
   return (
@@ -243,6 +247,93 @@ export default function CuadernosHub() {
               );
             })}
           </ul>
+
+          {/* ─── SECCIÓN LOGROS · GAMIFICACIÓN ─────────────────────── */}
+          {hydrated && ach && (
+            <section className="hub-ach" aria-labelledby="ach-h">
+              <header className="hub-ach-head">
+                <div>
+                  <span className="hub-ach-eyebrow">— LOGROS COLECCIONABLES —</span>
+                  <h2 id="ach-h" className="hub-ach-h">
+                    <em>{ach.unlocked}</em> de {ach.total} sellos conseguidos.
+                  </h2>
+                </div>
+                <div className="hub-ach-xp" aria-label="Puntos">
+                  <span className="hub-ach-xp-num">{ach.xp}</span>
+                  <span className="hub-ach-xp-lbl">xp</span>
+                </div>
+              </header>
+              <div className="hub-ach-bar" aria-hidden>
+                <div className="hub-ach-bar-fill" style={{ width: `${ach.pct}%` }} />
+              </div>
+              <ul className="hub-ach-grid">
+                {ach.achievements.map((a) => (
+                  <li
+                    key={a.id}
+                    className={`hub-ach-card ${a.unlocked ? 'is-unlocked' : 'is-locked'} hub-ach-${a.color}`}
+                    title={a.unlocked ? `Conseguido: ${a.label}` : `Pendiente: ${a.desc}`}
+                  >
+                    <span className="hub-ach-icon" aria-hidden>
+                      {a.icon}
+                    </span>
+                    <div className="hub-ach-body">
+                      <strong>{a.label}</strong>
+                      <small>{a.desc}</small>
+                      {a.progress && !a.unlocked && (
+                        <div className="hub-ach-progress" aria-hidden>
+                          <div
+                            className="hub-ach-progress-fill"
+                            style={{ width: `${(a.progress.current / a.progress.total) * 100}%` }}
+                          />
+                          <span>
+                            {a.progress.current}/{a.progress.total}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
+
+          {/* ─── SECCIÓN EJERCICIOS SUELTOS ────────────────────────── */}
+          <section className="hub-ex" aria-labelledby="ex-h">
+            <header className="hub-ex-head">
+              <span className="hub-ex-eyebrow">— EJERCICIOS SUELTOS —</span>
+              <h2 id="ex-h" className="hub-ex-h">
+                Si no quieres el cuaderno entero, <em>haz uno solo</em>.
+              </h2>
+              <p className="hub-ex-sub">
+                Extraídos de los cuadernos. Entre 5 y 20 min. Sin compromiso.
+              </p>
+            </header>
+            <ul className="hub-ex-grid">
+              {EXERCISES_CATALOG.map((ex) => (
+                <li key={ex.id}>
+                  <Link
+                    href={`/cuadernos/${ex.fromCuaderno.slug}`}
+                    className={`hub-ex-card hub-ex-${ex.color}`}
+                  >
+                    <span className="hub-ex-icon" aria-hidden>
+                      {ex.icon}
+                    </span>
+                    <div className="hub-ex-meta">
+                      <span className="hub-ex-kicker">{ex.kicker}</span>
+                      <h3 className="hub-ex-title">{ex.title}</h3>
+                      <div className="hub-ex-footer">
+                        <span className="hub-ex-from">{ex.fromCuaderno.title}</span>
+                        <span className="hub-ex-duration">{ex.duration}</span>
+                      </div>
+                    </div>
+                    <span className="hub-ex-arrow" aria-hidden>
+                      →
+                    </span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </section>
 
           {/* ─── BLOQUE FINAL ──────────────────────────────────────── */}
           <footer className="hub-foot">
@@ -676,6 +767,347 @@ export default function CuadernosHub() {
         .hub-foot-body strong {
           color: var(--cobalto);
           font-weight: 600;
+        }
+
+        /* ═══ LOGROS COLECCIONABLES ═══ */
+        .hub-ach {
+          margin: 32px 0 36px;
+          padding: 24px 22px 26px;
+          background: linear-gradient(135deg, #1d2bdb 0%, #0f1a9c 100%);
+          color: var(--crema);
+          border-radius: 22px;
+          position: relative;
+          overflow: hidden;
+        }
+        .hub-ach::before {
+          content: '';
+          position: absolute;
+          top: -40px;
+          right: -40px;
+          width: 160px;
+          height: 160px;
+          border-radius: 50%;
+          background: radial-gradient(circle, rgba(244, 200, 66, 0.35) 0%, transparent 70%);
+        }
+        .hub-ach-head {
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-end;
+          gap: 18px;
+          margin-bottom: 14px;
+          position: relative;
+          z-index: 1;
+        }
+        .hub-ach-eyebrow {
+          display: block;
+          font-family: var(--font-mono);
+          font-size: 10px;
+          letter-spacing: 0.24em;
+          color: #f4c842;
+          margin-bottom: 6px;
+        }
+        .hub-ach-h {
+          font-family: var(--font-display);
+          font-weight: 300;
+          font-size: clamp(22px, 4vw, 32px);
+          line-height: 1.05;
+          color: var(--crema);
+          margin: 0;
+        }
+        .hub-ach-h em {
+          font-style: italic;
+          color: #f4c842;
+          font-weight: 500;
+          font-variant-numeric: tabular-nums;
+        }
+        .hub-ach-xp {
+          flex-shrink: 0;
+          display: flex;
+          flex-direction: column;
+          align-items: flex-end;
+        }
+        .hub-ach-xp-num {
+          font-family: var(--font-display);
+          font-style: italic;
+          font-weight: 600;
+          font-size: clamp(34px, 5vw, 48px);
+          line-height: 0.9;
+          color: #f4c842;
+          font-variant-numeric: tabular-nums;
+        }
+        .hub-ach-xp-lbl {
+          font-family: var(--font-mono);
+          font-size: 10px;
+          letter-spacing: 0.22em;
+          text-transform: uppercase;
+          color: rgba(244, 200, 66, 0.7);
+          margin-top: 2px;
+        }
+        .hub-ach-bar {
+          height: 4px;
+          background: rgba(241, 234, 216, 0.12);
+          border-radius: 999px;
+          overflow: hidden;
+          margin-bottom: 20px;
+          position: relative;
+          z-index: 1;
+        }
+        .hub-ach-bar-fill {
+          height: 100%;
+          background: linear-gradient(90deg, #f4c842 0%, #d97757 100%);
+          border-radius: 999px;
+          transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .hub-ach-grid {
+          list-style: none;
+          padding: 0;
+          margin: 0;
+          display: grid;
+          grid-template-columns: repeat(2, 1fr);
+          gap: 10px;
+          position: relative;
+          z-index: 1;
+        }
+        @media (min-width: 640px) {
+          .hub-ach-grid {
+            grid-template-columns: repeat(4, 1fr);
+          }
+        }
+        @media (min-width: 980px) {
+          .hub-ach-grid {
+            grid-template-columns: repeat(4, 1fr);
+          }
+        }
+        .hub-ach-card {
+          display: flex;
+          gap: 10px;
+          align-items: flex-start;
+          padding: 12px 12px 14px;
+          background: rgba(241, 234, 216, 0.06);
+          border: 1px solid rgba(241, 234, 216, 0.10);
+          border-radius: 14px;
+          transition: background 0.18s, border-color 0.18s, transform 0.18s;
+        }
+        .hub-ach-card.is-unlocked {
+          background: rgba(244, 200, 66, 0.12);
+          border-color: rgba(244, 200, 66, 0.45);
+        }
+        .hub-ach-card.is-unlocked:hover {
+          transform: translateY(-2px);
+        }
+        .hub-ach-card.is-locked {
+          opacity: 0.62;
+        }
+        .hub-ach-icon {
+          width: 36px;
+          height: 36px;
+          border-radius: 50%;
+          flex-shrink: 0;
+          display: grid;
+          place-items: center;
+          font-family: var(--font-display);
+          font-style: italic;
+          font-weight: 600;
+          font-size: 18px;
+          background: rgba(241, 234, 216, 0.10);
+          color: rgba(241, 234, 216, 0.55);
+        }
+        .hub-ach-card.is-unlocked .hub-ach-icon {
+          background: #f4c842;
+          color: #0d0f3d;
+          box-shadow: 0 4px 12px rgba(244, 200, 66, 0.32);
+        }
+        .hub-ach-card.is-unlocked.hub-ach-coral .hub-ach-icon {
+          background: #d97757;
+          color: var(--crema);
+        }
+        .hub-ach-card.is-unlocked.hub-ach-cobalto .hub-ach-icon {
+          background: rgba(241, 234, 216, 0.95);
+          color: #1d2bdb;
+        }
+        .hub-ach-body {
+          flex: 1;
+          min-width: 0;
+        }
+        .hub-ach-body strong {
+          display: block;
+          font-family: var(--font-body);
+          font-weight: 700;
+          font-size: 12px;
+          color: var(--crema);
+          line-height: 1.15;
+          margin-bottom: 2px;
+        }
+        .hub-ach-body small {
+          display: block;
+          font-family: var(--font-body);
+          font-size: 10.5px;
+          color: rgba(241, 234, 216, 0.55);
+          line-height: 1.35;
+        }
+        .hub-ach-progress {
+          margin-top: 6px;
+          height: 3px;
+          background: rgba(241, 234, 216, 0.10);
+          border-radius: 999px;
+          position: relative;
+        }
+        .hub-ach-progress-fill {
+          height: 100%;
+          background: rgba(241, 234, 216, 0.45);
+          border-radius: 999px;
+        }
+        .hub-ach-progress span {
+          position: absolute;
+          right: 0;
+          top: -16px;
+          font-family: var(--font-mono);
+          font-size: 8.5px;
+          letter-spacing: 0.12em;
+          color: rgba(241, 234, 216, 0.55);
+        }
+
+        /* ═══ EJERCICIOS SUELTOS ═══ */
+        .hub-ex {
+          margin: 36px 0 32px;
+        }
+        .hub-ex-head {
+          margin-bottom: 18px;
+        }
+        .hub-ex-eyebrow {
+          display: block;
+          font-family: var(--font-mono);
+          font-size: 10.5px;
+          letter-spacing: 0.24em;
+          color: var(--cobalto);
+          margin-bottom: 6px;
+        }
+        .hub-ex-h {
+          font-family: var(--font-display);
+          font-weight: 600;
+          font-style: italic;
+          font-size: clamp(24px, 4.5vw, 36px);
+          line-height: 1.05;
+          color: var(--ink);
+          margin: 0 0 6px;
+          letter-spacing: -0.01em;
+        }
+        .hub-ex-h em {
+          color: var(--coral, #d97757);
+        }
+        .hub-ex-sub {
+          font-family: var(--font-body);
+          font-size: 13.5px;
+          line-height: 1.45;
+          color: var(--ink-soft);
+          margin: 0;
+          font-style: italic;
+        }
+        .hub-ex-grid {
+          list-style: none;
+          padding: 0;
+          margin: 0;
+          display: grid;
+          grid-template-columns: 1fr;
+          gap: 10px;
+        }
+        @media (min-width: 560px) {
+          .hub-ex-grid {
+            grid-template-columns: 1fr 1fr;
+          }
+        }
+        @media (min-width: 980px) {
+          .hub-ex-grid {
+            grid-template-columns: 1fr 1fr 1fr;
+          }
+        }
+        .hub-ex-card {
+          display: flex;
+          gap: 14px;
+          align-items: center;
+          padding: 16px 18px;
+          background: #fff;
+          border: 1px solid rgba(13, 15, 61, 0.08);
+          border-radius: 14px;
+          text-decoration: none;
+          color: inherit;
+          transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+        }
+        .hub-ex-card:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 10px 26px -16px rgba(13, 15, 61, 0.36);
+          border-color: rgba(29, 43, 219, 0.32);
+        }
+        .hub-ex-icon {
+          width: 44px;
+          height: 44px;
+          border-radius: 50%;
+          flex-shrink: 0;
+          display: grid;
+          place-items: center;
+          font-family: var(--font-display);
+          font-style: italic;
+          font-weight: 600;
+          font-size: 19px;
+          background: rgba(244, 200, 66, 0.22);
+          color: var(--cobalto);
+        }
+        .hub-ex-cobalto .hub-ex-icon {
+          background: rgba(29, 43, 219, 0.10);
+          color: var(--cobalto);
+        }
+        .hub-ex-coral .hub-ex-icon {
+          background: rgba(217, 119, 87, 0.18);
+          color: var(--coral, #d97757);
+        }
+        .hub-ex-mostaza .hub-ex-icon {
+          background: rgba(244, 200, 66, 0.32);
+          color: var(--ink);
+        }
+        .hub-ex-meta {
+          flex: 1;
+          min-width: 0;
+        }
+        .hub-ex-kicker {
+          display: block;
+          font-family: var(--font-mono);
+          font-size: 9px;
+          letter-spacing: 0.18em;
+          text-transform: uppercase;
+          color: var(--coral, #d97757);
+          margin-bottom: 2px;
+        }
+        .hub-ex-title {
+          font-family: var(--font-display);
+          font-style: italic;
+          font-weight: 500;
+          font-size: 16px;
+          line-height: 1.15;
+          color: var(--ink);
+          margin: 0 0 4px;
+        }
+        .hub-ex-footer {
+          display: flex;
+          justify-content: space-between;
+          gap: 8px;
+          font-family: var(--font-mono);
+          font-size: 9px;
+          letter-spacing: 0.14em;
+          text-transform: uppercase;
+          color: rgba(13, 15, 61, 0.55);
+        }
+        .hub-ex-from {
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+          max-width: 14ch;
+        }
+        .hub-ex-arrow {
+          flex-shrink: 0;
+          font-family: var(--font-mono);
+          color: var(--cobalto);
+          font-size: 18px;
+          opacity: 0.6;
         }
       `}</style>
     </>
