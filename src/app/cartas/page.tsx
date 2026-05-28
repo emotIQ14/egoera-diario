@@ -314,18 +314,27 @@ export default function CartasPage() {
           opacity: 0.78;
           margin: 0 0 22px;
         }
-        .tabs { display: flex; gap: 6px; margin-bottom: 22px; }
+        .tabs {
+          display: grid;
+          grid-template-columns: 1fr 1fr 1fr;
+          gap: 6px;
+          margin-bottom: 22px;
+          width: 100%;
+        }
         .tab {
-          flex: 1;
+          min-width: 0;
           background: transparent;
           border: 1px solid rgba(13,15,61,0.18);
           color: var(--ink);
-          padding: 10px 8px;
+          padding: 10px 4px;
           border-radius: 12px;
           font-family: var(--font-mono);
-          font-size: 10.5px;
-          letter-spacing: 0.16em;
+          font-size: 9.5px;
+          letter-spacing: 0.10em;
           text-transform: uppercase;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
           cursor: pointer;
           display: inline-flex; align-items: center; justify-content: center; gap: 6px;
         }
