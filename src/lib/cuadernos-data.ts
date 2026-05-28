@@ -944,12 +944,214 @@ const FORTALEZAS: Cuaderno = {
   ],
 };
 
+// ─── Cuaderno #6 — Tu mejor yo (IEPP · Psicología Positiva 2.0) ───────────
+
+const MEJOR_YO: Cuaderno = {
+  meta: {
+    title: 'Tu mejor yo',
+    subtitle: 'siete días de psicología positiva',
+    issue: 'Cuaderno nº 6',
+    slug: 'tu-mejor-yo',
+    pdfUrl: '/cuadernos/egoera-cuaderno-06-tu-mejor-yo.pdf',
+    duration: '7 días · 10-15 min',
+    topic: 'Psicología positiva',
+  },
+  pages: [
+    {
+      type: 'cover',
+      title: 'Tu mejor yo.',
+      accent: 'mañana.',
+      eyebrow: '— EGOERA · CUADERNO Nº 6 · MAYO 2026 —',
+      lede:
+        'Siete días de ejercicios validados de psicología positiva. Visualización, gratitud, flow, doble visión, resiliencia. Sin promesas vacías — con evidencia y con cuerpo.',
+      columns: [
+        { h: 'VISUALIZAR', body: 'El ejercicio de Seligman para imaginar tu mejor versión.' },
+        { h: 'AGRADECER', body: 'Cuatro variantes de gratitud validadas científicamente.' },
+        { h: 'RESISTIR', body: 'Cómo se entrena la resiliencia antes de necesitarla.' },
+      ],
+    },
+    {
+      type: 'editorial',
+      h: 'Antes de empezar.',
+      body: [
+        'La psicología positiva no es positivismo. No te pide que mires el lado bueno cuando no lo hay. Te entrena para que cuando lo haya, lo notes — y para que cuando no lo haya, tengas recursos donde antes había solo reacción.',
+        'Este cuaderno reúne siete ejercicios validados por la investigación de los últimos veinticinco años. Visualización del mejor yo (Laura King, 2001), visita de gratitud (Seligman, 2005), flow (Csikszentmihalyi, 1990), doble visión (Maslow, 1970), y resiliencia anticipada (Bonanno, 2004).',
+        'Hazlo a tu ritmo. Un día por sesión. Lo que escribas aquí es tuyo y solo tuyo.',
+      ],
+      quote: 'No se trata de ser feliz. Se trata de tener recursos.',
+      quote_src: 'EGOERA · ADAPTADO DE SELIGMAN',
+    },
+    {
+      type: 'sumario',
+      entries: [
+        { n: '01', h: 'Día 1 · Tu mejor yo', sub: 'Visualización 15 min. El ejercicio fundacional.' },
+        { n: '02', h: 'Día 2 · Visita de gratitud', sub: 'Carta a alguien que no le agradeciste.' },
+        { n: '03', h: 'Día 3 · Body scan compasivo', sub: 'Doce minutos contigo, sin objetivo.' },
+        { n: '04', h: 'Día 4 · Identifica tu Flow', sub: 'Cuándo desapareces sin esfuerzo.' },
+        { n: '05', h: 'Día 5 · El jarrón roto', sub: 'Aceptación · kintsugi mental.' },
+        { n: '06', h: 'Día 6 · Doble visión', sub: 'Lo que duele y lo que crece.' },
+        { n: '07', h: 'Día 7 · Plan de presiliencia', sub: 'Prepararte antes de necesitarlo.' },
+      ],
+    },
+    {
+      type: 'section',
+      n: '01',
+      kicker: 'TEORÍA · DE 4',
+      h: 'Qué es la psicología positiva.',
+      color_accent: 'mostaza',
+      body: [
+        'Martin Seligman, en 1998 desde la presidencia de la APA, propuso un giro: la psicología había gastado cuarenta años estudiando lo que va mal — depresión, trauma, trastornos — y casi nada estudiando lo que va bien. La psicología positiva no niega lo doloroso: añade el estudio de las condiciones bajo las cuales las personas florecen.',
+        'Sus tres pilares originales fueron emociones positivas, engagement (flow), y meaning. Christopher Peterson y el mismo Seligman compilaron en 2004 las "Character Strengths and Virtues" — el catálogo VIA de 24 fortalezas humanas universales.',
+        'La psicología positiva 2.0 (Wong, 2011) añadió el estudio sistemático del sufrimiento como vía de crecimiento — la psicología positiva existencial.',
+      ],
+      bullets: [
+        'No es optimismo · es ciencia del florecimiento.',
+        'Las emociones positivas amplían el repertorio cognitivo (Fredrickson, broaden-and-build).',
+        'Las fortalezas se entrenan · no son rasgos fijos.',
+      ],
+    },
+    {
+      type: 'exercise',
+      n: '02',
+      kicker: 'DÍA 1 · DE 7',
+      h: 'Tu mejor yo · visualización.',
+      intro:
+        'Ejercicio de Laura King (2001), uno de los más estudiados de la psicología positiva. Quince minutos sin pausa. Imagina tu vida dentro de cinco años, en el escenario en el que todo ha ido tan bien como razonablemente puede ir.',
+      prompts: [
+        '¿Cómo es un día tuyo de esa vida? (concreto · 5 detalles):',
+        '¿Qué relaciones aparecen?',
+        '¿Qué hábito tuyo de hoy te llevó hasta ahí?',
+      ],
+      reflection:
+        'No es fantasía. Es ensayo mental dirigido. Las personas que lo hacen 4 días seguidos mejoran su mood durante semanas (King, 2001).',
+    },
+    {
+      type: 'exercise',
+      n: '03',
+      kicker: 'DÍA 2 · DE 7',
+      h: 'Visita de gratitud.',
+      intro:
+        'Seligman et al. (2005). Identifica a una persona que cambió algo en tu vida y a quien nunca diste gracias del todo. Escríbele una carta detallada. Lo ideal: leerla en voz alta delante de ella. La versión solo escrita también funciona.',
+      prompts: [
+        '¿A quién le escribirías la carta? (nombre + qué hizo por ti):',
+        'Tres detalles concretos de lo que hizo y cómo te afectó:',
+        '¿Cómo le agradeces hoy lo que hizo entonces?',
+      ],
+    },
+    {
+      type: 'exercise',
+      n: '04',
+      kicker: 'DÍA 3 · DE 7',
+      h: 'Body scan compasivo.',
+      intro:
+        'Doce minutos. Cierra los ojos. Recorre el cuerpo desde los pies hasta la cabeza sin tratar de cambiar nada. Cuando encuentres tensión, no la sueltes — solo dile «te veo». Después, escribe.',
+      prompts: [
+        '¿Dónde encontraste tensión?',
+        '¿Qué emoción aparecía cuando ponías atención ahí?',
+        '¿Qué te diría tu cuerpo si pudiera hablarte hoy?',
+      ],
+    },
+    {
+      type: 'section',
+      n: '05',
+      kicker: 'TEORÍA · DE 4',
+      h: 'Flow · el estado óptimo.',
+      color_accent: 'coral',
+      body: [
+        'Mihaly Csikszentmihalyi pasó treinta años entrevistando a personas en su mejor momento de rendimiento. Llegó a un patrón: cuando la dificultad de una tarea iguala tu habilidad, desapareces como observador. No notas el tiempo. No notas el cuerpo. No notas el "yo". Solo hay la actividad.',
+        'A eso lo llamó flow. No es relajación. Es absorción.',
+      ],
+      bullets: [
+        'Difícil + posible · ese es el equilibrio.',
+        'Demasiado fácil = aburrimiento. Demasiado difícil = ansiedad.',
+        'Las personas que tienen 1 actividad de flow regular tienen niveles bienestar más altos.',
+      ],
+    },
+    {
+      type: 'exercise',
+      n: '06',
+      kicker: 'DÍA 4 · DE 7',
+      h: 'Identifica un momento de flow.',
+      intro:
+        'Piensa en un momento reciente en el que estuviste absorto en algo. Una conversación, una receta, un código, un dibujo. Lo que sea. Reconstruye el contexto que lo hizo posible.',
+      prompts: [
+        'Actividad · dónde · con quién:',
+        '¿Qué dificultad tenía? ¿Qué habilidad tuya respondía?',
+        '¿Cómo podrías crear más momentos así en tu semana?',
+      ],
+    },
+    {
+      type: 'exercise',
+      n: '07',
+      kicker: 'DÍA 5 · DE 7',
+      h: 'El jarrón roto.',
+      intro:
+        'En Japón, el kintsugi repara cerámica rota con oro líquido. No oculta la grieta — la subraya. Hay una idea aquí: lo que se rompió ya forma parte del objeto y a veces lo hace más valioso.',
+      prompts: [
+        '¿Qué de ti se rompió en algún momento?',
+        '¿Qué surgió de ahí que antes no estaba?',
+        '¿Cómo le pondrías oro a esa grieta hoy?',
+      ],
+    },
+    {
+      type: 'quote_break',
+      quote: 'El optimismo no resuelve. La doble visión, sí.',
+      src: 'EGOERA · ADAPTADO DE WONG',
+    },
+    {
+      type: 'exercise',
+      n: '08',
+      kicker: 'DÍA 6 · DE 7',
+      h: 'La doble visión.',
+      intro:
+        'Paul Wong, psicología positiva existencial. Toma una dificultad actual. Hazle dos miradas: la que duele (lo que pierdes, te asusta, agota) y la que crece (lo que te enseña, expande, ordena). Ninguna mira sola es completa.',
+      prompts: [
+        'Dificultad actual (frase corta):',
+        'Lo que duele · qué pierdes en concreto:',
+        'Lo que crece · qué se mueve dentro de ti hacia adelante:',
+      ],
+    },
+    {
+      type: 'exercise',
+      n: '09',
+      kicker: 'DÍA 7 · DE 7',
+      h: 'Plan de presiliencia.',
+      intro:
+        'Bonanno (2004) propuso que la resiliencia no es la respuesta a la crisis — es lo que existe antes de la crisis. Hoy identificas las personas, hábitos y refugios que tendrías que tener listos por si algo viene. Eso es presiliencia.',
+      prompts: [
+        'Tres personas a las que llamarías si pasa algo (nombres):',
+        'Dos hábitos que sostienen tu sistema nervioso (qué y cuándo):',
+        'Un lugar — físico o mental — al que volverías para respirar:',
+      ],
+    },
+    {
+      type: 'map_table',
+      h: 'El mapa de la semana.',
+      intro:
+        'Una tabla para mirar el conjunto. Marca con palabras qué emergió cada día. Sin interpretar — solo registrar.',
+      columns: ['DÍA', 'EJERCICIO', 'MOOD', 'LO QUE SE QUEDA'],
+      rows: ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'],
+    },
+    {
+      type: 'closing',
+      h: 'Florecer no es brillar.',
+      body: [
+        'La psicología positiva — bien entendida — no es presión por estar bien. Es vocabulario para nombrar lo que ya está bien y entrenamiento para sostenerlo en los momentos en los que no.',
+        'Si una sola de las siete prácticas te ha removido algo, vuelve a ella. Las semillas no germinan a la primera. Lo que sí está documentado: la práctica repetida sí da fruto.',
+      ],
+      cta_text: 'Sigue trabajando en el diario',
+      cta_url: 'https://diario.egoera.es',
+    },
+  ],
+};
+
 export const CUADERNOS: Cuaderno[] = [
   HIPERVIGILANCIA,
   GOTTMAN,
   LENGUAJES,
   EMOCIONES,
   FORTALEZAS,
+  MEJOR_YO,
 ];
 
 export function getCuaderno(slug: string): Cuaderno | undefined {
