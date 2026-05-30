@@ -269,14 +269,18 @@ export default function LecturasPage() {
           font-family: var(--font-display);
           font-weight: 600;
           font-style: italic;
-          font-size: clamp(28px, 6.5vw, 40px);
-          line-height: 1.05;
+          font-size: clamp(24px, 6.2vw, 40px);
+          line-height: 1.06;
           color: var(--ink);
           margin: 8px 0 8px;
           letter-spacing: -0.01em;
+          overflow-wrap: break-word;
+          word-break: normal;
+          max-width: 100%;
         }
         .lx-h em {
           color: var(--coral, #d97757);
+          overflow-wrap: break-word;
         }
         .lx-sub {
           font-family: var(--font-body);
