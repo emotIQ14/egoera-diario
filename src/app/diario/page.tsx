@@ -9,6 +9,7 @@ import { loadEntries, saveEntry, makeId, streakDays } from '@/lib/storage';
 import type { DiaryEntry, Emotion, ContextTag } from '@/lib/storage';
 import { CONTEXTS, EMOTIONS } from '@/lib/types';
 import EmotionAvatar from '@/components/EmotionAvatar';
+import TurtleMascot, { type TurtleEmotion } from '@/components/TurtleMascot';
 import { useToast } from '@/components/toast/ToastProvider';
 import { track } from '@/lib/track';
 
@@ -84,6 +85,14 @@ function getMoodNumColor(m: number): string {
   if (m >= 7) return 'var(--cobalto)';
   if (m >= 5) return '#b8860b'; // ocre oscuro, buen contraste sobre crema
   return '#c25a3a'; // coral oscuro
+}
+
+/** Tortuga que refleja el ánimo seleccionado (0-10). */
+function turtleFromMood(m: number): TurtleEmotion {
+  if (m <= 3) return 'sad';
+  if (m <= 6) return 'calm';
+  if (m <= 8) return 'happy';
+  return 'pride';
 }
 
 function pad2D(n: number): string { return n < 10 ? `0${n}` : `${n}`; }
@@ -473,6 +482,7 @@ export default function DiarioPage() {
         ) : null}
 
         <section className="mood-hero" aria-labelledby="mood-label">
+          <TurtleMascot emotion={turtleFromMood(mood)} />
           <div
             className="mood-num"
             aria-hidden="true"

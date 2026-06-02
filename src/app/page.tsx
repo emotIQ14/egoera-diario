@@ -12,6 +12,15 @@ import { entriesThisWeek, loadEntries, streakDays, type DiaryEntry } from '@/lib
 import { EMOTIONS } from '@/lib/types';
 import { useToast } from '@/components/toast/ToastProvider';
 import { EvaCuidadoraCharacter } from '@/components/illustrations/EgoeraCharacters';
+import TurtleMascot, { type TurtleEmotion } from '@/components/TurtleMascot';
+
+/** Deriva la emoción de la tortuga a partir del último ánimo registrado (0-10). */
+function turtleFromMood(mood: number): TurtleEmotion {
+  if (mood <= 3) return 'sad';
+  if (mood <= 6) return 'calm';
+  if (mood <= 8) return 'happy';
+  return 'pride';
+}
 
 function emotionLabelHome(id: string): string {
   return EMOTIONS.find((e) => e.id === id)?.label ?? id;
@@ -221,6 +230,7 @@ export default function HomePage() {
   const [hasDraft, setHasDraft] = useState<boolean>(false);
   const [lowMoodAlert, setLowMoodAlert] = useState<boolean>(false);
   const [lowMoodDismissed, setLowMoodDismissed] = useState<boolean>(false);
+  const [turtleEmotion, setTurtleEmotion] = useState<TurtleEmotion>('calm');
 
   // Redirige a /bienvenida si el usuario aún no ha hecho onboarding.
   useEffect(() => {
@@ -260,6 +270,15 @@ export default function HomePage() {
     // Flashback: look for entries from 7, 14, or 30 days ago (in that order)
     const allEntries = loadEntries();
     setTotalEntries(allEntries.length);
+
+    // Tortuga: refleja el ánimo de la entrada más reciente (si la hay).
+    if (allEntries.length > 0) {
+      const latest = [...allEntries].sort(
+        (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      )[0];
+      setTurtleEmotion(turtleFromMood(latest.mood));
+    }
+
     for (const daysAgo of [7, 14, 30]) {
       const target = new Date();
       target.setDate(target.getDate() - daysAgo);
@@ -421,6 +440,10 @@ export default function HomePage() {
         </h1>
         <p className="s-date">{dateLine}</p>
       </header>
+
+      <div className="turtle-companion">
+        <TurtleMascot emotion={turtleEmotion} priority />
+      </div>
 
       <GamSummary />
 
@@ -680,6 +703,13 @@ export default function HomePage() {
         }
         .head .eyebrow {
           margin-bottom: 14px;
+        }
+        .turtle-companion {
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          width: 100%;
+          margin: 0 0 24px;
         }
         .cards {
           display: flex;
