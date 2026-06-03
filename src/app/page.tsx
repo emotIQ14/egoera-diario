@@ -442,7 +442,9 @@ export default function HomePage() {
       </header>
 
       <div className="turtle-companion">
-        <TurtleMascot emotion={turtleEmotion} priority />
+        {/* sin `priority`: la tortuga no es el LCP (lo es el saludo) y `priority`
+            forzaba precargar la variante de imagen 4K. Carga normal = menos peso. */}
+        <TurtleMascot emotion={turtleEmotion} />
       </div>
 
       {/* Gamificación calmada: el diario promete "sin gamificación, sin métricas
