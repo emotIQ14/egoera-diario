@@ -1,6 +1,7 @@
 'use client';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useState } from 'react';
 
 type Tab = { href: string; label: string; icon: React.ReactNode };
 
@@ -104,20 +105,71 @@ const TABS: Tab[] = [
   },
 ];
 
+// 5 pestañas primarias (móvil-first, según el mockup); el resto va en "Más".
+const PRIMARY = ['/', '/diario', '/cuadernos', '/patrones', '/tu'];
+
 export default function TabBar() {
   const pathname = usePathname();
+  const [more, setMore] = useState(false);
+  const isActive = (href: string) =>
+    pathname === href || (href !== '/' && pathname.startsWith(href));
+  const primary = TABS.filter((t) => PRIMARY.includes(t.href));
+  const secondary = TABS.filter((t) => !PRIMARY.includes(t.href));
+  const moreActive = secondary.some((t) => isActive(t.href));
+
   return (
-    <nav className="tabbar">
-      {TABS.map((t) => {
-        const active = pathname === t.href || (t.href !== '/' && pathname.startsWith(t.href));
-        return (
-          <Link key={t.href} href={t.href} className={`tab ${active ? 'active' : ''}`}>
+    <>
+      {more && (
+        <div
+          className="tabbar-more-backdrop"
+          onClick={() => setMore(false)}
+          aria-hidden
+        />
+      )}
+      {more && (
+        <div className="tabbar-more" role="menu" aria-label="Más secciones">
+          {secondary.map((t) => (
+            <Link
+              key={t.href}
+              href={t.href}
+              className={`tab ${isActive(t.href) ? 'active' : ''}`}
+              onClick={() => setMore(false)}
+            >
+              <span className="ico">{t.icon}</span>
+              <span>{t.label}</span>
+            </Link>
+          ))}
+        </div>
+      )}
+      <nav className="tabbar">
+        {primary.map((t) => (
+          <Link
+            key={t.href}
+            href={t.href}
+            className={`tab ${isActive(t.href) ? 'active' : ''}`}
+          >
             <span className="ico">{t.icon}</span>
             <span>{t.label}</span>
           </Link>
-        );
-      })}
+        ))}
+        <button
+          type="button"
+          className={`tab tab-more ${more || moreActive ? 'active' : ''}`}
+          onClick={() => setMore((v) => !v)}
+          aria-expanded={more}
+          aria-label="Más secciones"
+        >
+          <span className="ico">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round">
+              <circle cx="5" cy="12" r="1.4" fill="currentColor" stroke="none" />
+              <circle cx="12" cy="12" r="1.4" fill="currentColor" stroke="none" />
+              <circle cx="19" cy="12" r="1.4" fill="currentColor" stroke="none" />
+            </svg>
+          </span>
+          <span>Más</span>
+        </button>
+      </nav>
       {/* Estilos en globals.css — styled-jsx no puede aplicar al <Link> de Next */}
-    </nav>
+    </>
   );
 }

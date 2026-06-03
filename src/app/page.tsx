@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import Screen from '@/components/Screen';
 import TabBar from '@/components/TabBar';
 import InstallPrompt from '@/components/InstallPrompt';
-import GamSummary from '@/components/GamSummary';
+// import GamSummary from '@/components/GamSummary'; // gamificación calmada (ver más abajo)
 import WeeklyReflection from '@/components/WeeklyReflection';
 import { autoDeliverDue, readyLetters } from '@/lib/letters';
 import { entriesThisWeek, loadEntries, streakDays, type DiaryEntry } from '@/lib/storage';
@@ -445,7 +445,10 @@ export default function HomePage() {
         <TurtleMascot emotion={turtleEmotion} priority />
       </div>
 
-      <GamSummary />
+      {/* Gamificación calmada: el diario promete "sin gamificación, sin métricas
+          raras". Ocultamos el bloque shouty de racha/insignias de la home para no
+          contradecir la voz de marca. El progreso sigue registrándose en silencio. */}
+      {/* <GamSummary /> */}
 
       <WeeklyReflection />
 
