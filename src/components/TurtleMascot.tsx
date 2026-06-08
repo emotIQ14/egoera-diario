@@ -124,6 +124,8 @@ export default function TurtleMascot({
           height: var(--turtle-h);
           /* el ancho lo marca la imagen; centrado por el flex padre */
           line-height: 0;
+          /* entrada (una vez) con spring, como Peep/friendPop */
+          animation: turtle-in 0.85s cubic-bezier(0.18, 0.89, 0.32, 1.28) both;
         }
         .turtle-img {
           height: var(--turtle-h);
@@ -131,7 +133,7 @@ export default function TurtleMascot({
           max-width: 100%;
           object-fit: contain;
           transform-origin: bottom center;
-          animation: turtle-bob 3s ease-in-out infinite;
+          animation: turtle-bob 3s ease-in-out infinite, turtle-pop 0.4s ease-out both;
           will-change: transform;
           user-select: none;
           -webkit-user-drag: none;
@@ -166,20 +168,29 @@ export default function TurtleMascot({
         /* Bob: flotación + leve squash (escala vertical) con origen en la base. */
         @keyframes turtle-bob {
           0% {
-            transform: translateY(0) scaleY(1) scaleX(1);
+            transform: translateY(0) scaleY(1) scaleX(1) rotate(-1.5deg);
           }
           30% {
-            transform: translateY(-7px) scaleY(1.025) scaleX(0.99);
+            transform: translateY(-7px) scaleY(1.025) scaleX(0.99) rotate(0.6deg);
           }
           50% {
-            transform: translateY(-9px) scaleY(1.03) scaleX(0.985);
+            transform: translateY(-9px) scaleY(1.03) scaleX(0.985) rotate(1.6deg);
           }
           70% {
-            transform: translateY(-7px) scaleY(1.025) scaleX(0.99);
+            transform: translateY(-7px) scaleY(1.025) scaleX(0.99) rotate(0.6deg);
           }
           100% {
-            transform: translateY(0) scaleY(1) scaleX(1);
+            transform: translateY(0) scaleY(1) scaleX(1) rotate(-1.5deg);
           }
+        }
+        /* entrada (una vez) y micro-fade al cambiar de emoción */
+        @keyframes turtle-in {
+          0% { opacity: 0; transform: translateY(16px) scale(0.86); }
+          100% { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        @keyframes turtle-pop {
+          0% { opacity: 0; }
+          100% { opacity: 1; }
         }
         /* La sombra se encoge cuando la tortuga sube (sensación de profundidad). */
         @keyframes turtle-shadow {
@@ -207,6 +218,7 @@ export default function TurtleMascot({
 
         /* Accesibilidad: sin movimiento si el usuario lo pide. */
         @media (prefers-reduced-motion: reduce) {
+          .turtle-stage,
           .turtle-img,
           .turtle-shadow {
             animation: none !important;

@@ -38,6 +38,8 @@ export default function EgoeraMascot({ size = 140, variant = 'idle', className }
       {/* fondo redondo crema suave */}
       <circle cx="80" cy="80" r="70" fill={CREMA_SOFT} />
 
+      {/* cuerpo animado: respira + balanceo sutil (idle vivo) */}
+      <g className="eg-mascot-breath">
       {/* Cuerpo: sobre */}
       <g>
         {/* base del sobre */}
@@ -73,12 +75,13 @@ export default function EgoeraMascot({ size = 140, variant = 'idle', className }
       {/* Pies pequeños */}
       <ellipse cx="62" cy="116" rx="6" ry="3" fill={COBALTO} />
       <ellipse cx="98" cy="116" rx="6" ry="3" fill={COBALTO} />
+      </g>
 
       <style>{`
-        .eg-mascot-breath { animation: egMascotBreath 4s ease-in-out infinite; transform-origin: 80px 110px; }
+        .eg-mascot-breath { animation: egMascotBreath 4.6s ease-in-out infinite; transform-origin: 80px 116px; will-change: transform; }
         @keyframes egMascotBreath {
-          0%, 100% { transform: scale(1) translateY(0); }
-          50% { transform: scale(1.02) translateY(-2px); }
+          0%, 100% { transform: scale(1) translateY(0) rotate(-1.2deg); }
+          50% { transform: scale(1.022) translateY(-3px) rotate(1.2deg); }
         }
         @media (prefers-reduced-motion: reduce) {
           .eg-mascot-breath { animation: none; }
