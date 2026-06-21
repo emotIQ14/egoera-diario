@@ -28,7 +28,9 @@ export default function Screen({
         ? 'var(--cobalto)'
         : 'var(--crema)';
   const fg = background === 'cream' ? 'var(--ink)' : 'var(--crema)';
-  const innerStyle: CSSProperties = { maxWidth };
+  // Centrado inline (no depende de styled-jsx, que en el build desplegado no emitía la regla
+  // .screen-inner{margin:0 auto} → la columna quedaba anclada a la izquierda en móvil).
+  const innerStyle: CSSProperties = { maxWidth, marginInline: 'auto', width: '100%' };
   return (
     <main style={{ background: bg, color: fg, padding }} className="screen-root">
       <div className="screen-inner" style={innerStyle}>
