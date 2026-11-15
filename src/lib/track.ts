@@ -1,5 +1,6 @@
 import { track as vercelTrack } from '@vercel/analytics';
 
+// Sin eventos ligados al aviso de seguridad, al riesgo ni a la ayuda (dato de salud, RGPD art. 9).
 type EventName =
   | 'entry_saved'
   | 'entry_edited'
@@ -11,7 +12,6 @@ type EventName =
   | 'export_markdown'
   | 'export_json'
   | 'export_pdf'
-  | 'safety_bar_shown'
   | 'historial_opened'
   | 'historial_search_used'
   | 'historial_filter_used'

@@ -1,0 +1,1479 @@
+{
+ "version": "v5-2026-11-15",
+ "descripcion": "Capa ampliada del detector de riesgo de Egoera. Solo AÑADE detecciones al núcleo (deteccion-riesgo.js). Texto ya normalizado con norma(). Sin lookbehind. Generado por herramientas/generar_ampliada.py: no editar a mano.",
+ "separadores_clausula": "[.,;:!?¡¿…\\n\\r()\"«»“”—–\\[\\]{}|/\\\\\\p{Extended_Pictographic}]+",
+ "raices_pegadas": "(?:suicid|autolesi)",
+ "reescrituras": [
+  [
+   "(^| )(?:q|k|ke)(?= |$)",
+   "$1que"
+  ],
+  [
+   "(^| )(?:xq|xk|pq|pk|porq|xque|porke|xke)(?= |$)",
+   "$1porque"
+  ],
+  [
+   "(^| )x(?= |$)",
+   "$1por"
+  ],
+  [
+   "(^| )d(?= |$)",
+   "$1de"
+  ],
+  [
+   "(^| )m(?= |$)",
+   "$1me"
+  ],
+  [
+   "(^| )t(?= |$)",
+   "$1te"
+  ],
+  [
+   "(^| )n(?= |$)",
+   "$1no"
+  ],
+  [
+   "(^| )ns(?= |$)",
+   "$1no se"
+  ],
+  [
+   "(^| )nd(?= |$)",
+   "$1nada"
+  ],
+  [
+   "(^| )(?:tb|tmb|tbn|tambn|tamb)(?= |$)",
+   "$1tambien"
+  ],
+  [
+   "(^| )(?:toy|toi|estoi)(?= |$)",
+   "$1estoy"
+  ],
+  [
+   "(^| )tas(?= |$)",
+   "$1estas"
+  ],
+  [
+   "(^| )pa(?= |$)",
+   "$1para"
+  ],
+  [
+   "(^| )(?:aki|aqi)(?= |$)",
+   "$1aqui"
+  ],
+  [
+   "(^| )mui(?= |$)",
+   "$1muy"
+  ],
+  [
+   "(^| )(?:queiro|quiro|quero|kero|qero|qiero|quieor|qiro)(?= |$)",
+   "$1quiero"
+  ],
+  [
+   "(^| )qier",
+   "$1quier"
+  ],
+  [
+   "(^| )su(?:i|y)?(?:s|z|c|cc|sc)id",
+   "$1suicid"
+  ],
+  [
+   "(^| )(matar|morir|suicidar|cortar|ahorcar|colgar|quitar|autolesionar)(?:m|ne)(?= |$)",
+   "$1$2me"
+  ],
+  [
+   "(^| )morime(?= |$)",
+   "$1morirme"
+  ],
+  [
+   "(^| )morr(ir|irme|iria|iendo)(?= |$)",
+   "$1mor$2"
+  ],
+  [
+   "(^| )mueri(era|ese)(?= |$)",
+   "$1muri$2"
+  ],
+  [
+   "(^| )(?:bibir|vibir|bivir|vivr|bivr|vivi)(?= |$)",
+   "$1vivir"
+  ],
+  [
+   "(^| )(?:bibiendo|biviendo|vibiendo)(?= |$)",
+   "$1viviendo"
+  ],
+  [
+   "(^| )(?:biv|bib)([oa])(?= |$)",
+   "$1viv$2"
+  ],
+  [
+   "(^| )(?:acabr|akabar)(?= |$)",
+   "$1acabar"
+  ],
+  [
+   "(^| )acav",
+   "$1acab"
+  ],
+  [
+   "(^| )estub",
+   "$1estuv"
+  ],
+  [
+   "(^| )buelt",
+   "$1vuelt"
+  ],
+  [
+   "(^| )bolv",
+   "$1volv"
+  ],
+  [
+   "(^| )beo(?= |$)",
+   "$1veo"
+  ],
+  [
+   "(^| )ise(?= |$)",
+   "$1hice"
+  ],
+  [
+   "(^| )pastiy",
+   "$1pastill"
+  ],
+  [
+   "(^| )echo dano",
+   "$1hecho dano"
+  ],
+  [
+   "(^| )(tom|cort|regal|dej|pas|quem|intent|trag|pens|plane|guard|compr|busc|colg|ahorc|tir|despid|apunt|escond|acab)ao(?= |$)",
+   "$1$2ado"
+  ],
+  [
+   "(^| )ay (nada|salida|nadie|que|motivo|motivos|razon|razones|forma|manera|futuro|esperanza)(?= |$)",
+   "$1hay $2"
+  ],
+  [
+   "(^| )(d|s|v|est)oi(?= |$)",
+   "$1$2oy"
+  ],
+  [
+   "(^| )megor",
+   "$1mejor"
+  ],
+  [
+   "(^| )neses",
+   "$1neces"
+  ],
+  [
+   "(^| )(?:tngo|tengp)(?= |$)",
+   "$1tengo"
+  ],
+  [
+   "(^| )stan(?= |$)",
+   "$1estan"
+  ],
+  [
+   "(^| )sta(?= |$)",
+   "$1esta"
+  ],
+  [
+   "(^| )tq(?= |$)",
+   "$1te quiero"
+  ],
+  [
+   "(^| )bentana",
+   "$1ventana"
+  ],
+  [
+   "(^| )benas(?= |$)",
+   "$1venas"
+  ],
+  [
+   "(^| )beneno",
+   "$1veneno"
+  ],
+  [
+   "(^| )noxe(?= |$)",
+   "$1noche"
+  ],
+  [
+   "(^| )(me quiero|quiero|voy a|me voy a|ganas de|pienso en|tengo que) (mata|mori|suicida|ahorca|colga|corta|quita)(?= |$)",
+   "$1$2 $3r"
+  ],
+  [
+   "(^| )(para que|por que) segui(?= |$)",
+   "$1$2 seguir"
+  ],
+  [
+   "(^| )na(?= |$)",
+   "$1nada"
+  ],
+  [
+   "(^| )mu(?= |$)",
+   "$1muy"
+  ],
+  [
+   "(^| )(no le veo|no veo|no hay|no tengo) salia(?= |$)",
+   "$1$2 salida"
+  ],
+  [
+   "(^| )tranqu?i(?= |$)",
+   "$1tranquila"
+  ],
+  [
+   "(^| )e (pensado|intentado|tomado|tragado|bebido|cortado|vuelto|decidido|escrito|comprado|regalado|buscado|dejado|hecho|despedido|mirado|planeado|guardado|quemado|ido|estado|sido|tenido|perdido|llorado)(?= |$)",
+   "$1he $2"
+  ]
+ ],
+ "reglas": [
+  {
+   "id": "x-indiferencia",
+   "ambito": "texto",
+   "familia": "CSSRS-1",
+   "nivel": "explicita",
+   "patron": "(?:me da igual|me da lo mismo|me es indiferente|me daria igual|me daria lo mismo) (?:vivir o morir|morir o vivir|morir(?:me)?|si me muero|si muero|si me muriera|no despertar(?:me)?|estar muert[oa]|seguir viv[oa]|que me pasara algo|que me atropellen|que me atropellaran|vivir)(?! (?:en|con|como|cerca|lejos|alli|alla|de alquiler|solo|sola|juntos|juntas|aqui en|donde|para|sin|tan lejos|mas cerca)(?: |$))(?! (?:de|hasta|antes|a|por|un|una|el|la|aqui|alli)(?: |$))"
+  },
+  {
+   "id": "x-pedir-no-despertar",
+   "ambito": "texto",
+   "familia": "CSSRS-1",
+   "nivel": "explicita",
+   "patron": "(?:pido|rezo|deseo|suplico|ruego|le pido a dios)(?: (?:cada|todas|todos|las|los|noche|noches|dia|dias|a dios|al cielo|por|poder|que)){0,4} (?:no despertar(?:me)?|morir(?:me)?|que me muera|estar muert[oa]|no volver a despertar)(?! (?:hasta|antes|tarde|pronto|temprano|en toda la noche|a|al|de|del)(?: |$))"
+  },
+  {
+   "id": "x-imagino",
+   "ambito": "texto",
+   "familia": "CSSRS-3",
+   "nivel": "explicita",
+   "patron": "me (?:imagino|veo|he imaginado|imaginaba) (?:colgandome|colgado|colgada|ahorcandome|ahorcad[oa]|muert[oa](?! (?:de|del|con|en (?:la|el) (?:boda|fiesta|partido))(?: |$))|tirandome (?:por|desde|de|a)|cortandome las venas|matandome|suicidandome|en mi (?:propio )?(?:funeral|entierro)|en un ataud|desangrandome)"
+  },
+  {
+   "id": "x-envenenamiento",
+   "ambito": "texto",
+   "familia": "CSSRS-C",
+   "nivel": "explicita",
+   "patron": "(?:me he bebido|me he tomado|me he tragado|me bebi|me trague|me tome|me voy a beber|voy a beberme|quiero beberme|beberme|tomarme|tragarme|me he metido) (?:la |el |un poco de |un vaso de |una botella de |un bote de |un trago de )?(?:lejia|amoniaco|veneno|matarratas|salfuman|anticongelante|insecticida|aguarras|desatascador|raticida|herbicida)"
+  },
+  {
+   "id": "x-sobredosis",
+   "ambito": "texto",
+   "familia": "CSSRS-C",
+   "nivel": "explicita",
+   "patron": "(?:me he tomado|me he tragado|me tome|me trague|casi me tomo|me trago|me he metido|voy a tomarme|me voy a tomar|quiero tomarme|me tomaria|tomarme|tragarme|me he bebido) (?:todas las|todos los|un bote (?:entero )?de|una caja (?:entera )?de|el bote (?:entero )?de|la caja (?:entera )?de|un blister (?:entero )?de|muchas|muchisimas|demasiadas|un punado de|[1-9][0-9]+|veinte|treinta|cuarenta|cincuenta|cien)(?: (?:mis|las|los|esas|estas))? (?:pastillas|pildoras|comprimidos|capsulas|somniferos|ansioliticos|antidepresivos|medicamentos|medicinas|paracetamol|ibuprofenos?|orfidal(?:es)?|lorazepam|diazepam|trankimazin|tranquimazin|valium|lexatin(?:es)?|alprazolam|clonazepam|rivotril|tranquilizantes|calmantes|pastis)"
+  },
+  {
+   "id": "x-golpes",
+   "ambito": "texto",
+   "familia": "NICE-AL",
+   "nivel": "explicita",
+   "patron": "me (?:doy|di|he dado|pego|pegue|he pegado|estoy dando|estoy pegando) (?:golpes|punetazos|cabezazos|bofetadas|tortazos|hostias|guantazos|patadas)(?! (?:de pecho|de suerte|con (?:el|la|los|las) (?:puerta|mesa|esquina|coche|bici|moto|armario))(?: |$))"
+  },
+  {
+   "id": "x-golpeo",
+   "ambito": "texto",
+   "familia": "NICE-AL",
+   "nivel": "explicita",
+   "patron": "me (?:golpeo|golpee|he golpeado|pego|doy) (?:contra (?:la pared|el suelo|la mesa|el espejo|la puerta)|la cabeza (?:contra|para|hasta)|la cara (?:contra|para|hasta)|(?:la cabeza|la cara|las piernas|los brazos|el cuerpo) para (?:castigarme|sentir|hacerme dano|no sentir))"
+  },
+  {
+   "id": "x-marcador-autolesion",
+   "ambito": "texto",
+   "familia": "NICE-AL",
+   "nivel": "explicita",
+   "patron": "me (?:quemo|he quemado|queme|corto|he cortado|corte|arano|he aranado|arane|pellizco|muerdo|he mordido|golpeo|pego|clavo|he clavado|hago heridas|hago cortes|rajo|he rajado)(?: [a-z0-9]+){0,7} (?:a proposito|adrede|aposta|para castigarme|para sentir algo|para sentir dolor|para no sentir|para dejar de sentir|hasta sangrar|hasta hacerme (?:sangre|heridas|dano|una herida)|hasta que me sangr[ae]n?|hasta que sangr[ae]n?)"
+  },
+  {
+   "id": "x-cortado-otra-vez",
+   "ambito": "texto",
+   "familia": "NICE-AL",
+   "nivel": "explicita",
+   "patron": "me (?:he )?(?:cortado|hecho cortes|hecho dano|autolesionado|quemado) (?:otra vez|de nuevo|una vez mas)(?! (?:el|la|los|las|con|al|mientras|cocinando|pelando|en (?:el|la) (?:dedo|mano|rodilla|pie|espalda|tobillo)|jugando|corriendo|entrenando)(?: |$))"
+  },
+  {
+   "id": "x-hice-dano",
+   "ambito": "texto",
+   "familia": "NICE-AL",
+   "nivel": "explicita",
+   "patron": "me (?:hice|he hecho|hago|vuelvo a hacer|volvi a hacer|he vuelto a hacer) dano (?:otra vez|de nuevo|a proposito|adrede|aposta|a mi mism[oa])(?! (?:en|al|jugando|corriendo|con|entrenando|haciendo)(?: |$))"
+  },
+  {
+   "id": "x-para-cuando",
+   "ambito": "texto",
+   "familia": "CSSRS-6",
+   "nivel": "explicita",
+   "patron": "para cuando (?:me mate|me suicide|me quite la vida|lo haga|me haya matado|me haya suicidado)(?! (?:a|de)(?: |$))"
+  },
+  {
+   "id": "x-tercera-quiere",
+   "ambito": "texto",
+   "familia": "024",
+   "nivel": "explicita",
+   "patron": "(?:se|dice que se|me dice que se|me ha dicho que se) (?:quiere|va a|quiso|intento|ha intentado|piensa|piensa en) (?:morir|matar|suicidar|quitar la vida|hacer dano|cortar las venas)(?! (?:de)(?: |$))"
+  },
+  {
+   "id": "x-tercera-corta",
+   "ambito": "texto",
+   "familia": "024",
+   "nivel": "explicita",
+   "patron": "se (?:corta|ha cortado|hace cortes|hace dano|quema|ha quemado) (?:los brazos|las piernas|las munecas|las venas|los muslos|a proposito|adrede|aposta)"
+  },
+  {
+   "id": "n-no-se-si-seguir",
+   "ambito": "texto",
+   "familia": "NEG",
+   "nivel": "indirecta",
+   "patron": "no (?:se|estoy segur[oa]) (?:si|de) (?:quiero|querer|puedo|poder|voy a poder|aguanto|merece la pena|vale la pena|tiene sentido) (?:seguir(?: (?:viviendo|viv[oa]|aqui|asi|adelante|luchando|con vida|en este mundo|existiendo|respirando))?(?=$| (?:ya|y|pero|porque|si|cuando|nunca|mas|de verdad|la verdad|nada|joder|ni|o|asi|aqui|con esta vida|con mi vida)(?: |$))|vivir(?! (?:en|con|como|cerca|lejos|alli|alla|de alquiler|solo|sola|juntos|juntas|aqui en|donde|para|sin|tan lejos|mas cerca)(?: |$))|aguantar(?: viv[oa]| asi| mucho mas)?(?! (?:en|con|a|el|la|este|esta|sin|de)(?: |$)))"
+  },
+  {
+   "id": "n-no-se-cuanto",
+   "ambito": "texto",
+   "familia": "NEG",
+   "nivel": "indirecta",
+   "patron": "no se (?:cuanto|hasta cuando) (?:tiempo )?(?:mas )?(?:voy a |podre |puedo |voy a poder )?(?:aguantar|resistir|seguir|soportar|durar)(?: (?:asi|viv[oa]|viviendo|aqui|esto|con vida|en este mundo))?(?! (?:en|con|a|el|la|este|esta|sin|de|por|trabajando|estudiando)(?: |$))"
+  },
+  {
+   "id": "n-ganas-de-vivir",
+   "ambito": "texto",
+   "familia": "NEG",
+   "nivel": "indirecta",
+   "patron": "(?:no|ni siquiera|ya no|ni) (?:tengo|me quedan|siento|encuentro) (?:ningunas )?ganas de (?:seguir viv[oa]|vivir(?! (?:en|con|como|cerca|lejos|alli|alla|de alquiler|solo|sola|juntos|juntas|aqui en|donde|para|sin|tan lejos|mas cerca)(?: |$))|seguir viviendo|seguir aqui|existir|seguir en este mundo|seguir(?: (?:viviendo|viv[oa]|aqui|asi|adelante|luchando|con vida|en este mundo|existiendo|respirando))?(?=$| (?:ya|y|pero|porque|si|cuando|nunca|mas|de verdad|la verdad|nada|joder|ni|o|asi|aqui|con esta vida|con mi vida)(?: |$)))"
+  },
+  {
+   "id": "n-no-me-importaria",
+   "ambito": "texto",
+   "familia": "NEG",
+   "nivel": "indirecta",
+   "patron": "no me (?:importaria|importa|preocupa|preocuparia|daria pena|molestaria) (?:no despertar(?:me)?|morir(?:me)?|que me pasara algo|desaparecer|dejar de existir|no estar|estar muert[oa]|la muerte|que me atropellaran|que me atropellara un coche)(?! (?:de|hasta|en|antes|a|por|un|una|el|la|joven|viej[oa]|del)(?: |$))"
+  },
+  {
+   "id": "n-miedo-morir",
+   "ambito": "texto",
+   "familia": "NEG",
+   "nivel": "indirecta",
+   "patron": "no (?:me da|tengo|le tengo|me dan) (?:ningun )?miedo (?:a )?(?:morir(?:me)?|la muerte|estar muert[oa])(?! (?:de|en|si|por|joven|viej[oa]|sol[oa])(?: |$))"
+  },
+  {
+   "id": "n-no-corto-pero-ganas",
+   "ambito": "texto",
+   "familia": "NEG",
+   "nivel": "indirecta",
+   "patron": "no me (?:he )?(?:cortado|corto|hecho dano|hago dano|autolesionado|autolesiono|quemado)(?! (?:el|la|los|las|con|mi|un|una|al|en)(?: |$))(?: [a-z]+){0,4} (?:pero|aunque|y eso que)(?: [a-z]+){0,4} (?:ganas|necesidad|impulso)"
+  },
+  {
+   "id": "n-no-soporto-vivo",
+   "ambito": "texto",
+   "familia": "NEG",
+   "nivel": "indirecta",
+   "patron": "no (?:soporto|aguanto|puedo|quiero|tengo fuerzas para) (?:seguir|estar) viv[oa]"
+  },
+  {
+   "id": "i-sentido-vida",
+   "ambito": "texto",
+   "familia": "AAS",
+   "nivel": "indirecta",
+   "patron": "(?:no le veo|no veo|no tiene|no tiene ningun|no encuentro|ya no le encuentro|no le encuentro|he perdido el|perdi el) (?:ningun )?sentido (?:a |de )?(?:(?:la vida|mi vida|esta vida)(?! (?:laboral|social|politica|sentimental|amorosa|de|del|nocturna|sexual|privada|academica|profesional|que llevan|que lleva|en|real)(?: |$))|vivir(?! (?:en|con|como|cerca|lejos|alli|alla|de alquiler|solo|sola|juntos|juntas|aqui en|donde|para|sin|tan lejos|mas cerca)(?: |$))|seguir viviendo|seguir aqui|seguir viv[oa]|existir|levantarme|nada)"
+  },
+  {
+   "id": "i-sentido-seguir",
+   "ambito": "clausula",
+   "familia": "AAS",
+   "nivel": "indirecta",
+   "patron": "^(?:(?:y|pero|es que|creo que|siento que|la verdad es que|la verdad|de verdad|en serio|ya|hoy|joder|jo|tio|tia|mama|papa|dios|por dios|lo siento|perdon|otra vez|vale|bueno|uf|buf|ay|no se|sinceramente) )*(?:(?:ya )?no tiene (?:ningun )?sentido (?:seguir|continuar|nada|vivir|luchar|intentarlo))(?: (?:ya|de verdad|en serio|enserio|joder|jo|hoy|tio|tia|por favor|nunca mas|otra vez|de una vez|y punto|ya esta|lo siento|mas|nada|mama|papa|dios|en serio ya|de verdad ya|para siempre|del todo|con todo))*$"
+  },
+  {
+   "id": "i-nada-sentido",
+   "ambito": "clausula",
+   "familia": "AAS",
+   "nivel": "indirecta",
+   "patron": "^(?:(?:y|pero|es que|creo que|siento que|la verdad es que|la verdad|de verdad|en serio|ya|hoy|joder|jo|tio|tia|mama|papa|dios|por dios|lo siento|perdon|otra vez|vale|bueno|uf|buf|ay|no se|sinceramente) )*(?:(?:ya )?(?:nada|ya nada) (?:tiene|me da|le da) (?:ningun )?sentido(?: ya| para mi| en mi vida)?)(?: (?:ya|de verdad|en serio|enserio|joder|jo|hoy|tio|tia|por favor|nunca mas|otra vez|de una vez|y punto|ya esta|lo siento|mas|nada|mama|papa|dios|en serio ya|de verdad ya|para siempre|del todo|con todo))*$"
+  },
+  {
+   "id": "i-sin-futuro",
+   "ambito": "clausula",
+   "familia": "AAS",
+   "nivel": "indirecta",
+   "patron": "^(?:(?:y|pero|es que|creo que|siento que|la verdad es que|la verdad|de verdad|en serio|ya|hoy|joder|jo|tio|tia|mama|papa|dios|por dios|lo siento|perdon|otra vez|vale|bueno|uf|buf|ay|no se|sinceramente) )*(?:(?:ya )?no (?:tengo|hay) (?:ningun )?futuro(?: para mi| ninguno)?)(?: (?:ya|de verdad|en serio|enserio|joder|jo|hoy|tio|tia|por favor|nunca mas|otra vez|de una vez|y punto|ya esta|lo siento|mas|nada|mama|papa|dios|en serio ya|de verdad ya|para siempre|del todo|con todo))*$"
+  },
+  {
+   "id": "i-sin-futuro-vida",
+   "ambito": "texto",
+   "familia": "AAS",
+   "nivel": "indirecta",
+   "patron": "no (?:tengo|veo) (?:ningun )?futuro (?:ninguno|en esta vida|en la vida|para mi|por delante)"
+  },
+  {
+   "id": "i-nunca-mejorar",
+   "ambito": "texto",
+   "familia": "AAS",
+   "nivel": "indirecta",
+   "patron": "(?:mi vida|lo mio|mi situacion|este dolor|lo que siento) (?:no )?va a (?:mejorar|cambiar|ir a mejor) nunca|(?:mi vida|lo mio|mi situacion|este dolor|lo que siento) nunca va a (?:mejorar|cambiar|ir a mejor)|nunca (?:voy a|vaya a) (?:estar bien|ser feliz|salir de esta|salir de esto|mejorar|salir del pozo)(?! (?:con|en|si|sin|hasta|de|del)(?: |$))"
+  },
+  {
+   "id": "i-esto-no-mejora",
+   "ambito": "clausula",
+   "familia": "AAS",
+   "nivel": "indirecta",
+   "patron": "^(?:(?:y|pero|es que|creo que|siento que|la verdad es que|la verdad|de verdad|en serio|ya|hoy|joder|jo|tio|tia|mama|papa|dios|por dios|lo siento|perdon|otra vez|vale|bueno|uf|buf|ay|no se|sinceramente) )*(?:(?:esto|nada|todo) (?:no )?va a (?:mejorar|ir a mejor) nunca|(?:esto|nada) nunca va a (?:mejorar|ir a mejor))(?: (?:ya|de verdad|en serio|enserio|joder|jo|hoy|tio|tia|por favor|nunca mas|otra vez|de una vez|y punto|ya esta|lo siento|mas|nada|mama|papa|dios|en serio ya|de verdad ya|para siempre|del todo|con todo))*$"
+  },
+  {
+   "id": "i-nada-que-me-haga",
+   "ambito": "texto",
+   "familia": "AAS",
+   "nivel": "indirecta",
+   "patron": "(?:no hay|no queda|ya no hay|ya no queda|no tengo) nada (?:que me haga|por lo que|para|que me de ganas de|que me ate a) (?:seguir(?: (?:viviendo|viv[oa]|aqui|asi|adelante|luchando|con vida|en este mundo|existiendo|respirando))?(?=$| (?:ya|y|pero|porque|si|cuando|nunca|mas|de verdad|la verdad|nada|joder|ni|o|asi|aqui|con esta vida|con mi vida)(?: |$))|vivir|luchar|levantarme|quedarme)"
+  },
+  {
+   "id": "i-sin-motivos",
+   "ambito": "texto",
+   "familia": "AAS",
+   "nivel": "indirecta",
+   "patron": "no (?:tengo|me quedan|encuentro|veo) (?:ningun |ninguna |ningunos )?(?:motivos?|razon|razones|motivacion|ganas) (?:para|por la que|por los que|por las que) (?:seguir(?: (?:viviendo|viv[oa]|aqui|asi|adelante|luchando|con vida|en este mundo|existiendo|respirando))?(?=$| (?:ya|y|pero|porque|si|cuando|nunca|mas|de verdad|la verdad|nada|joder|ni|o|asi|aqui|con esta vida|con mi vida)(?: |$))|vivir(?! (?:en|con|como|cerca|lejos|alli|alla|de alquiler|solo|sola|juntos|juntas|aqui en|donde|para|sin|tan lejos|mas cerca)(?: |$))|levantarme|luchar|quedarme|estar aqui|existir)"
+  },
+  {
+   "id": "i-no-espero-nada",
+   "ambito": "texto",
+   "familia": "AAS",
+   "nivel": "indirecta",
+   "patron": "(?:ya )?no espero nada (?:de (?:la vida|mi vida|esta vida)(?! (?:laboral|social|politica|sentimental|amorosa|de|del|nocturna|sexual|privada|academica|profesional|que llevan|que lleva|en|real)(?: |$))|de nadie|de nada|de este mundo|bueno)|(?:ya )?no quiero nada (?:de|con) (?:(?:la vida|mi vida|esta vida)(?! (?:laboral|social|politica|sentimental|amorosa|de|del|nocturna|sexual|privada|academica|profesional|que llevan|que lleva|en|real)(?: |$))|nadie|nada|este mundo)"
+  },
+  {
+   "id": "i-no-quiero-nada",
+   "ambito": "clausula",
+   "familia": "AAS",
+   "nivel": "indirecta",
+   "patron": "^(?:(?:y|pero|es que|creo que|siento que|la verdad es que|la verdad|de verdad|en serio|ya|hoy|joder|jo|tio|tia|mama|papa|dios|por dios|lo siento|perdon|otra vez|vale|bueno|uf|buf|ay|no se|sinceramente) )*(?:(?:ya )?no quiero nada(?: mas)?)(?: (?:ya|de verdad|en serio|enserio|joder|jo|hoy|tio|tia|por favor|nunca mas|otra vez|de una vez|y punto|ya esta|lo siento|mas|nada|mama|papa|dios|en serio ya|de verdad ya|para siempre|del todo|con todo))*$"
+  },
+  {
+   "id": "i-no-merece-pena",
+   "ambito": "texto",
+   "familia": "AAS",
+   "nivel": "indirecta",
+   "patron": "(?:vivir|seguir|seguir viviendo|la vida|mi vida|esta vida|seguir asi|vivir asi|existir)(?: asi)? no (?:merece|vale) la pena(?! (?:sin|si|si no|cuando|con)(?: |$))"
+  },
+  {
+   "id": "i-atrapado",
+   "ambito": "texto",
+   "familia": "IMV",
+   "nivel": "indirecta",
+   "patron": "atrapad[oa]s? (?:sin salida|y sin salida|en mi vida|en mi propia vida|en mi cabeza|dentro de mi|en esta vida)|no (?:hay|veo|le veo|tengo|encuentro|tiene) (?:ninguna )?salida(?: (?:a|para|de) (?:esto|mi vida|lo mio|esta situacion|mi situacion|esta vida|mi)| posible| ninguna)?(?=$| (?:ya|y|pero|nunca|mas|joder|para mi)(?: |$))"
+  },
+  {
+   "id": "i-no-puedo-mas",
+   "ambito": "clausula",
+   "familia": "IMV",
+   "nivel": "indirecta",
+   "patron": "^(?!.*(?:^| )(?:comer|comido|comida|cenar|cenado|risa|reir|calor|frio|correr|corrido|andar|caminar|subir|cuestas?|escaleras|gimnasio|entrenar|entrenamiento|pies|piernas|sueno|dormir|tacones|zapatos|pelicula|serie|partido|jugar)(?: |$))(?:(?:y|pero|es que|creo que|siento que|la verdad es que|la verdad|de verdad|en serio|ya|hoy|joder|jo|tio|tia|mama|papa|dios|por dios|lo siento|perdon|otra vez|vale|bueno|uf|buf|ay|no se|sinceramente) )*(?:(?:ya )?no (?:puedo|aguanto|soporto) mas(?: con (?:esto|todo|nada|mi vida|la vida|esta vida|vivir|conmigo))?)(?: (?:ya|de verdad|en serio|enserio|joder|jo|hoy|tio|tia|por favor|nunca mas|otra vez|de una vez|y punto|ya esta|lo siento|mas|nada|mama|papa|dios|en serio ya|de verdad ya|para siempre|del todo|con todo))*$"
+  },
+  {
+   "id": "i-no-puedo-mas-con",
+   "ambito": "texto",
+   "familia": "IMV",
+   "nivel": "indirecta",
+   "patron": "no (?:puedo|aguanto|soporto) mas (?:con (?:mi vida|la vida|esta vida|vivir|todo|esto|nada|conmigo|mi cabeza|este dolor|mi existencia)|de vivir|de esta vida|ya no)(?! (?:de|del|en el|en la|en clase|que)(?: |$))"
+  },
+  {
+   "id": "i-rendirse-vida",
+   "ambito": "texto",
+   "familia": "IMV",
+   "nivel": "indirecta",
+   "patron": "(?:me rindo|tiro la toalla|me doy por vencid[oa]|abandono) (?:con|de|en) (?:(?:la vida|mi vida|esta vida)(?! (?:laboral|social|politica|sentimental|amorosa|de|del|nocturna|sexual|privada|academica|profesional|que llevan|que lleva|en|real)(?: |$))|todo|vivir|seguir)(?=$| (?:ya|y|pero|de verdad)(?: |$))"
+  },
+  {
+   "id": "i-me-rindo-solo",
+   "ambito": "entero",
+   "familia": "IMV",
+   "nivel": "indirecta",
+   "patron": "^(?:(?:y|pero|es que|creo que|siento que|la verdad es que|la verdad|de verdad|en serio|ya|hoy|joder|jo|tio|tia|mama|papa|dios|por dios|lo siento|perdon|otra vez|vale|bueno|uf|buf|ay|no se|sinceramente) )*(?:(?:me rindo|me doy por vencid[oa]|tiro la toalla|me rindo ya))(?: (?:ya|de verdad|en serio|enserio|joder|jo|hoy|tio|tia|por favor|nunca mas|otra vez|de una vez|y punto|ya esta|lo siento|mas|nada|mama|papa|dios|en serio ya|de verdad ya|para siempre|del todo|con todo))*$"
+  },
+  {
+   "id": "i-nadie-notaria",
+   "ambito": "texto",
+   "familia": "IPTS",
+   "nivel": "indirecta",
+   "patron": "(?:si (?:desaparezco|desapareciera|me muero|me muriera|no estuviera|ya no estoy|dejo de estar|dejara de estar|me fuera para siempre|me voy para siempre)|cuando (?:desaparezca|me muera|ya no este))(?: [a-z]+){0,4} (?:nadie|a nadie|nadie lo|ni) (?:lo )?(?:notaria|notara|echaria de menos|echara de menos|importaria|le importaria|le importara|se daria cuenta|se dara cuenta|me echaria de menos|me echara de menos|lloraria|llorara)"
+  },
+  {
+   "id": "i-estorbo",
+   "ambito": "texto",
+   "familia": "IPTS",
+   "nivel": "indirecta",
+   "patron": "(?:solo|solamente) (?:estorbo|molesto|sobro|doy problemas|causo problemas|soy un problema|soy una molestia|soy un estorbo|soy una carga)(?! (?:en|a mi|al|cuando|si|con)(?: |$))|soy (?:un|una) (?:estorbo|lastre|molestia|problema|carga) (?:para (?:todos|todo el mundo|mi familia|mis padres|los demas|mis hijos|mi pareja|mis amigos|ellos|vosotros|ti|el|ella|nadie)|en (?:esta casa|esta familia|la vida de))|lo unico que hago es (?:molestar|estorbar|dar problemas|hacer dano|joder|ser una carga)|(?:hart[oa]|cansad[oa]) de ser (?:un|una) (?:estorbo|carga|lastre|molestia)|no quiero ser (?:un|una) (?:estorbo|carga|lastre|molestia) para"
+  },
+  {
+   "id": "i-sin-mi-mejor",
+   "ambito": "texto",
+   "familia": "IPTS",
+   "nivel": "indirecta",
+   "patron": "sin mi (?:les |os |te |le |nos )?(?:iria|irian|ira|iran|estarian|estaria|estareis|seria|serian|todo seria|todo iria|vivirian)(?: todo)? (?:mejor|mas facil|mas tranquil[oa]s?|mas felices|mas feliz)|(?:les|os|le|te) (?:iria|irian|ira) mejor sin mi|(?:seria|todo seria|estarian|estaria|serian) (?:mejor|mas facil|mas sencillo|mas felices)(?: para (?:todos|mi familia|ellos|vosotros|ti))? (?:si|que) (?:no (?:estuviera|existiera|estuviese|existiese|hubiera nacido)|desapareciera|me muriera|me fuera para siempre)"
+  },
+  {
+   "id": "i-nadie-necesita",
+   "ambito": "texto",
+   "familia": "IPTS",
+   "nivel": "indirecta",
+   "patron": "no le hago falta a nadie|nadie me necesita|no le sirvo a nadie|no sirvo para nada ni para nadie|a nadie le (?:importaria|importara|afectaria|dolera|doleria) (?:que no estuviera|si no estuviera|si desapareciera|si me muriera|si me muero|que desapareciera|que me muriera|que me fuera)|nadie se (?:daria|dara) cuenta si (?:desapareciera|no estuviera|me muriera|me fuera)"
+  },
+  {
+   "id": "i-ultima-entrada",
+   "ambito": "texto",
+   "familia": "DESPEDIDA",
+   "nivel": "indirecta",
+   "patron": "(?:esta es|esta sera|sera|es) (?:mi|la) ultima (?:entrada|pagina|vez que escribo)(?! (?:del|de la|de este|de esta|antes|hasta|en (?!(?:el|este|mi) diario)|por|sobre|de|a|al|te|le|os|les|con|esto|eso)(?: |$))"
+  },
+  {
+   "id": "i-ultima-vez",
+   "ambito": "texto",
+   "familia": "DESPEDIDA",
+   "nivel": "indirecta",
+   "patron": "(?:es|sera|esta es) la ultima vez que (?:escribo|escribire|os escribo|te escribo|me leeis|me vais a leer|me veis|me vais a ver|hablo con vosotros|hablamos|me oyes|me oireis)(?! (?:sobre|de|del|en|con|hasta|antes|por|a|al|esto|eso)(?: |$))"
+  },
+  {
+   "id": "i-cuando-leais",
+   "ambito": "texto",
+   "familia": "DESPEDIDA",
+   "nivel": "indirecta",
+   "patron": "cuando (?:leais|lean|leas|leeis|alguien lea|me leais|veais|encontreis|encuentres|leais esto|lea alguien)(?: [a-z]+){0,3} (?:ya no (?:estare|existire|estare aqui|estare viv[oa]|estare con vosotros|estare entre vosotros)|(?:ya )?sera (?:demasiado )?tarde)"
+  },
+  {
+   "id": "i-manana-no-estare",
+   "ambito": "solo_texto",
+   "familia": "DESPEDIDA",
+   "nivel": "indirecta",
+   "patron": "(?:manana|pronto|esta noche|para entonces|en unas horas|el lunes|dentro de poco|muy pronto) (?:ya )?no (?:estare|existire|estare aqui|estare con vosotros|estare entre vosotros|voy a estar)(?! (?:en|de|por|para|con (?!vosotros)|trabajando|disponible|conectad[oa]|me voy|tengo|voy|estare|que)(?: |$))"
+  },
+  {
+   "id": "i-ya-no-estare",
+   "ambito": "clausula",
+   "familia": "DESPEDIDA",
+   "nivel": "indirecta",
+   "patron": "^(?:(?:y|pero|es que|creo que|siento que|la verdad es que|la verdad|de verdad|en serio|ya|hoy|joder|jo|tio|tia|mama|papa|dios|por dios|lo siento|perdon|otra vez|vale|bueno|uf|buf|ay|no se|sinceramente) )*(?:(?:pronto |esta noche )?ya no (?:estare|voy a estar|existire)(?: aqui| con vosotros| entre vosotros| mas)?)(?: (?:ya|de verdad|en serio|enserio|joder|jo|hoy|tio|tia|por favor|nunca mas|otra vez|de una vez|y punto|ya esta|lo siento|mas|nada|mama|papa|dios|en serio ya|de verdad ya|para siempre|del todo|con todo))*$"
+  },
+  {
+   "id": "i-adios",
+   "ambito": "texto",
+   "familia": "DESPEDIDA",
+   "nivel": "indirecta",
+   "patron": "adios para siempre|hasta siempre a todos|os quiero(?: a todos)? (?:y )?adios(?! (?:hasta|nos vemos|el|la|en|que)(?: |$))|me despido (?:de todos|de vosotros|de todo el mundo) para siempre|me despido para siempre"
+  },
+  {
+   "id": "i-gracias-adios",
+   "ambito": "clausula",
+   "familia": "DESPEDIDA",
+   "nivel": "indirecta",
+   "patron": "^(?:(?:y|pero|es que|creo que|siento que|la verdad es que|la verdad|de verdad|en serio|ya|hoy|joder|jo|tio|tia|mama|papa|dios|por dios|lo siento|perdon|otra vez|vale|bueno|uf|buf|ay|no se|sinceramente) )*(?:gracias por todo (?:y )?adios(?: a todos)?|os quiero (?:y )?adios)(?: (?:ya|de verdad|en serio|enserio|joder|jo|hoy|tio|tia|por favor|nunca mas|otra vez|de una vez|y punto|ya esta|lo siento|mas|nada|mama|papa|dios|en serio ya|de verdad ya|para siempre|del todo|con todo))*$"
+  },
+  {
+   "id": "i-perdonadme",
+   "ambito": "texto",
+   "familia": "DESPEDIDA",
+   "nivel": "indirecta",
+   "patron": "(?:perdonadme|perdoname|perdonad|perdon|lo siento|siento|disculpad) (?:por )?lo que voy a hacer(?! (?:con|en|a|al|el|la|los|las|manana|hoy)(?: |$))"
+  },
+  {
+   "id": "i-dejar-de-ser-problema",
+   "ambito": "texto",
+   "familia": "IPTS",
+   "nivel": "indirecta",
+   "patron": "(?:pronto|ya|muy pronto) (?:dejare|voy a dejar|vais a dejar de tener|no sere|ya no sere) (?:de ser )?(?:un problema|una carga|un estorbo|una molestia)|(?:pronto|muy pronto|ya) no (?:tendreis|tendras|tendran|tendra|vais a tener|vas a tener) que (?:preocuparos|preocuparte|preocuparse|aguantarme|cargar conmigo|soportarme)|dejare de ser (?:un problema|una carga|un estorbo|una molestia) para (?:todos|nadie|vosotros|mi familia|ellos)"
+  },
+  {
+   "id": "i-regalado",
+   "ambito": "texto",
+   "familia": "CSSRS-6",
+   "nivel": "indirecta",
+   "patron": "(?:he regalado|regale|estoy regalando) (?:mis cosas|todas mis cosas|mis pertenencias|lo que tenia|todo lo que tengo|todo lo que tenia|todo lo mio|mis cosas mas queridas|mis cosas de valor|todo lo de valor)(?! (?:a (?:una )?(?:ong|caritas|la parroquia|beneficencia)|porque me (?:mudo|voy|cambio))(?: |$))"
+  },
+  {
+   "id": "i-para-cuando-no-este",
+   "ambito": "texto",
+   "familia": "CSSRS-6",
+   "nivel": "indirecta",
+   "patron": "para cuando (?:yo )?(?:no este|ya no este|me haya ido|falte|ya no estemos)(?! (?:en|de|por|este|esta|estos|el|la|los|las|unos|unas|un|una|mi|tu|su|mis|tus|sus|fuera|de viaje|de vacaciones|manana|durante|trabajando)(?: |$))"
+  },
+  {
+   "id": "i-guardando-pastillas",
+   "ambito": "texto",
+   "familia": "CSSRS-6",
+   "nivel": "indirecta",
+   "patron": "(?:(?:he ido|llevo (?:tiempo|semanas|meses|dias|un tiempo)) (?:guardando|juntando|acumulando|escondiendo) (?:las |mis |sus )?(?:pastillas|medicamentos|medicinas|pildoras|(?:pastillas|pildoras|comprimidos|capsulas|somniferos|ansioliticos|antidepresivos|medicamentos|medicinas|paracetamol|ibuprofenos?|orfidal(?:es)?|lorazepam|diazepam|trankimazin|tranquimazin|valium|lexatin(?:es)?|alprazolam|clonazepam|rivotril|tranquilizantes|calmantes|pastis))|tengo (?:guardadas|acumuladas|escondidas|ahorradas) (?:pastillas|muchas pastillas|todas las pastillas|(?:pastillas|pildoras|comprimidos|capsulas|somniferos|ansioliticos|antidepresivos|medicamentos|medicinas|paracetamol|ibuprofenos?|orfidal(?:es)?|lorazepam|diazepam|trankimazin|tranquimazin|valium|lexatin(?:es)?|alprazolam|clonazepam|rivotril|tranquilizantes|calmantes|pastis)))(?! (?:para el|para la|para los|del|de la|en el pastillero|en el botiquin|en el neceser|por si)(?: |$))"
+  },
+  {
+   "id": "i-cuerda-sola",
+   "ambito": "clausula",
+   "familia": "CSSRS-6",
+   "nivel": "indirecta",
+   "patron": "^(?:(?:y|pero|es que|creo que|siento que|la verdad es que|la verdad|de verdad|en serio|ya|hoy|joder|jo|tio|tia|mama|papa|dios|por dios|lo siento|perdon|otra vez|vale|bueno|uf|buf|ay|no se|sinceramente) )*(?:(?:ya )?(?:he comprado|tengo|me he comprado|he conseguido) (?:una|la) (?:cuerda|soga))(?: (?:ya|de verdad|en serio|enserio|joder|jo|hoy|tio|tia|por favor|nunca mas|otra vez|de una vez|y punto|ya esta|lo siento|mas|nada|mama|papa|dios|en serio ya|de verdad ya|para siempre|del todo|con todo))*$"
+  },
+  {
+   "id": "i-cuerda-para",
+   "ambito": "texto",
+   "familia": "CSSRS-6",
+   "nivel": "indirecta",
+   "patron": "(?:tengo|he comprado|me he comprado|llevo|guardo|he conseguido) (?:una|la) (?:cuerda|soga)(?: [a-z]+){0,4} (?:y (?:ya )?se para que|para (?:esta noche|usarla|hacerlo|colgarme|cuando)|y voy a usarla|en la mochila|preparada|escondida)(?! (?:para (?:escalar|la excursion|el monte|saltar|atar|tender|el barco)|de escalada)(?: |$))"
+  },
+  {
+   "id": "i-decidido",
+   "ambito": "entero",
+   "familia": "CSSRS-45",
+   "nivel": "indirecta",
+   "patron": "^(?:(?:y|pero|es que|creo que|siento que|la verdad es que|la verdad|de verdad|en serio|ya|hoy|joder|jo|tio|tia|mama|papa|dios|por dios|lo siento|perdon|otra vez|vale|bueno|uf|buf|ay|no se|sinceramente) )*(?:ya (?:lo tengo (?:todo )?decidido|lo he decidido|esta (?:todo )?decidido|he tomado la decision))(?: (?:ya|de verdad|en serio|enserio|joder|jo|hoy|tio|tia|por favor|nunca mas|otra vez|de una vez|y punto|ya esta|lo siento|mas|nada|mama|papa|dios|en serio ya|de verdad ya|para siempre|del todo|con todo))*$"
+  },
+  {
+   "id": "i-no-voy-a-fallar",
+   "ambito": "clausula",
+   "familia": "CSSRS-45",
+   "nivel": "indirecta",
+   "patron": "^(?:(?:y|pero|es que|creo que|siento que|la verdad es que|la verdad|de verdad|en serio|ya|hoy|joder|jo|tio|tia|mama|papa|dios|por dios|lo siento|perdon|otra vez|vale|bueno|uf|buf|ay|no se|sinceramente) )*(?:esta vez no (?:voy a fallar|fallare|va a fallar))(?: (?:ya|de verdad|en serio|enserio|joder|jo|hoy|tio|tia|por favor|nunca mas|otra vez|de una vez|y punto|ya esta|lo siento|mas|nada|mama|papa|dios|en serio ya|de verdad ya|para siempre|del todo|con todo))*$"
+  },
+  {
+   "id": "i-volveria-intentar",
+   "ambito": "texto",
+   "familia": "CSSRS-C",
+   "nivel": "indirecta",
+   "patron": "lo (?:intente|he intentado) (?:una vez|otra vez|antes|ya|hace [a-z]+(?: [a-z]+)?|el ano pasado)(?: [a-z]+){0,3} (?:y )?(?:lo volveria a intentar|lo voy a volver a intentar|volvere a intentarlo|volveria a hacerlo|lo volvere a hacer|lo volveria a hacer|lo voy a repetir)"
+  },
+  {
+   "id": "i-pastillas-delante",
+   "ambito": "texto",
+   "familia": "IMV-VM",
+   "nivel": "indirecta",
+   "patron": "tengo (?:las|todas las|un monton de|muchas|la caja de|el bote de|todas mis|mis) (?:pastillas|(?:pastillas|pildoras|comprimidos|capsulas|somniferos|ansioliticos|antidepresivos|medicamentos|medicinas|paracetamol|ibuprofenos?|orfidal(?:es)?|lorazepam|diazepam|trankimazin|tranquimazin|valium|lexatin(?:es)?|alprazolam|clonazepam|rivotril|tranquilizantes|calmantes|pastis)) (?:delante|en la mano|en la mesa|preparadas|contadas|encima de la mesa|aqui|al lado|a mano)(?! (?:del|de la|de los|para no|para acordarme|para la semana|del desayuno)(?: |$))"
+  },
+  {
+   "id": "i-cuchilla",
+   "ambito": "texto",
+   "familia": "IMV-VM",
+   "nivel": "indirecta",
+   "patron": "tengo (?:la|una|mi) (?:cuchilla|navaja|hoja de afeitar|cuchilla de afeitar) (?:preparada|en la mano|delante|aqui|escondida|a mano)|tengo el cuchillo preparado(?! para (?:la|el|cortar|cocinar|picar|pelar))"
+  },
+  {
+   "id": "i-mirando-puente",
+   "ambito": "texto",
+   "familia": "IMV-VM",
+   "nivel": "indirecta",
+   "patron": "llevo (?:dias|semanas|tiempo|horas|un rato|toda la noche|meses) (?:mirando|pensando en|yendo a|rondando|visitando|subiendo a) (?:el puente|el viaducto|el acantilado|las vias|la via del tren|la azotea|el balcon|el precipicio|la ventana)(?! (?:de|para|del)(?: |$))"
+  },
+  {
+   "id": "i-borde",
+   "ambito": "texto",
+   "familia": "IMV-VM",
+   "nivel": "indirecta",
+   "patron": "estoy (?:en|sentad[oa] en|de pie en|subid[oa] a|subid[oa] en) (?:el borde|la barandilla|lo alto|el pretil|la cornisa|el alfeizar) (?:del|de la|de un|de una|de mi) (?:puente|viaducto|azotea|acantilado|edificio|balcon|ventana|terraza|tejado)(?! (?:haciendo|sacando|de excursion|con|tomando|viendo|pintando|limpiando)(?: |$))"
+  },
+  {
+   "id": "i-irme-no-volver",
+   "ambito": "texto",
+   "familia": "CSSRS-1",
+   "nivel": "indirecta",
+   "patron": "(?:quiero|me quiero|me gustaria|ojala pudiera|voy a|necesito) (?:irme|ir|desaparecer|marcharme) (?:y no (?:volver|regresar)(?! (?:(?:nunca|jamas|nunca mas|mas) )?(?:a|de|al|en|por|con|del|aqui|alli)(?: |$))(?: (?:nunca mas|nunca|jamas|mas))?|para siempre(?! (?:a|de|al|en|por|con|del|aqui|alli)(?: |$))|y que nadie me encuentre)"
+  },
+  {
+   "id": "i-trague-tierra",
+   "ambito": "texto",
+   "familia": "CSSRS-1",
+   "nivel": "indirecta",
+   "patron": "(?:me trague la tierra|desaparecer|irme) y no (?:volver|vuelva|salir|aparecer)(?! (?:(?:nunca|jamas|mas|nunca mas) )?(?:a|de|al|en|por|con|del)(?: |$))"
+  },
+  {
+   "id": "i-no-hubiera-manana",
+   "ambito": "texto",
+   "familia": "CSSRS-1",
+   "nivel": "indirecta",
+   "patron": "(?:dormir(?:me)?|acostarme|cerrar los ojos) y que no (?:hubiera|haya|exista|existiera) (?:manana|un manana|mas dias)"
+  },
+  {
+   "id": "i-dejar-de-estar",
+   "ambito": "texto",
+   "familia": "CSSRS-1",
+   "nivel": "indirecta",
+   "patron": "(?:quiero|me gustaria|ojala pudiera|necesito|deseo) dejar de (?:estar aqui|existir|estar en este mundo|estar viv[oa]|respirar|sentir para siempre)(?! (?:en|con|de|tan|asi|un|una|el|la|como|para)(?: |$))"
+  },
+  {
+   "id": "i-irme-con-difunto",
+   "ambito": "texto",
+   "familia": "REUNION",
+   "nivel": "indirecta",
+   "patron": "(?:murio|muerte|fallecio|se fue|perdi a|ya no esta|enterramos|se murio)(?: [a-z]+){0,12} (?:quiero|solo quiero|me quiero|me gustaria|necesito|ojala pudiera) (?:irme|ir|estar|reunirme|marcharme) con (?:el|ella|ellos|mi (?:madre|padre|mama|papa|abuela|abuelo|hermano|hermana|hijo|hija|marido|mujer|pareja|novio|novia|amigo|amiga|tio|tia|prima|primo|aita|ama|aitona|amona|aitatxo|amatxo|yaya|yayo))(?! (?:a|al|de|en|por|para|manana|hoy)(?: |$))"
+  },
+  {
+   "id": "i-reunirme-alli",
+   "ambito": "texto",
+   "familia": "REUNION",
+   "nivel": "indirecta",
+   "patron": "(?:quiero|me gustaria|ojala pudiera|solo quiero|pronto voy a) (?:reunirme|estar|irme) con (?:mi (?:madre|padre|mama|papa|abuela|abuelo|hermano|hermana|hijo|hija|marido|mujer|pareja|novio|novia|amigo|amiga|tio|tia|prima|primo|aita|ama|aitona|amona|aitatxo|amatxo|yaya|yayo)|el|ella|ellos)(?: [a-z]+){0,3} (?:alli arriba|en el cielo|alla arriba|donde (?:este|esten|estes)|en la otra vida|al otro lado)"
+  },
+  {
+   "id": "i-pronto-contigo",
+   "ambito": "texto",
+   "familia": "REUNION",
+   "nivel": "indirecta",
+   "patron": "pronto (?:estare|estaremos|ire) (?:contigo|con vosotros|juntos) (?:(?:madre|padre|mama|papa|abuela|abuelo|hermano|hermana|hijo|hija|marido|mujer|pareja|novio|novia|amigo|amiga|tio|tia|prima|primo|aita|ama|aitona|amona|aitatxo|amatxo|yaya|yayo)|amor|carino)$|(?:murio|muerte|fallecio|cielo|echo de menos|tumba|cementerio|te fuiste|se fue|te perdi)(?: [a-z]+){0,15} pronto (?:estare|estaremos|ire|voy a estar) (?:contigo|con vosotros|juntos|con el|con ella|con ellos|con mi (?:madre|padre|mama|papa|abuela|abuelo|hermano|hermana|hijo|hija|marido|mujer|pareja|novio|novia|amigo|amiga|tio|tia|prima|primo|aita|ama|aitona|amona|aitatxo|amatxo|yaya|yayo))"
+  },
+  {
+   "id": "i-hacer-locura",
+   "ambito": "clausula",
+   "familia": "AAS",
+   "nivel": "indirecta",
+   "patron": "^(?:(?:y|pero|es que|creo que|siento que|la verdad es que|la verdad|de verdad|en serio|ya|hoy|joder|jo|tio|tia|mama|papa|dios|por dios|lo siento|perdon|otra vez|vale|bueno|uf|buf|ay|no se|sinceramente) )*(?:(?:pienso en|voy a|estoy a punto de|tengo ganas de|quiero) hacer una locura)(?: (?:ya|de verdad|en serio|enserio|joder|jo|hoy|tio|tia|por favor|nunca mas|otra vez|de una vez|y punto|ya esta|lo siento|mas|nada|mama|papa|dios|en serio ya|de verdad ya|para siempre|del todo|con todo))*$"
+  },
+  {
+   "id": "i-harto-de-todo",
+   "ambito": "entero",
+   "familia": "AAS",
+   "nivel": "indirecta",
+   "patron": "^(?:(?:y|pero|es que|creo que|siento que|la verdad es que|la verdad|de verdad|en serio|ya|hoy|joder|jo|tio|tia|mama|papa|dios|por dios|lo siento|perdon|otra vez|vale|bueno|uf|buf|ay|no se|sinceramente) )*(?:estoy (?:hart[oa]|cansad[oa]|agotad[oa]) de todo(?: y de todos)?)(?: (?:ya|de verdad|en serio|enserio|joder|jo|hoy|tio|tia|por favor|nunca mas|otra vez|de una vez|y punto|ya esta|lo siento|mas|nada|mama|papa|dios|en serio ya|de verdad ya|para siempre|del todo|con todo))*$"
+  },
+  {
+   "id": "i-quiero-rendirme",
+   "ambito": "clausula",
+   "familia": "IMV",
+   "nivel": "indirecta",
+   "patron": "^(?:(?:y|pero|es que|creo que|siento que|la verdad es que|la verdad|de verdad|en serio|ya|hoy|joder|jo|tio|tia|mama|papa|dios|por dios|lo siento|perdon|otra vez|vale|bueno|uf|buf|ay|no se|sinceramente) )*(?:(?:me quiero rendir|quiero rendirme|me voy a rendir|voy a rendirme)(?: ya| del todo)?)(?: (?:ya|de verdad|en serio|enserio|joder|jo|hoy|tio|tia|por favor|nunca mas|otra vez|de una vez|y punto|ya esta|lo siento|mas|nada|mama|papa|dios|en serio ya|de verdad ya|para siempre|del todo|con todo))*$"
+  },
+  {
+   "id": "i-no-sirvo",
+   "ambito": "clausula",
+   "familia": "IPTS",
+   "nivel": "indirecta",
+   "patron": "^(?:(?:y|pero|es que|creo que|siento que|la verdad es que|la verdad|de verdad|en serio|ya|hoy|joder|jo|tio|tia|mama|papa|dios|por dios|lo siento|perdon|otra vez|vale|bueno|uf|buf|ay|no se|sinceramente) )*(?:(?:ya )?no sirvo para nada(?: ni para nadie)?)(?: (?:ya|de verdad|en serio|enserio|joder|jo|hoy|tio|tia|por favor|nunca mas|otra vez|de una vez|y punto|ya esta|lo siento|mas|nada|mama|papa|dios|en serio ya|de verdad ya|para siempre|del todo|con todo))*$"
+  },
+  {
+   "id": "i-dormida-y-ya",
+   "ambito": "clausula",
+   "familia": "CSSRS-1",
+   "nivel": "indirecta",
+   "patron": "^(?:(?:y|pero|es que|creo que|siento que|la verdad es que|la verdad|de verdad|en serio|ya|hoy|joder|jo|tio|tia|mama|papa|dios|por dios|lo siento|perdon|otra vez|vale|bueno|uf|buf|ay|no se|sinceramente) )*(?:(?:ojala )?(?:quedarme|me quedo|me quedara|me quedase|dormirme|me duermo) dormid[oa]s? y ya esta)(?: (?:ya|de verdad|en serio|enserio|joder|jo|hoy|tio|tia|por favor|nunca mas|otra vez|de una vez|y punto|ya esta|lo siento|mas|nada|mama|papa|dios|en serio ya|de verdad ya|para siempre|del todo|con todo))*$"
+  },
+  {
+   "id": "i-paz-para-siempre",
+   "ambito": "texto",
+   "familia": "CSSRS-1",
+   "nivel": "indirecta",
+   "patron": "(?:me dejen|me dejeis|me deje|me dejaran) en paz para siempre"
+  },
+  {
+   "id": "i-me-van-a-matar",
+   "ambito": "entero",
+   "familia": "PELIGRO",
+   "nivel": "indirecta",
+   "patron": "^(?:(?:y|pero|es que|creo que|siento que|la verdad es que|la verdad|de verdad|en serio|ya|hoy|joder|jo|tio|tia|mama|papa|dios|por dios|lo siento|perdon|otra vez|vale|bueno|uf|buf|ay|no se|sinceramente) )*(?:me (?:van a matar|va a matar|matarian|mataria|matan|van a hacer dano))(?: (?:ya|de verdad|en serio|enserio|joder|jo|hoy|tio|tia|por favor|nunca mas|otra vez|de una vez|y punto|ya esta|lo siento|mas|nada|mama|papa|dios|en serio ya|de verdad ya|para siempre|del todo|con todo))*$"
+  },
+  {
+   "id": "i-me-da-igual-nada",
+   "ambito": "texto",
+   "familia": "AAS",
+   "nivel": "indirecta",
+   "patron": "todo me da igual(?: y)? (?:ya )?no quiero nada"
+  },
+  {
+   "id": "i-irme-de-aqui-siempre",
+   "ambito": "texto",
+   "familia": "CSSRS-1",
+   "nivel": "indirecta",
+   "patron": "(?:quiero|me quiero) ir(?:me)? (?:de aqui |de este mundo )?(?:para siempre y no volver|y no volver nunca|de este mundo)(?! (?:a|de|al|en|por|con|del|mas a)(?: |$))"
+  },
+  {
+   "id": "i-si-me-pasara-algo",
+   "ambito": "texto",
+   "familia": "CSSRS-1",
+   "nivel": "indirecta",
+   "patron": "(?:si|ojala) me (?:pasara|pasase|ocurriera|ocurriese) algo(?: y me (?:muriera|muriese))?(?: [a-z]+){0,2} (?:mejor|me daria igual|no pasaria nada|seria un alivio|me alegraria)"
+  },
+  {
+   "id": "i-se-acabo-me-voy",
+   "ambito": "entero",
+   "familia": "DESPEDIDA",
+   "nivel": "indirecta",
+   "patron": "^(?:(?:y|pero|es que|creo que|siento que|la verdad es que|la verdad|de verdad|en serio|ya|hoy|joder|jo|tio|tia|mama|papa|dios|por dios|lo siento|perdon|otra vez|vale|bueno|uf|buf|ay|no se|sinceramente) )*(?:se acabo(?: todo)? (?:me voy|adios)(?: ya| para siempre)?)(?: (?:ya|de verdad|en serio|enserio|joder|jo|hoy|tio|tia|por favor|nunca mas|otra vez|de una vez|y punto|ya esta|lo siento|mas|nada|mama|papa|dios|en serio ya|de verdad ya|para siempre|del todo|con todo))*$"
+  },
+  {
+   "id": "x-arrojarme",
+   "ambito": "texto",
+   "familia": "CSSRS-3",
+   "nivel": "explicita",
+   "patron": "(?:me (?:voy a |quiero |pienso |podria )?(?:arrojar|tirar|lanzar)|(?:arrojarme|tirarme|lanzarme)) (?:al rio|al mar|al pantano|a las vias|a la via|al tren|al metro|al vacio|a la carretera|delante de (?:un|una|el|la) (?:coche|tren|camion|metro|autobus))(?! (?:a|con|para|de cabeza|en verano|que|a banarme|a nadar)(?: |$))"
+  },
+  {
+   "id": "i-no-quiero-vida",
+   "ambito": "texto",
+   "familia": "AAS",
+   "nivel": "indirecta",
+   "patron": "(?:ya )?no quiero (?:tener|esta) vida(?! (?:social|sexual|de|en|asi de)(?: |$))"
+  },
+  {
+   "id": "x-pienso-muerte",
+   "ambito": "texto",
+   "familia": "CSSRS-1",
+   "nivel": "explicita",
+   "patron": "pienso (?:mucho |todo el rato |constantemente )?en (?:la muerte|morir(?:me)?|estar muert[oa]) (?:todo el rato|todos los dias|a todas horas|constantemente|cada dia|cada noche|sin parar|mucho|cada vez mas)|(?:tengo|me vienen|me asaltan) (?:ideas|pensamientos) de (?:muerte|morir(?:me)?|quitarme la vida|matarme)"
+  },
+  {
+   "id": "x-deseo-muerte",
+   "ambito": "texto",
+   "familia": "CSSRS-1",
+   "nivel": "explicita",
+   "patron": "(?:deseo|anhelo|busco|quiero|espero|necesito) (?:la muerte|mi muerte)(?! (?:de|del)(?: |$))|(?:me merezco|merezco) (?:morir(?:me)?|estar muert[oa]|la muerte)|no (?:merezco|me merezco) (?:vivir|estar viv[oa]|seguir viv[oa]|existir|la vida|seguir viviendo)(?! (?:asi de|en|con|como|de|tan|aqui)(?: |$))"
+  },
+  {
+   "id": "x-ojala-no-existiera",
+   "ambito": "texto",
+   "familia": "CSSRS-1",
+   "nivel": "explicita",
+   "patron": "ojala (?:no (?:existiera|existiese|hubiera nacido|hubiese nacido)(?! (?:el|la|los|las|este|esta|ese|esa|un|una|tanto|tanta|nada|eso|esto)(?: |$))|me (?:pille|pillara|pillase|atropelle|atropellara|atropellase|arrolle|arrollara) (?:un|una) (?:coche|camion|tren|autobus|metro|moto)|(?:tuviera|tuviese|tener|me diera|me de) un (?:accidente|infarto|ictus) y)"
+  },
+  {
+   "id": "x-sin-dolor",
+   "ambito": "texto",
+   "familia": "CSSRS-3",
+   "nivel": "explicita",
+   "patron": "(?:morir(?:me)?|hacerlo|matarme|suicidarme|irme) sin (?:dolor|sufrir)(?! (?:en el|en la|del|de la)(?: |$))|dosis (?:letal|mortal)(?! de (?:cafeina|cafe|azucar|trabajo|realidad|series)(?: |$))|cuantas pastillas (?:hacen falta|necesito|son mortales|tengo que tomar) para"
+  },
+  {
+   "id": "x-tercera-morirse",
+   "ambito": "texto",
+   "familia": "024",
+   "nivel": "explicita",
+   "patron": "(?:quiere|va a|piensa en|ha intentado|intento|habla de|quiso) (?:morirse|quitarse la vida|hacerse dano|cortarse las venas|tirarse por la ventana|tirarse del puente)(?! (?:de|a)(?: |$))"
+  },
+  {
+   "id": "i-muerte-alivio",
+   "ambito": "texto",
+   "familia": "CSSRS-1",
+   "nivel": "indirecta",
+   "patron": "(?:la muerte|morir(?:me)?|no despertar(?:me)?|desaparecer|no estar|dejar de existir|si no me despertara|si me muriera|si desapareciera)(?: [a-z]+){0,2} (?:seria|es) (?:un alivio|una liberacion|un descanso|la solucion|la unica salida|lo mejor que me podria pasar)"
+  },
+  {
+   "id": "i-unica-salida",
+   "ambito": "texto",
+   "familia": "IMV",
+   "nivel": "indirecta",
+   "patron": "la unica (?:salida|solucion|opcion|forma de dejar de sufrir) (?:es|que me queda es|seria|que veo es) (?:morir(?:me)?|desaparecer|irme|acabar con todo|dejar de existir|no estar|matarme|quitarme|la muerte|el suicidio)"
+  },
+  {
+   "id": "i-cansado-luchar",
+   "ambito": "texto",
+   "familia": "AAS",
+   "nivel": "indirecta",
+   "patron": "(?:estoy|me siento) (?:muy |tan )?(?:cansad[oa]|agotad[oa]|hart[oa]) de (?:luchar|intentarlo|resistir|existir|sufrir|seguir luchando|estar viv[oa]|despertarme cada dia)(?! (?:contra|con|por|para|en)(?: |$))"
+  },
+  {
+   "id": "i-sin-fuerzas-para",
+   "ambito": "texto",
+   "familia": "AAS",
+   "nivel": "indirecta",
+   "patron": "(?:ya )?no me quedan fuerzas para (?:seguir intentandolo|intentarlo|seguir luchando|seguir viviendo|vivir|luchar|nada|seguir adelante|aguantar mas)"
+  },
+  {
+   "id": "i-sin-fuerzas",
+   "ambito": "clausula",
+   "familia": "AAS",
+   "nivel": "indirecta",
+   "patron": "^(?:(?:y|pero|es que|creo que|siento que|la verdad es que|la verdad|de verdad|en serio|ya|hoy|joder|jo|tio|tia|mama|papa|dios|por dios|lo siento|perdon|otra vez|vale|bueno|uf|buf|ay|no se|sinceramente) )*(?:(?:ya )?no (?:me quedan|tengo|me queda) (?:fuerzas|energia|ganas)(?: para (?:nada|seguir|vivir|luchar|levantarme|seguir viviendo|seguir luchando|seguir adelante|aguantar|seguir aqui|continuar))?)(?: (?:ya|de verdad|en serio|enserio|joder|jo|hoy|tio|tia|por favor|nunca mas|otra vez|de una vez|y punto|ya esta|lo siento|mas|nada|mama|papa|dios|en serio ya|de verdad ya|para siempre|del todo|con todo))*$"
+  },
+  {
+   "id": "i-que-pare-dolor",
+   "ambito": "clausula",
+   "familia": "CSSRS-1",
+   "nivel": "indirecta",
+   "patron": "^(?:(?:y|pero|es que|creo que|siento que|la verdad es que|la verdad|de verdad|en serio|ya|hoy|joder|jo|tio|tia|mama|papa|dios|por dios|lo siento|perdon|otra vez|vale|bueno|uf|buf|ay|no se|sinceramente) )*(?:(?:solo )?quiero (?:dejar de sufrir|que pare (?:el dolor|todo|esto)|que deje de doler|que todo pare)(?: ya)?)(?: (?:ya|de verdad|en serio|enserio|joder|jo|hoy|tio|tia|por favor|nunca mas|otra vez|de una vez|y punto|ya esta|lo siento|mas|nada|mama|papa|dios|en serio ya|de verdad ya|para siempre|del todo|con todo))*$"
+  },
+  {
+   "id": "i-tunel-pozo",
+   "ambito": "texto",
+   "familia": "IMV",
+   "nivel": "indirecta",
+   "patron": "no (?:veo|hay) luz al final del tunel|(?:estoy en|he caido en|estoy metid[oa] en) un pozo (?:y no (?:puedo|se como|consigo) salir|sin salida|del que no (?:puedo|se|consigo) salir)"
+  },
+  {
+   "id": "i-mundo-igual-sin-mi",
+   "ambito": "texto",
+   "familia": "IPTS",
+   "nivel": "indirecta",
+   "patron": "(?:el mundo|todo|la vida de todos|nada) (?:seguiria|seguira|iria|ira) (?:igual|igual de bien|mejor) sin mi"
+  },
+  {
+   "id": "i-despidiendome",
+   "ambito": "texto",
+   "familia": "DESPEDIDA",
+   "nivel": "indirecta",
+   "patron": "(?:me estoy|estoy) despidiendo(?:me)? de (?:todos|todo el mundo|la gente|mis amigos|mi familia|vosotros)(?! (?:del|de la|en|antes|porque|por|que)(?: |$))|(?:os|te|les) (?:dejo|he dejado|escribo|he escrito) una carta (?:de despedida|para cuando|para despues)(?! (?:porque|que|antes|por)(?: |$))"
+  },
+  {
+   "id": "p-violencia",
+   "ambito": "texto",
+   "familia": "PELIGRO",
+   "nivel": "indirecta",
+   "patron": "mi (?:pareja|marido|mujer|novio|novia|ex|padre|madre|padrastro|madrastra|hermano) me (?:pega(?! (?:unos|un|una|gritos|voces|broncas|la bronca|el rollo|sus|su|la gripe|el resfriado|los piojos)(?: |$))|ha pegado(?! (?:la gripe|el resfriado|un grito|unos gritos|la bronca)(?: |$))|maltrata|amenaza con matarme|ha amenazado con matarme|ha violado|viola|quiere matar|va a matar(?! (?:si|cuando|como|porque)(?: |$)))"
+  },
+  {
+   "id": "x-autolesion-instrumento",
+   "ambito": "texto",
+   "familia": "NICE-AL",
+   "nivel": "explicita",
+   "patron": "me (?:he )?(?:quemado|quemo|marcado|marco)(?: [a-z]+){0,3} con (?:el|un|una|la|mi) (?:mechero|cigarro|cigarrillo|encendedor)|me (?:he )?(?:cortado|corto|rajado|rajo|hecho cortes|hago cortes) (?:los|las|el|la|mis) (?:brazos?|munecas?|piernas?|muslos?|tripa|barriga|antebrazos?|tobillos?) con (?:una|la|el|un|mi) (?:cuchilla|navaja|cuter|cuchillo|compas|sacapuntas|cristal)|me (?:he )?(?:cortado|corto|rajado|hecho cortes) con (?:el|un|una|la|mi) (?:compas|sacapuntas|cristal roto)"
+  },
+  {
+   "id": "x-tomarme-todo",
+   "ambito": "texto",
+   "familia": "CSSRS-C",
+   "nivel": "explicita",
+   "patron": "(?:tomarme|tragarme|me tomaria|me trague|me he tragado|me voy a tomar|voy a tomarme|casi me tomo|casi me tomo) (?:todo|todas|todos)(?: [a-z]+){0,8} (?:medicinas|medicamentos|pastillas|pildoras|botiquin|pastis)"
+  },
+  {
+   "id": "x-me-habria-matado",
+   "ambito": "texto",
+   "familia": "CSSRS-2",
+   "nivel": "explicita",
+   "patron": "si no (?:fuera|llega a ser|es|hubiera sido|fuese) por(?: [a-z]+){0,4} (?:ya )?me (?:habria|hubiera|hubiese) (?:matado|suicidado|quitado la vida|tirado|colgado|ahorcado)|me (?:habria|hubiera|hubiese) (?:suicidado|quitado la vida)"
+  },
+  {
+   "id": "x-dejar-que-me-atropelle",
+   "ambito": "texto",
+   "familia": "CSSRS-1",
+   "nivel": "explicita",
+   "patron": "(?:pienso en|ojala|me gustaria|quiero|deseo|seria un alivio|no me importaria|me dan ganas de) (?:dejar )?que me (?:atropelle|atropellara|atropellase|atropellen|arrolle|arrollara|lleve por delante|llevara por delante|pille (?:un|una) (?:coche|camion|tren|autobus|metro|moto)|pillara (?:un|una) (?:coche|camion|tren|autobus|metro|moto))|(?:un|el) (?:coche|camion|tren|autobus|metro) me (?:atropellara|atropelle|arrollara|arrolle|llevara por delante|lleve por delante)"
+  },
+  {
+   "id": "x-imaginarme-muerta",
+   "ambito": "texto",
+   "familia": "CSSRS-1",
+   "nivel": "explicita",
+   "patron": "(?:imaginarme|imaginandome|verme) (?:muert[oa]|en (?:mi|un) (?:ataud|entierro|funeral))(?! (?:de|del)(?: |$))|pienso en mi (?:propio )?(?:entierro|funeral)"
+  },
+  {
+   "id": "x-dejar-de-vivir",
+   "ambito": "texto",
+   "familia": "CSSRS-2",
+   "nivel": "explicita",
+   "patron": "(?:voy a|quiero|necesito|he decidido|prefiero|me gustaria|tengo que) dejar de (?:vivir|existir|respirar)(?! (?:en|con|aqui en|de|asi|para|tan|como|un|una|el|la)(?: |$))"
+  },
+  {
+   "id": "x-me-encontraran-muerto",
+   "ambito": "texto",
+   "familia": "CSSRS-1",
+   "nivel": "explicita",
+   "patron": "me (?:encontraran|encuentren|encontrasen|hallaran|hallen) muert[oa]|(?:para )?cuando me (?:encuentren|hallen)(?! (?:en|el|la|los|las|a|trabajando|despiert[oa]|dormid[oa]|trabajo|piso|un|una|novio|novia)(?: |$))"
+  },
+  {
+   "id": "x-ojala-estar-muerta",
+   "ambito": "texto",
+   "familia": "CSSRS-1",
+   "nivel": "explicita",
+   "patron": "ojala (?:estar|estuviera|estuviese) muert[oa](?! (?:de|del)(?: |$))"
+  },
+  {
+   "id": "n-nunca-lo-haria",
+   "ambito": "texto",
+   "familia": "NEG",
+   "nivel": "indirecta",
+   "patron": "(?:nunca|no) lo (?:haria|voy a hacer|hare)(?: [a-z]+){0,2} (?:aunque|pero) lo (?:pienso|he pensado|pense|pienso mucho)"
+  },
+  {
+   "id": "n-no-me-importa-morir",
+   "ambito": "texto",
+   "familia": "NEG",
+   "nivel": "indirecta",
+   "patron": "(?:ya )?no me importa (?:si me muero|si muero|morir(?:me)?|vivir o morir|si vivo o (?:si )?muero)"
+  },
+  {
+   "id": "n-me-da-igual-lo-que-pase",
+   "ambito": "solo_texto",
+   "familia": "NEG",
+   "nivel": "indirecta",
+   "patron": "me da igual lo que me (?:pase|ocurra)(?! (?:en|con|el|la|si|manana en|cuando|voy|vaya|porque|que)(?: |$))"
+  },
+  {
+   "id": "n-por-que-seguir-aqui",
+   "ambito": "texto",
+   "familia": "NEG",
+   "nivel": "indirecta",
+   "patron": "no (?:veo|se|encuentro|entiendo) (?:por que|para que) (?:deberia|debo|tengo que|tendria que|quiero|voy a) (?:seguir|estar) (?:aqui|viv[oa]|viviendo|en este mundo)|(?:para que|por que) (?:sigo|seguir) (?:aqui|viv[oa]|en este mundo|viviendo|existiendo)(?=$| )|(?:para que|por que) (?:existo|vivo)(?=$| ya| asi)"
+  },
+  {
+   "id": "n-nada-raro",
+   "ambito": "clausula",
+   "familia": "NEG",
+   "nivel": "indirecta",
+   "patron": "^(?:(?:y|pero|es que|creo que|siento que|la verdad es que|la verdad|de verdad|en serio|ya|hoy|joder|jo|tio|tia|mama|papa|dios|por dios|lo siento|perdon|otra vez|vale|bueno|uf|buf|ay|no se|sinceramente) )*(?:no (?:voy a|pienso|vaya a) hacer (?:nada raro|ninguna tonteria|ninguna locura|nada malo)(?: tranquil[oa]s?)?(?: creo)?)(?: (?:ya|de verdad|en serio|enserio|joder|jo|hoy|tio|tia|por favor|nunca mas|otra vez|de una vez|y punto|ya esta|lo siento|mas|nada|mama|papa|dios|en serio ya|de verdad ya|para siempre|del todo|con todo))*$"
+  },
+  {
+   "id": "i-escapar",
+   "ambito": "texto",
+   "familia": "IMV",
+   "nivel": "indirecta",
+   "patron": "no hay (?:forma|manera|modo|salida) de (?:escapar|salir)(?! (?:del|de la|de las|de los|de casa|de aqui|antes|hasta|por|con|en|a)(?: |$))(?: de (?:esto|esta situacion|mi vida|mi cabeza|este pozo|esta vida))?"
+  },
+  {
+   "id": "i-mas-entradas",
+   "ambito": "texto",
+   "familia": "DESPEDIDA",
+   "nivel": "indirecta",
+   "patron": "ya no (?:habra|va a haber|escribire|voy a escribir) mas (?:entradas|paginas)(?! (?:hasta|porque|por|este ano|hasta el|en vacaciones)(?: |$))|querido diario(?: [a-z]+){0,4} me despido(?: de ti)?(?: para siempre)?(?=$| gracias| adios)|me despido(?: de ti)?(?: [a-z]+){0,3} gracias por (?:escucharme|leerme|acompanarme)"
+  },
+  {
+   "id": "i-carta-por-si-acaso",
+   "ambito": "texto",
+   "familia": "CSSRS-6",
+   "nivel": "indirecta",
+   "patron": "(?:carta|cartas|nota de despedida)(?: [a-z]+){0,8} por si acaso"
+  },
+  {
+   "id": "i-medio-para-el-momento",
+   "ambito": "texto",
+   "familia": "IMV-VM",
+   "nivel": "indirecta",
+   "patron": "(?:pastillas|cuerda|soga|cuchilla|lo que necesito|lo que necesitaba)(?: [a-z]+){0,6} (?:por si llega el momento|para cuando llegue el momento|para cuando sea|para el dia que)"
+  },
+  {
+   "id": "i-ya-no-lo-necesito",
+   "ambito": "texto",
+   "familia": "CSSRS-6",
+   "nivel": "indirecta",
+   "patron": "(?:he regalado|regale|he dado|le he dado|les he dado|he dejado|le he dejado|he empezado a regalar|estoy regalando|empezado a regalar|he repartido)(?!(?: [a-z]+){0,6} (?:viej[oa]s?|pequen[oa]s?|rot[oa]s?|usad[oa]s?|que ya no me (?:pongo|vale|valen|queda|quedan|sirve|sirven)))(?: [a-z]+){0,14} (?:ya )?no (?:la|lo|las|los) (?:voy a|vaya a) (?:necesitar|usar)(?: mas| nunca mas)?$"
+  },
+  {
+   "id": "i-despedido-sin-que",
+   "ambito": "texto",
+   "familia": "DESPEDIDA",
+   "nivel": "indirecta",
+   "patron": "me he despedido de (?:todos|mis amigos|mis amigas|mi familia|todo el mundo|la gente|mis padres|mi gente|la cuadrilla|la kuadrilla|mi cuadrilla)(?: [a-z]+){0,2} sin que (?:se dieran cuenta|lo supieran|nadie lo supiera|se enteraran|nadie se diera cuenta)"
+  },
+  {
+   "id": "i-estar-donde-esta",
+   "ambito": "texto",
+   "familia": "REUNION",
+   "nivel": "indirecta",
+   "patron": "(?:quiero|me gustaria|ojala pudiera|necesito) (?:estar|irme) (?:donde|adonde|a donde) (?:esta|estan|estes) (?:ella|el|ellos|mi (?:madre|padre|mama|papa|abuela|abuelo|hermano|hermana|hijo|hija|marido|mujer|pareja|novio|novia|amigo|amiga|tio|tia|prima|primo|aita|ama|aitona|amona|aitatxo|amatxo|yaya|yayo))"
+  },
+  {
+   "id": "i-pronto-con-familiar",
+   "ambito": "texto",
+   "familia": "REUNION",
+   "nivel": "indirecta",
+   "patron": "pronto (?:estare|estaremos|voy a estar|ire) con (?:el|la|mi|mis) (?:madre|padre|mama|papa|abuela|abuelo|hermano|hermana|hijo|hija|marido|mujer|pareja|novio|novia|amigo|amiga|tio|tia|prima|primo|aita|ama|aitona|amona|aitatxo|amatxo|yaya|yayo)(?: otra vez| de nuevo)?(?: [a-z]+){0,4} (?:echo|hecho) (?:tanto |mucho )?de menos|(?:echo|hecho) (?:tanto |mucho )?de menos(?: [a-z]+){0,10} pronto (?:estare|estaremos|voy a estar|ire) con"
+  },
+  {
+   "id": "i-dejare-de-molestar",
+   "ambito": "texto",
+   "familia": "IPTS",
+   "nivel": "indirecta",
+   "patron": "(?:pronto|ya|muy pronto) (?:dejare de|voy a dejar de|no volvere a) (?:molestaros|molestar|molestarte|molestarles|daros problemas|preocuparos)|ya no (?:voy a ser|sere) (?:un|una) (?:problema|carga|estorbo|molestia)(?: para (?:nadie|nadie mas|vosotros|ti|mi familia|todos))?"
+  },
+  {
+   "id": "i-todo-ordenado",
+   "ambito": "texto",
+   "familia": "CSSRS-6",
+   "nivel": "indirecta",
+   "patron": "dejado (?:todo |lo todo )?(?:ordenado|arreglado|en orden|atado)(?!(?: [a-z]+){0,8} (?:vacaciones|viaje|mudanza|mudarme|irme de|operacion|boda|examen))(?: [a-z]+){0,10} (?:el gato|el perro|mis cosas|las cuentas|los papeles|el testamento|las contrasenas|mis contrasenas)"
+  },
+  {
+   "id": "i-nada-va-a-mejorar",
+   "ambito": "clausula",
+   "familia": "AAS",
+   "nivel": "indirecta",
+   "patron": "^(?:(?:y|pero|es que|creo que|siento que|la verdad es que|la verdad|de verdad|en serio|ya|hoy|joder|jo|tio|tia|mama|papa|dios|por dios|lo siento|perdon|otra vez|vale|bueno|uf|buf|ay|no se|sinceramente) )*(?:nada va a (?:mejorar|ir a mejor)(?: nunca)?)(?: (?:ya|de verdad|en serio|enserio|joder|jo|hoy|tio|tia|por favor|nunca mas|otra vez|de una vez|y punto|ya esta|lo siento|mas|nada|mama|papa|dios|en serio ya|de verdad ya|para siempre|del todo|con todo))*$"
+  },
+  {
+   "id": "i-todo-sale-mal-nunca",
+   "ambito": "texto",
+   "familia": "AAS",
+   "nivel": "indirecta",
+   "patron": "todo me sale mal(?: [a-z]+){0,2} nunca va a (?:cambiar|mejorar|ir a mejor)"
+  },
+  {
+   "id": "i-gracias-lo-siento-fin",
+   "ambito": "texto",
+   "familia": "DESPEDIDA",
+   "nivel": "indirecta",
+   "patron": "gracias por todo(?: (?:(?:madre|padre|mama|papa|abuela|abuelo|hermano|hermana|hijo|hija|marido|mujer|pareja|novio|novia|amigo|amiga|tio|tia|prima|primo|aita|ama|aitona|amona|aitatxo|amatxo|yaya|yayo)|a todos|chicos|de verdad))?(?: [a-z]+){0,2} (?:lo siento|perdon|perdonadme|perdoname)(?: mucho| de verdad| muchisimo| por todo)?$|(?:te quiero|os quiero)(?: (?:(?:madre|padre|mama|papa|abuela|abuelo|hermano|hermana|hijo|hija|marido|mujer|pareja|novio|novia|amigo|amiga|tio|tia|prima|primo|aita|ama|aitona|amona|aitatxo|amatxo|yaya|yayo)|a todos))?(?: [a-z]+){0,2} (?:perdon|perdoname|perdonadme|lo siento) por todo$|gracias por todo(?: [a-z]+){0,3} adios(?: a todos)?$|adios a todos(?: [a-z]+){0,2} os quiero$|os quiero(?: a todos)?(?: [a-z]+){0,2} adios$"
+  },
+  {
+   "id": "i-adios-para-siempre",
+   "ambito": "texto",
+   "familia": "DESPEDIDA",
+   "nivel": "indirecta",
+   "patron": "adios(?: de verdad)? para siempre"
+  },
+  {
+   "id": "i-dolor-pare",
+   "ambito": "texto",
+   "familia": "CSSRS-1",
+   "nivel": "indirecta",
+   "patron": "(?:necesito|quiero) que (?:este|el|mi) dolor (?:pare|termine|acabe|se acabe|desaparezca)(?! de (?:espalda|muelas|cabeza|rodilla|estomago|barriga|tripa|regla|oido|garganta|pies?|piernas?|cuello)(?: |$))(?: [a-z]+){0,6} (?:cueste lo que cueste|como sea|de la forma que sea)|cueste lo que cueste(?: [a-z]+){0,3} (?:dejar de sufrir|que pare)"
+  },
+  {
+   "id": "i-elegido-dia",
+   "ambito": "clausula",
+   "familia": "CSSRS-45",
+   "nivel": "indirecta",
+   "patron": "^(?:(?:y|pero|es que|creo que|siento que|la verdad es que|la verdad|de verdad|en serio|ya|hoy|joder|jo|tio|tia|mama|papa|dios|por dios|lo siento|perdon|otra vez|vale|bueno|uf|buf|ay|no se|sinceramente) )*(?:ya (?:he elegido|tengo elegido|he decidido) el dia(?: y la hora)?)(?: (?:ya|de verdad|en serio|enserio|joder|jo|hoy|tio|tia|por favor|nunca mas|otra vez|de una vez|y punto|ya esta|lo siento|mas|nada|mama|papa|dios|en serio ya|de verdad ya|para siempre|del todo|con todo))*$"
+  },
+  {
+   "id": "i-mirando-abajo",
+   "ambito": "texto",
+   "familia": "IMV-VM",
+   "nivel": "indirecta",
+   "patron": "(?:azotea|puente|balcon|ventana|terraza|tejado|acantilado|viaducto)(?: [a-z]+){0,6} (?:mirando|mire|mirar|asomad[oa]) (?:hacia )?abajo(?! (?:a la gente|a los|a las|la calle|el paisaje|las vistas)(?: |$))"
+  },
+  {
+   "id": "i-borrando-rastro",
+   "ambito": "texto",
+   "familia": "CSSRS-6",
+   "nivel": "indirecta",
+   "patron": "(?:borrando|borrado|borre|eliminando|eliminado|elimine)(?: [a-z]+){0,6} para no dejar (?:nada|rastro|ni rastro|huella)(?! (?:en|de)(?: |$))"
+  },
+  {
+   "id": "i-que-hagan-con-mis-cosas",
+   "ambito": "texto",
+   "familia": "CSSRS-6",
+   "nivel": "indirecta",
+   "patron": "(?:he dejado escrito|he escrito|dejo escrito|he apuntado) (?:que|lo que|como) (?:quiero que )?(?:hagan|hagais|haga) con (?:mis cosas|mi cuerpo|mis cenizas|mi perro|mi gato|mis animales)"
+  },
+  {
+   "id": "i-una-sola-manera",
+   "ambito": "texto",
+   "familia": "IMV",
+   "nivel": "indirecta",
+   "patron": "(?:este dolor|mi sufrimiento|el sufrimiento|lo que siento) solo (?:se acaba|termina|acaba|se arregla|tiene solucion|se va) de una (?:manera|forma)|solo (?:se acaba|termina|acaba) de una (?:manera|forma)(?: [a-z]+){0,2} y ya (?:se|la se|la conozco) (?:cual|como)"
+  },
+  {
+   "id": "i-compre-lo-que-necesitaba",
+   "ambito": "texto",
+   "familia": "IMV-VM",
+   "nivel": "indirecta",
+   "patron": "(?:he comprado|tengo|he conseguido|ya tengo) lo que (?:necesitaba|necesito|me hace falta|me hacia falta)(?! para (?:la|el|los|las|mi|cocinar|clase|el viaje|la excursion))(?: [a-z]+){0,6} (?:mochila|cajon|bolso|armario|coche|mesilla)"
+  },
+  {
+   "id": "i-todo-habra-terminado",
+   "ambito": "clausula",
+   "familia": "DESPEDIDA",
+   "nivel": "indirecta",
+   "patron": "^(?:(?:y|pero|es que|creo que|siento que|la verdad es que|la verdad|de verdad|en serio|ya|hoy|joder|jo|tio|tia|mama|papa|dios|por dios|lo siento|perdon|otra vez|vale|bueno|uf|buf|ay|no se|sinceramente) )*(?:(?:manana|esta noche|pronto|en unas horas|el lunes|dentro de poco)(?: a estas horas)? todo (?:habra|va a haber) (?:terminado|acabado))(?: (?:ya|de verdad|en serio|enserio|joder|jo|hoy|tio|tia|por favor|nunca mas|otra vez|de una vez|y punto|ya esta|lo siento|mas|nada|mama|papa|dios|en serio ya|de verdad ya|para siempre|del todo|con todo))*$"
+  },
+  {
+   "id": "i-alivio-coche",
+   "ambito": "texto",
+   "familia": "CSSRS-1",
+   "nivel": "indirecta",
+   "patron": "seria (?:un alivio|lo mejor|una liberacion) (?:que|si) (?:me muriera|me atropellara|un coche|no despertara|desapareciera|me pasara algo|no estuviera)"
+  },
+  {
+   "id": "i-mirando-pastillas",
+   "ambito": "texto",
+   "familia": "IMV-VM",
+   "nivel": "indirecta",
+   "patron": "mirando (?:el bote|la caja|las pastillas|el blister|la cuchilla|la cuerda|la soga)(?: de (?:pastillas|pastis))?(?: [a-z]+){0,3} (?:un rato|mucho rato|un buen rato|horas|toda la noche|un rato largo|sin parar)"
+  },
+  {
+   "id": "i-soy-estorbo",
+   "ambito": "clausula",
+   "familia": "IPTS",
+   "nivel": "indirecta",
+   "patron": "^(?:(?:y|pero|es que|creo que|siento que|la verdad es que|la verdad|de verdad|en serio|ya|hoy|joder|jo|tio|tia|mama|papa|dios|por dios|lo siento|perdon|otra vez|vale|bueno|uf|buf|ay|no se|sinceramente) )*(?:(?:soy (?:un|una) (?:estorbo|lastre|molestia|carga)|no soy mas que (?:un|una) (?:estorbo|carga|molestia))(?: para (?:todos|todo el mundo|mi familia|los demas|vosotros))?(?: siempre lo he sido)?)(?: (?:ya|de verdad|en serio|enserio|joder|jo|hoy|tio|tia|por favor|nunca mas|otra vez|de una vez|y punto|ya esta|lo siento|mas|nada|mama|papa|dios|en serio ya|de verdad ya|para siempre|del todo|con todo))*$"
+  },
+  {
+   "id": "i-tranquila-se-lo-que",
+   "ambito": "texto",
+   "familia": "CSSRS-45",
+   "nivel": "indirecta",
+   "patron": "(?:tranquil[oa]|en paz|calma)(?: [a-z]+){0,8} (?:ya )?(?:se (?:lo que voy a hacer|como hacerlo|como lo voy a hacer)|lo he decidido)|ya lo he decidido(?: [a-z]+){0,3} (?:es|siento|me da) (?:un alivio|paz|tranquilidad)"
+  },
+  {
+   "id": "i-sueno-no-acabe",
+   "ambito": "texto",
+   "familia": "CSSRS-1",
+   "nivel": "indirecta",
+   "patron": "dormir(?:me)? y (?:que )?(?:el sueno )?no (?:se acabe|acabe|termine) nunca|no volver a abrir los ojos(?! (?:hasta|antes|en|delante)(?: |$))|no abrir los ojos nunca mas|cerrar los ojos para siempre"
+  },
+  {
+   "id": "i-nada-me-ate",
+   "ambito": "texto",
+   "familia": "AAS",
+   "nivel": "indirecta",
+   "patron": "(?:no me queda|ya no me queda|no hay|ya no hay|no tengo) nada (?:por lo que|que me ate a|que me retenga en|que me una a) (?:quedarme|seguir|vivir|este mundo|la vida|aqui|luchar)"
+  },
+  {
+   "id": "i-arruinando-vida",
+   "ambito": "texto",
+   "familia": "IPTS",
+   "nivel": "indirecta",
+   "patron": "(?:les|os|le|te) estoy (?:arruinando|destrozando|jodiendo) la vida|quitarme de (?:su|vuestro|tu|sus|vuestros) camino|apartarme de (?:su|vuestro|sus|vuestras) vidas?(?: para siempre)?"
+  },
+  {
+   "id": "i-sin-mi-un-problema-menos",
+   "ambito": "texto",
+   "familia": "IPTS",
+   "nivel": "indirecta",
+   "patron": "sin mi (?:tendrian|tendriais|tendria|tendrias|tendreis|tendran) (?:un|1) problema menos|(?:estan|estais|esta) hart[oa]s? de mi(?: [a-z]+){0,4} sin mi"
+  },
+  {
+   "id": "x-tercera-se-corta",
+   "ambito": "texto",
+   "familia": "024",
+   "nivel": "explicita",
+   "patron": "(?:mi|su) (?:(?:madre|padre|mama|papa|abuela|abuelo|hermano|hermana|hijo|hija|marido|mujer|pareja|novio|novia|amigo|amiga|tio|tia|prima|primo|aita|ama|aitona|amona|aitatxo|amatxo|yaya|yayo)|alumno|alumna|companera|companero|sobrina|sobrino|nieta|nieto|hijastra|hijastro|colega) se (?:corta|ha cortado|autolesiona|hace cortes|hace dano|ha vuelto a cortar)(?! (?:el|la|los|las|con|al|mientras|cocinando|el pelo|las unas|un dedo|el dedo)(?: |$))"
+  },
+  {
+   "id": "x-me-las-tomo",
+   "ambito": "texto",
+   "familia": "CSSRS-45",
+   "nivel": "explicita",
+   "patron": "(?:pastillas|pastis|medicinas|medicamentos|pildoras|comprimidos)(?: [a-z]+){0,12} me las (?:tomo|tomare|voy a tomar|tome|he tomado|trague|trago|tragare) todas"
+  },
+  {
+   "id": "x-voces",
+   "ambito": "texto",
+   "familia": "CSSRS-2",
+   "nivel": "explicita",
+   "patron": "(?:voz|voces|cabeza|mente)(?: [a-z]+){0,5} que me (?:mate|suicide|haga dano|corte|tire|muera|quite la vida)(?! (?:a|de)(?: |$))"
+  },
+  {
+   "id": "x-para-colgarme",
+   "ambito": "texto",
+   "familia": "CSSRS-45",
+   "nivel": "explicita",
+   "patron": "(?:es |era |sera )?para (?:colgarme|ahorcarme|matarme|suicidarme|quitarme la vida|cortarme las venas)(?! (?:el|la|los|las|un|una|mi|del|de|a)(?: |$))"
+  },
+  {
+   "id": "x-cortes-otra-vez",
+   "ambito": "texto",
+   "familia": "NICE-AL",
+   "nivel": "explicita",
+   "patron": "(?:me lo he vuelto a hacer|lo he vuelto a hacer|ha vuelto a pasar|he recaido|recai)(?: [a-z]+){0,3} (?:los cortes|cortes|cortarme|las quemaduras|quemarme)|(?:los cortes|cortes|quemaduras)(?: [a-z]+){0,2} ya van (?:[a-z0-9]+)"
+  },
+  {
+   "id": "x-gas",
+   "ambito": "texto",
+   "familia": "CSSRS-3",
+   "nivel": "explicita",
+   "patron": "dejarme morir|me dejaria morir|(?:pensado en|voy a|quiero|pienso en|podria) abrir el gas(?! (?:para|de la cocina para|y cocinar|y hacer)(?: |$))"
+  },
+  {
+   "id": "x-tras-bronca",
+   "ambito": "texto",
+   "familia": "NICE-AL",
+   "nivel": "explicita",
+   "patron": "(?:despues de|tras|por) (?:la|una) (?:bronca|discusion|pelea|ruptura)(?: [a-z]+){0,6} me (?:corte|he cortado|queme|he quemado|hice dano|he hecho dano|golpee|pegue|arane)(?! (?:el|la|los|las) (?:pelo|flequillo|unas|barba|puntas|dedo|melena)(?: |$))"
+  },
+  {
+   "id": "x-a-ver-si-muero",
+   "ambito": "texto",
+   "familia": "CSSRS-C",
+   "nivel": "explicita",
+   "patron": "a ver si (?:asi )?(?:me muero|muero|no despierto|no me despierto|se acaba todo)(?! (?:de|del)(?: |$))|(?:pastillas|medicamentos)(?: [a-z]+){0,5} a proposito"
+  },
+  {
+   "id": "x-de-momento",
+   "ambito": "texto",
+   "familia": "NEG",
+   "nivel": "explicita",
+   "patron": "(?:matarme|suicidarme|quitarme la vida|hacerme dano) (?:de momento|por ahora|todavia|aun)|no tengo (?:intencion|pensado) de (?:matarme|suicidarme|hacerme dano|quitarme la vida)(?! (?:a|por|de (?!momento))(?: |$))"
+  },
+  {
+   "id": "n-no-es-que-quiera",
+   "ambito": "texto",
+   "familia": "NEG",
+   "nivel": "indirecta",
+   "patron": "no es que (?:me )?(?:quiera|quisiera) (?:matar(?:me)?|morir(?:me)?|suicidar(?:me)?)(?! (?:de|del|a)(?: |$))|si (?:manana )?no me (?:despertara|despertase)(?: [a-z]+){0,3} (?:tampoco pasaria nada|no pasaria nada|me daria igual|mejor|seria un alivio)|me da igual si me pasa algo"
+  },
+  {
+   "id": "n-cortado-un-poco",
+   "ambito": "texto",
+   "familia": "NEG",
+   "nivel": "indirecta",
+   "patron": "me he cortado (?:un poco|un poquito|poquito)(?! (?:el|la|los|las|con|al|cocinando|pelando)(?: |$))|(?:lo de las pastillas|las pastillas)(?: [a-z]+){0,4} no fue un intento|lo de (?:los cortes|cortarme|autolesionarme|hacerme dano)(?! de (?:luz|agua|pelo|la luz|trafico|carretera|suministro|presupuesto|internet)(?: |$))"
+  },
+  {
+   "id": "n-puente-tirarme",
+   "ambito": "texto",
+   "familia": "NEG",
+   "nivel": "indirecta",
+   "patron": "(?:puente|vias|tren|metro|ventana|balcon|azotea|acantilado|viaducto)(?: [a-z]+){0,4} (?:pienso en|me dan ganas de|ganas de|quiero|podria) (?:tirarme|saltar|lanzarme|arrojarme)(?! (?:a la piscina|al agua|en paracaidas|al sofa|a la cama|de cabeza al agua)(?: |$))"
+  },
+  {
+   "id": "n-nada-pero-pensado",
+   "ambito": "texto",
+   "familia": "NEG",
+   "nivel": "indirecta",
+   "patron": "no voy a hacer nada(?: [a-z]+){0,4} (?:aunque|pero) (?:ya )?lo tengo todo (?:pensado|planeado|preparado)(?! para (?:el|la|los|las|mi|tu|su)(?: |$))|lo tengo todo (?:preparado|pensado|planeado|listo)(?: [a-z]+){0,4} ya no hay (?:vuelta|marcha) atras"
+  },
+  {
+   "id": "i-cartas-dejadas",
+   "ambito": "texto",
+   "familia": "CSSRS-6",
+   "nivel": "indirecta",
+   "patron": "(?:he escrito|he dejado|deje|dejo|escribi) (?:una|la|las) cartas? (?:para cada uno|a mis padres|a mi familia|para mis padres|para mi familia|encima (?:de|del)|en el cajon|en la mesilla|para que la encuentre|para que las encuentren)(?!(?: [a-z]+){0,8} (?:aniversario|cumpleanos|felicitar|felicitacion|navidad|reyes|san valentin|boda|jubilacion|jubilo|mudo|mudanza|santo))"
+  },
+  {
+   "id": "i-despedida-ultima-vez",
+   "ambito": "solo_texto",
+   "familia": "DESPEDIDA",
+   "nivel": "indirecta",
+   "patron": "(?:me he despedido|me despedi|despedirme|abrace|he abrazado|he dado un abrazo)(?: [a-z]+){0,5} como si fuera la ultima vez(?! (?:siempre|como siempre|por si acaso|que)(?: |$))"
+  },
+  {
+   "id": "i-atrapada",
+   "ambito": "clausula",
+   "familia": "IMV",
+   "nivel": "indirecta",
+   "patron": "^(?:(?:y|pero|es que|creo que|siento que|la verdad es que|la verdad|de verdad|en serio|ya|hoy|joder|jo|tio|tia|mama|papa|dios|por dios|lo siento|perdon|otra vez|vale|bueno|uf|buf|ay|no se|sinceramente) )*(?:estoy atrapad[oa]s?|no aguanto (?:un dia|ni un dia|una semana|un minuto) mas(?: asi)?)(?: (?:ya|de verdad|en serio|enserio|joder|jo|hoy|tio|tia|por favor|nunca mas|otra vez|de una vez|y punto|ya esta|lo siento|mas|nada|mama|papa|dios|en serio ya|de verdad ya|para siempre|del todo|con todo))*$"
+  },
+  {
+   "id": "i-atrapada-no-puedo",
+   "ambito": "texto",
+   "familia": "IMV",
+   "nivel": "indirecta",
+   "patron": "atrapad[oa]s?(?: [a-z]+){0,2} no (?:puedo|aguanto) mas|mi vida es (?:una carcel|un infierno|un pozo|una trampa)(?: [a-z]+){0,3} (?:sin salida|y no tiene (?:ninguna )?(?:puerta|salida)|no hay salida)"
+  },
+  {
+   "id": "i-cuando-yo-no-este",
+   "ambito": "texto",
+   "familia": "DESPEDIDA",
+   "nivel": "indirecta",
+   "patron": "cuando yo (?:ya )?no este(?! (?:en|de|por|este|esta|el|la|manana|trabajando|en casa)(?: |$))|yo ya no voy a estar mucho(?: tiempo)?(?! (?:en|aqui en|por)(?: |$))"
+  },
+  {
+   "id": "i-perdone-por-todo",
+   "ambito": "texto",
+   "familia": "DESPEDIDA",
+   "nivel": "indirecta",
+   "patron": "que me (?:perdone|perdonen|perdoneis|perdonais) por todo(?! (?:lo|el|la|lo que|lo de)(?: |$))|no (?:es|ha sido|fue) culpa (?:vuestra|tuya|de nadie|de vosotros)(?: [a-z]+){0,3} lo siento|(?:mama|papa|ama|aita)(?: [a-z]+){0,3} no es culpa vuestra"
+  },
+  {
+   "id": "i-ojala-para-siempre",
+   "ambito": "texto",
+   "familia": "CSSRS-1",
+   "nivel": "indirecta",
+   "patron": "(?:dormir|me voy a dormir|me acuesto|dormirme)(?: [a-z]+){0,3} ojala (?:sea|fuera) para siempre(?! (?:el|la|este|esta|un|una|los|las)(?: |$))"
+  },
+  {
+   "id": "i-sin-rastro",
+   "ambito": "texto",
+   "familia": "CSSRS-6",
+   "nivel": "indirecta",
+   "patron": "(?:borrado|borrando|borre|eliminado|eliminando)(?: [a-z]+){0,12} (?:para )?no (?:quiero )?dejar (?:nada|rastro|ni rastro|huella)(?! (?:en|de)(?: |$))"
+  },
+  {
+   "id": "i-testamento-no-importa",
+   "ambito": "texto",
+   "familia": "CSSRS-6",
+   "nivel": "indirecta",
+   "patron": "testamento(?: [a-z]+){0,8} (?:ya no importa|nada importa|ya da igual|lo demas ya no importa)"
+  },
+  {
+   "id": "i-no-voy-a-llegar",
+   "ambito": "texto",
+   "familia": "AAS",
+   "nivel": "indirecta",
+   "patron": "no voy a llegar a (?:los [a-z0-9]+|navidad|fin de ano|mi cumpleanos|el verano|manana|mayor|viej[oa])(?! (?:a tiempo|al|con|en|de|kilos)(?: |$))"
+  },
+  {
+   "id": "i-arma",
+   "ambito": "texto",
+   "familia": "IMV-VM",
+   "nivel": "indirecta",
+   "patron": "(?:escopeta|pistola|arma|rifle|revolver)(?: [a-z]+){0,14} no (?:paro|dejo) de pensar en (?:ella|el|eso|usarla|usarlo)"
+  },
+  {
+   "id": "i-que-se-acabe-todo",
+   "ambito": "clausula",
+   "familia": "CSSRS-1",
+   "nivel": "indirecta",
+   "patron": "^(?:(?:y|pero|es que|creo que|siento que|la verdad es que|la verdad|de verdad|en serio|ya|hoy|joder|jo|tio|tia|mama|papa|dios|por dios|lo siento|perdon|otra vez|vale|bueno|uf|buf|ay|no se|sinceramente) )*(?:(?:quiero )?que (?:se acabe|termine|acabe) (?:ya )?todo(?: ya)?(?: por favor)?|(?:esta noche|hoy|manana) (?:termina|acaba|se acaba) todo)(?: (?:ya|de verdad|en serio|enserio|joder|jo|hoy|tio|tia|por favor|nunca mas|otra vez|de una vez|y punto|ya esta|lo siento|mas|nada|mama|papa|dios|en serio ya|de verdad ya|para siempre|del todo|con todo))*$"
+  },
+  {
+   "id": "i-termina-todo-descansar",
+   "ambito": "texto",
+   "familia": "CSSRS-45",
+   "nivel": "indirecta",
+   "patron": "(?:esta noche|hoy|manana|pronto) (?:termina|acaba|se acaba) todo(?: [a-z]+){0,3} (?:por fin )?(?:podre )?descansar"
+  },
+  {
+   "id": "i-tan-lejos",
+   "ambito": "texto",
+   "familia": "CSSRS-1",
+   "nivel": "indirecta",
+   "patron": "tan lejos que no (?:se pueda|pueda|podre|pueda nunca) volver|(?:me voy a ir|me voy|irme|marcharme) para no volver(?! (?:a|al|de|en|por)(?: |$))"
+  },
+  {
+   "id": "i-seguro-de-vida",
+   "ambito": "texto",
+   "familia": "IPTS",
+   "nivel": "indirecta",
+   "patron": "(?:si (?:yo )?faltara|si me muriera|si no estuviera|cuando falte)(?: [a-z]+){0,6} (?:cobraria|cobrarian|el seguro)"
+  },
+  {
+   "id": "i-ultimo-dia-de-todo",
+   "ambito": "texto",
+   "familia": "DESPEDIDA",
+   "nivel": "indirecta",
+   "patron": "(?:ultimo dia|ultima vez)(?: [a-z]+){0,4} (?:de todo|y en todo|en todo)(?=$| (?:ya|y|de verdad|lo se)(?: |$))|(?:ultima|ultimo)(?: [a-z]+){0,6} (?:la|el) (?:ultima|ultimo) de verdad"
+  },
+  {
+   "id": "i-dios-me-lleve",
+   "ambito": "texto",
+   "familia": "CSSRS-1",
+   "nivel": "indirecta",
+   "patron": "(?:dios|la virgen|el senor|al cielo|a los santos|a la virgen)(?: [a-z]+){0,4} que me lleve(?! (?:a|al)(?: |$))|ya he vivido (?:bastante|suficiente|demasiado)(?! (?:en|de|con|para)(?: |$))"
+  },
+  {
+   "id": "i-nada-aqui",
+   "ambito": "clausula",
+   "familia": "AAS",
+   "nivel": "indirecta",
+   "patron": "^(?:(?:y|pero|es que|creo que|siento que|la verdad es que|la verdad|de verdad|en serio|ya|hoy|joder|jo|tio|tia|mama|papa|dios|por dios|lo siento|perdon|otra vez|vale|bueno|uf|buf|ay|no se|sinceramente) )*(?:(?:ya )?no me queda nada aqui)(?: (?:ya|de verdad|en serio|enserio|joder|jo|hoy|tio|tia|por favor|nunca mas|otra vez|de una vez|y punto|ya esta|lo siento|mas|nada|mama|papa|dios|en serio ya|de verdad ya|para siempre|del todo|con todo))*$"
+  },
+  {
+   "id": "i-mejor-no-nacer",
+   "ambito": "texto",
+   "familia": "CSSRS-1",
+   "nivel": "explicita",
+   "patron": "(?:habria sido|seria|hubiera sido|hubiese sido) mejor no (?:nacer|haber nacido|existir)"
+  },
+  {
+   "id": "i-de-esta-no-salgo",
+   "ambito": "texto",
+   "familia": "AAS",
+   "nivel": "indirecta",
+   "patron": "(?:se que|yo se que) de esta no salgo"
+  },
+  {
+   "id": "i-irme-con-familiar",
+   "ambito": "texto",
+   "familia": "REUNION",
+   "nivel": "indirecta",
+   "patron": "(?:me quiero ir|quiero irme|me voy a ir|quiero estar) con (?:el|la|mi) (?:madre|padre|mama|papa|abuela|abuelo|hermano|hermana|hijo|hija|marido|mujer|pareja|novio|novia|amigo|amiga|tio|tia|prima|primo|aita|ama|aitona|amona|aitatxo|amatxo|yaya|yayo)(?: [a-z]+){0,3} (?:echo|hecho) (?:tanto |mucho )?de menos"
+  },
+  {
+   "id": "i-que-sentido-seguir",
+   "ambito": "texto",
+   "familia": "AAS",
+   "nivel": "indirecta",
+   "patron": "que sentido tiene (?:seguir asi|seguir viviendo|vivir|seguir aqui|levantarme|seguir)(?=$| (?:ya|si|asi)(?: |$))"
+  },
+  {
+   "id": "i-adios-gracias-fin",
+   "ambito": "texto",
+   "familia": "DESPEDIDA",
+   "nivel": "indirecta",
+   "patron": "adios a todos(?: [a-z]+){0,2} gracias por todo$"
+  },
+  {
+   "id": "t-quitado-vida",
+   "ambito": "texto",
+   "familia": "024",
+   "nivel": "explicita",
+   "patron": "se (?:ha quitado|quito) la vida|no quiere (?:vivir|seguir viviendo)(?! (?:en|con|aqui en|alli)(?: |$))"
+  },
+  {
+   "id": "p-amenaza",
+   "ambito": "texto",
+   "familia": "PELIGRO",
+   "nivel": "indirecta",
+   "patron": "me (?:ha|han) (?:dicho|amenazado|jurado|escrito|gritado) (?:que me (?:va|van) a matar|con matarme|que me matara|que me mataria|que me mataran)(?! (?:si|cuando|como|porque|por|a|de)(?: |$))"
+  },
+  {
+   "id": "p-miedo-mate",
+   "ambito": "texto",
+   "familia": "PELIGRO",
+   "nivel": "indirecta",
+   "patron": "tengo miedo de que me (?:mate|maten|haga dano|pegue otra vez|vuelva a pegar)(?! (?:a|de|el|la|mi|cuando|si)(?: |$))"
+  }
+ ]
+}

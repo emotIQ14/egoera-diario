@@ -1,41 +1,61 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
-import { track } from '@/lib/track';
+import { useEffect, useState } from 'react';
+import { esRiesgo } from '@/lib/riesgo/detector';
+import { marcarAvisoVisto } from '@/lib/aviso-seguridad';
 
-const CRISIS_PATTERN =
-  /\b(suicid|matarme|quitarme la vida|acabar con (mi vida|todo)|no quiero seguir (viviendo|vivo)|no aguanto m[aá]s|hacerme da[ñn]o|ya no quiero vivir|no vale la pena vivir|quiero desaparecer|no quiero estar aqu[ií]|mejor sin m[ií])\b/i;
+// Detector de riesgo común con la app iOS (src/lib/riesgo). Corre en el dispositivo, sin red, tras una espera
+// después de la última tecla (como la app: 600 ms) para no pasarlo en cada pulsación en entradas largas.
+// Que el aviso salga es un dato de salud (RGPD art. 9): ni el aviso, ni el riesgo, ni la llamada al 024 generan
+// ningún evento ni dato de analítica.
+const ESPERA_MS = 600;
 
 export default function SafetyBar({
   text,
   offsetBottom = 96,
+  forzar = 0,
 }: {
   text: string;
   offsetBottom?: number;
+  /** Cada vez que cambia (> 0) el aviso se muestra aunque el texto no salte (p. ej. Conversa no envió por riesgo en el contexto). */
+  forzar?: number;
 }): React.ReactElement | null {
-  const [visible, setVisible] = useState<boolean>(false);
-  // Si el usuario cierra mientras el patrón está activo, dejamos de mostrar
-  // hasta que el patrón desaparezca; entonces armamos para volver a mostrarlo
-  // si reaparece.
-  const dismissedForCurrentMatchRef = useRef<boolean>(false);
+  const [riesgo, setRiesgo] = useState<boolean>(false);
+  const [forzado, setForzado] = useState<boolean>(false);
+  // Si el usuario cierra mientras el riesgo sigue, no se vuelve a mostrar hasta que desaparezca; entonces se rearma
+  // para volver a mostrarlo si reaparece.
+  const [cerrado, setCerrado] = useState<boolean>(false);
 
   useEffect(() => {
-    const match = CRISIS_PATTERN.test(text);
-    if (match) {
-      if (!dismissedForCurrentMatchRef.current) {
-        setVisible(true);
-        track('safety_bar_shown');
-      }
-    } else {
-      dismissedForCurrentMatchRef.current = false;
-      setVisible(false);
+    if (!text.trim()) {
+      setRiesgo(false);
+      return;
     }
+    const id = window.setTimeout(() => setRiesgo(esRiesgo(text)), ESPERA_MS);
+    return () => window.clearTimeout(id);
   }, [text]);
 
+  useEffect(() => {
+    if (!riesgo) setCerrado(false);
+  }, [riesgo]);
+
+  useEffect(() => {
+    if (forzar > 0) {
+      setForzado(true);
+      setCerrado(false);
+    }
+  }, [forzar]);
+
   function handleClose(): void {
-    dismissedForCurrentMatchRef.current = true;
-    setVisible(false);
+    setForzado(false);
+    if (riesgo) setCerrado(true);
   }
+
+  const visible = (riesgo && !cerrado) || forzado;
+
+  useEffect(() => {
+    if (visible) marcarAvisoVisto();
+  }, [visible]);
 
   if (!visible) return null;
 

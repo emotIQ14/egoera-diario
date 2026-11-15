@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Screen from '@/components/Screen';
 import TabBar from '@/components/TabBar';
 import SafetyBar from '@/components/SafetyBar';
+import { hayRiesgoEnConversa } from '@/lib/riesgo/detector';
 import { loadEntries } from '@/lib/storage';
 import { EMOTIONS } from '@/lib/types';
 import { track } from '@/lib/track';
@@ -289,6 +290,8 @@ export default function ConversaPage() {
   const [hydrated, setHydrated] = useState(false);
   const [convHistory, setConvHistory] = useState<ConvSnippet[]>([]);
   const [showHistory, setShowHistory] = useState(false);
+  // Cada vez que no se envía por riesgo, sube y fuerza el aviso de seguridad (con su botón de llamada al 024).
+  const [ayudaN, setAyudaN] = useState(0);
 
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
@@ -342,13 +345,20 @@ export default function ConversaPage() {
     if (!text || loading) return;
 
     const next: Message[] = [...messages, { role: 'user', content: text }];
+    const recentEntries = loadEntries().slice(0, 7);
+    // Como en la app (PrefiltroConversa): si el detector salta en el mensaje o en el contexto que se enviaría
+    // (la conversación y las entradas recientes), NO se envía nada a la IA y se muestra la ayuda. El mensaje se queda
+    // en el campo, sin guardarse en la conversación, y no se registra ningún evento (dato de salud, RGPD art. 9).
+    if (hayRiesgoEnConversa(next, recentEntries)) {
+      setAyudaN((n) => n + 1);
+      return;
+    }
     setMessages(next);
     setInput('');
     setLoading(true);
     track('conversa_message_sent', { session: sessionN, turn: next.filter((m) => m.role === 'user').length });
 
     try {
-      const recentEntries = loadEntries().slice(0, 7);
       const last = recentEntries[0];
       const wCtx = getWeekContext();
       const res = await fetch('/api/conversa', {
@@ -366,7 +376,14 @@ export default function ConversaPage() {
         }),
       });
 
-      const data = (await res.json()) as { message?: string; error?: string };
+      const data = (await res.json()) as { message?: string; error?: string; ayuda?: boolean };
+      if (data.ayuda) {
+        // El servidor aplica el mismo filtro (por si llega un cliente viejo): no envió nada a la IA.
+        setMessages((prev) => prev.slice(0, -1));
+        setInput(text);
+        setAyudaN((n) => n + 1);
+        return;
+      }
       const reply =
         res.ok && data.message
           ? data.message
@@ -548,7 +565,7 @@ export default function ConversaPage() {
         </div>
       ) : null}
 
-      <SafetyBar text={input} offsetBottom={156} />
+      <SafetyBar text={input} offsetBottom={156} forzar={ayudaN} />
 
       <TabBar />
 

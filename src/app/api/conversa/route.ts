@@ -1,4 +1,5 @@
 import type { DiaryEntry } from '@/lib/storage';
+import { hayRiesgoEnConversa } from '@/lib/riesgo/detector';
 
 export const runtime = 'nodejs';
 
@@ -141,6 +142,13 @@ export async function POST(req: Request): Promise<Response> {
 
     if (!Array.isArray(messages) || messages.length === 0) {
       return Response.json({ error: 'No puedo conectar ahora mismo' }, { status: 400 });
+    }
+
+    // Mismo filtro que el cliente (y que la app): si el detector salta en los mensajes o en las entradas de contexto,
+    // no se envía nada a la IA. Se responde 200 como cualquier respuesta (el código no delata el riesgo en los
+    // registros) y NO se escribe nada en el registro.
+    if (hayRiesgoEnConversa(messages, userContext?.recentEntries)) {
+      return Response.json({ ayuda: true });
     }
 
     const systemPrompt = buildSystemPrompt(userContext);

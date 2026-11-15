@@ -1,8 +1,8 @@
 import type { Metadata, Viewport } from 'next';
 import { Analytics } from '@vercel/analytics/next';
-import { SpeedInsights } from '@vercel/speed-insights/next';
 import './globals.css';
 import { ServiceWorkerRegister } from '@/components/ServiceWorkerRegister';
+import { SpeedInsightsSinAviso } from '@/components/SpeedInsightsSinAviso';
 import { StructuredData } from '@/components/StructuredData';
 import { ToastProvider } from '@/components/toast/ToastProvider';
 
@@ -73,7 +73,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </ToastProvider>
         <StructuredData />
         <Analytics />
-        <SpeedInsights />
+        <SpeedInsightsSinAviso />
       </body>
     </html>
   );
