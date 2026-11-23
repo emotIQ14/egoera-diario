@@ -13,10 +13,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { path: '/', changeFrequency: 'weekly', priority: 0.9 },
     { path: '/bienvenida', changeFrequency: 'monthly', priority: 0.7 },
     { path: '/diario', changeFrequency: 'weekly', priority: 0.7 },
-    { path: '/conversa', changeFrequency: 'weekly', priority: 0.7 },
     { path: '/patrones', changeFrequency: 'weekly', priority: 0.7 },
     { path: '/lecturas', changeFrequency: 'weekly', priority: 0.7 },
-    { path: '/pro', changeFrequency: 'weekly', priority: 0.9 },
     { path: '/tu', changeFrequency: 'monthly', priority: 0.7 },
   ];
 

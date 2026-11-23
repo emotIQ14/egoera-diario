@@ -734,18 +734,6 @@ export default function TuPage() {
         <span id="more-eyebrow" className="eyebrow block-eyebrow">
           — Más —
         </span>
-        <button
-          type="button"
-          className="pro-card"
-          onClick={() => router.push('/pro')}
-          aria-label="Egoera Pro"
-        >
-          <span className="pro-pill">— PRO —</span>
-          <span className="pro-title">Egoera Pro</span>
-          <span className="pro-sub">
-            Conversa ilimitada · memoria 365 días · export profesional
-          </span>
-        </button>
         <ul className="link-list">
           <li>
             <button

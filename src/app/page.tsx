@@ -13,6 +13,7 @@ import { EMOTIONS } from '@/lib/types';
 import { useToast } from '@/components/toast/ToastProvider';
 import { EvaCuidadoraCharacter } from '@/components/illustrations/EgoeraCharacters';
 import TurtleMascot, { type TurtleEmotion } from '@/components/TurtleMascot';
+import { CONVERSA_ACTIVA } from '@/lib/conversa-flag';
 
 /** Deriva la emoción de la tortuga a partir del último ánimo registrado (0-10). */
 function turtleFromMood(mood: number): TurtleEmotion {
@@ -485,6 +486,7 @@ export default function HomePage() {
           </p>
         </button>
 
+        {CONVERSA_ACTIVA ? (
         <button
           type="button"
           className="m-card m-card-cream card-btn"
@@ -497,6 +499,7 @@ export default function HomePage() {
           <h2 className="card-title card-title-ink">Habla con Egoera.</h2>
           <p className="card-sub">Una conversación contigo mismo, mediada.</p>
         </button>
+        ) : null}
 
         <button
           type="button"
@@ -505,7 +508,7 @@ export default function HomePage() {
           aria-label="Mira qué se repite esta semana"
         >
           <div className="card-row">
-            <span className="pill-num">03 · Patrones</span>
+            <span className="pill-num">{CONVERSA_ACTIVA ? '03' : '02'} · Patrones</span>
             {weekSummary ? (
               <span className="pill-week-stat">
                 {weekSummary.avgMood.toFixed(1)}
@@ -599,13 +602,13 @@ export default function HomePage() {
             </div>
             <div className="low-mood-content">
               <p className="low-mood-title">Ha habido días difíciles esta semana.</p>
-              <p className="low-mood-sub">Está bien que así sea. La conversa está aquí cuando quieras ponerlo en palabras.</p>
+              <p className="low-mood-sub">Está bien que así sea. {CONVERSA_ACTIVA ? 'La conversa está aquí' : 'El diario está aquí'} cuando quieras ponerlo en palabras.</p>
               <button
                 type="button"
                 className="low-mood-cta"
-                onClick={() => router.push('/conversa')}
+                onClick={() => router.push(CONVERSA_ACTIVA ? '/conversa' : '/diario')}
               >
-                Hablar →
+                {CONVERSA_ACTIVA ? 'Hablar →' : 'Escribir →'}
               </button>
             </div>
           </div>
@@ -688,13 +691,6 @@ export default function HomePage() {
           onClick={() => router.push('/bienvenida')}
         >
           ¿Primera vez? · Empieza guiado →
-        </button>
-        <button
-          type="button"
-          className="discover-link discover-link-pro"
-          onClick={() => router.push('/pro')}
-        >
-          Egoera Pro · 7 días gratis →
         </button>
       </nav>
 

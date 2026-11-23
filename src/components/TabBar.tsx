@@ -2,10 +2,11 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
+import { CONVERSA_ACTIVA } from '@/lib/conversa-flag';
 
 type Tab = { href: string; label: string; icon: React.ReactNode };
 
-const TABS: Tab[] = [
+const TODAS: Tab[] = [
   {
     href: '/',
     label: 'Hoy',
@@ -104,6 +105,7 @@ const TABS: Tab[] = [
     ),
   },
 ];
+const TABS = TODAS.filter((t) => CONVERSA_ACTIVA || t.href !== '/conversa');
 
 // 5 pestañas primarias (móvil-first, según el mockup); el resto va en "Más".
 const PRIMARY = ['/', '/diario', '/cuadernos', '/patrones', '/tu'];

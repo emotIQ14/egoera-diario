@@ -1,5 +1,6 @@
 import type { DiaryEntry } from '@/lib/storage';
 import { hayRiesgoEnConversa } from '@/lib/riesgo/detector';
+import { CONVERSA_ACTIVA } from '@/lib/conversa-flag';
 
 export const runtime = 'nodejs';
 
@@ -131,6 +132,10 @@ async function callAnthropic(
 }
 
 export async function POST(req: Request): Promise<Response> {
+  // Apagada: se responde sin leer el cuerpo, así que ningún texto sale hacia la IA.
+  if (!CONVERSA_ACTIVA) {
+    return Response.json({ error: 'conversa_no_disponible' }, { status: 503, headers: { 'Cache-Control': 'no-store' } });
+  }
   try {
     const apiKey = process.env.ANTHROPIC_API_KEY;
     if (!apiKey) {

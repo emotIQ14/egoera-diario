@@ -11,6 +11,7 @@ import { EmptyHistorial } from '@/components/illustrations/EmptyStates';
 import EmotionAvatar from '@/components/EmotionAvatar';
 import { useToast } from '@/components/toast/ToastProvider';
 import { track } from '@/lib/track';
+import { CONVERSA_ACTIVA } from '@/lib/conversa-flag';
 
 // ─── helpers ────────────────────────────────────────────────────────────────
 
@@ -658,6 +659,7 @@ export default function HistorialPage() {
                               Copiar
                             </button>
                           )}
+                          {CONVERSA_ACTIVA ? (
                           <button
                             type="button"
                             className="explore-btn"
@@ -670,6 +672,7 @@ export default function HistorialPage() {
                           >
                             Explorar →
                           </button>
+                          ) : null}
                         </div>
                       </div>
                     )}
